@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/a11y/useButtonType: <explanation> */
-/** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
+/** biome-ignore-all lint/a11y/useButtonType: <no reason> */
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <no reason> */
 import { useState } from "react";
 import user1Image from "../assets/user1.jpg";
 import user2Image from "../assets/user2.jpg";
