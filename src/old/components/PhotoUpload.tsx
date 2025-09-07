@@ -3,11 +3,11 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 import { Camera, Image, Upload } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Label } from "../components/ui/label";
+import { Progress } from "../components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 
 interface PhotoUploadProps {
 	onPhotoUpload: (photo: string, gender: string) => void;

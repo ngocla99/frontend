@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Baby, Sparkles, Download, Heart, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { toast } from "sonner";
 
 interface BabyGeneratorProps {

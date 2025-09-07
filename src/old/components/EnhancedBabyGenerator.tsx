@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Baby, Download, Share2, Sparkles, Trophy, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ProgressIndicator } from "@/components/ui/progress-indicator";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { ProgressIndicator } from "../components/ui/progress-indicator";
 import { storage } from "../lib/storage";
 
 interface EnhancedBabyGeneratorProps {

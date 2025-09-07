@@ -1,6 +1,6 @@
 import { Heart, Zap } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
 
 interface MatchCardProps {
   user1: {

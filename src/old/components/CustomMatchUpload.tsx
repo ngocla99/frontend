@@ -2,8 +2,8 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 import { Heart, Upload, Users } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 
 interface CustomMatch {
 	id: string;

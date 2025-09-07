@@ -19,8 +19,8 @@ const queryClient = new QueryClient({
 				// eslint-disable-next-line no-console
 				if (import.meta.env.DEV) console.log({ failureCount, error });
 
-				if (failureCount >= 0 && import.meta.env.DEV) return false;
-				if (failureCount > 3 && import.meta.env.PROD) return false;
+				if (failureCount >= 0) return false;
+				// if (failureCount > 3 && import.meta.env.PROD) return false;
 
 				return !(
 					error instanceof AxiosError &&
