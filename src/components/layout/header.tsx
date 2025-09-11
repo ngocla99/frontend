@@ -86,16 +86,16 @@ export function Header() {
 	return (
 		<>
 			<motion.header
-				className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
+				className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 shadow-[0_1px_0_0_rgba(0,0,0,0.1)] ${
 					isScrolled
 						? "border-border/50 bg-background/80 border-b shadow-sm backdrop-blur-md"
-						: "bg-transparent"
+						: "bg-white"
 				}`}
 				variants={containerVariants}
 				initial="hidden"
 				animate="visible"
 			>
-				<div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+				<div className="mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex h-16 items-center justify-between">
 						<motion.div
 							className="flex items-center space-x-3"
