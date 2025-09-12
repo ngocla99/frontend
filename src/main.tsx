@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./app";
-// import "./old/index.css";
-import "./styles.css";
+import "./old/index.css";
+// import "./styles.css";
 
 const rootElement = document.getElementById("app");
 if (rootElement && !rootElement.innerHTML) {

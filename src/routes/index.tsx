@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AIBabyGenerator } from "@/features/matching/components";
+import Index from "@/old/pages/Index";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -36,16 +37,7 @@ function HomePage() {
 
 	return (
 		<div className="pt-16 min-h-screen grid overflow-hidden">
-			<AIBabyGenerator
-				fatherPhoto={fatherPhoto}
-				motherPhoto={motherPhoto}
-				selectedGender={selectedGender}
-				isGenerating={isGenerating}
-				onFatherPhotoUpload={handleFatherPhotoUpload}
-				onMotherPhotoUpload={handleMotherPhotoUpload}
-				onGenderChange={handleGenderChange}
-				onGenerate={handleGenerate}
-			/>
+			<Index />
 		</div>
 	);
 }
