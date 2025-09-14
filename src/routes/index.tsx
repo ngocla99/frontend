@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 /** biome-ignore-all lint/a11y/useButtonType: <no reason> */
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <no reason> */
 
@@ -9,19 +10,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
-import user1Image from "@/old/assets/user1.jpg";
-import user2Image from "@/old/assets/user2.jpg";
-import user3Image from "@/old/assets/user3.jpg";
-import user4Image from "@/old/assets/user4.jpg";
-import { CelebritySearch } from "@/old/components/CelebritySearch";
-import { CustomMatchUpload } from "@/old/components/CustomMatchUpload";
+import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import { EnhancedBabyGenerator } from "@/old/components/EnhancedBabyGenerator";
 import { FavoritesManager } from "@/old/components/FavoritesManager";
-import { LiveMatches } from "@/old/components/LiveMatches";
-import { MatchCard } from "@/old/components/MatchCard";
-import { PotentialMatches } from "@/old/components/PotentialMatches";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -114,77 +107,9 @@ function HomePage() {
 		setSelectedCustomMatch(null);
 	};
 
-	const handleViewMatch = (
-		user1: { name: string; image: string },
-		user2: { name: string; image: string },
-	) => {
-		setViewModalData({ user1, user2 });
-		setViewModalOpen(true);
-	};
-
 	const loadMoreMatches = () => {
 		setDisplayedMatches((prev) => prev + 3);
 	};
-
-	// Extended demo matches data for infinite scroll
-	const allMatches = [
-		{
-			user1: { name: "Sophie", image: user1Image },
-			user2: { name: "Jordan", image: user2Image },
-			matchPercentage: 88,
-			timestamp: "just now",
-			isNew: false,
-		},
-		{
-			user1: { name: "Casey", image: user3Image },
-			user2: { name: "Zoe", image: user4Image },
-			matchPercentage: 81,
-			timestamp: "just now",
-			isNew: false,
-		},
-		{
-			user1: { name: "Sam", image: user2Image },
-			user2: { name: "Zoe", image: user3Image },
-			matchPercentage: 69,
-			timestamp: "1m ago",
-			isNew: true,
-		},
-		{
-			user1: { name: "Alex", image: user1Image },
-			user2: { name: "Jamie", image: user4Image },
-			matchPercentage: 92,
-			timestamp: "2m ago",
-			isNew: true,
-		},
-		{
-			user1: { name: "Taylor", image: user3Image },
-			user2: { name: "Morgan", image: user2Image },
-			matchPercentage: 76,
-			timestamp: "5m ago",
-			isNew: false,
-		},
-		{
-			user1: { name: "Riley", image: user4Image },
-			user2: { name: "Avery", image: user1Image },
-			matchPercentage: 84,
-			timestamp: "8m ago",
-			isNew: false,
-		},
-		{
-			user1: { name: "Quinn", image: user2Image },
-			user2: { name: "Blake", image: user3Image },
-			matchPercentage: 73,
-			timestamp: "12m ago",
-			isNew: false,
-		},
-		{
-			user1: { name: "Drew", image: user1Image },
-			user2: { name: "Sage", image: user4Image },
-			matchPercentage: 89,
-			timestamp: "15m ago",
-			isNew: false,
-		},
-	];
 
 	const handleSeletMatch = (match: PotentialMatch) => {
 		setSelectedMatch(match);
@@ -192,8 +117,6 @@ function HomePage() {
 		setSelectedCustomMatch(null);
 		setShowBabyGenerator(true);
 	};
-
-	const matches = allMatches.slice(0, displayedMatches);
 
 	return (
 		<div className="pt-20 min-h-screen bg-gradient-subtle">
@@ -205,55 +128,10 @@ function HomePage() {
 						<div className="flex gap-4 items-center mb-4">
 							<FavoritesManager onSelectMatch={handleSelectMatch} />
 						</div>
-						<UploadPhoto
-							onPhotoUpload={handlePhotoUpload}
-							userPhoto={userPhoto}
-						/>
+						<UploadPhoto />
 
 						{/* Progressive Flow */}
-						{userPhoto && !showBabyGenerator && (
-							<div className="animate-fade-in">
-								<Tabs
-									value={activeTab}
-									onValueChange={setActiveTab}
-									className="w-full"
-								>
-									<TabsList className="grid w-full grid-cols-3 mb-8 bg-card border border-border">
-										<TabsTrigger value="university" className="font-medium">
-											University
-										</TabsTrigger>
-										<TabsTrigger value="celebrity" className="font-medium">
-											Celebrities
-										</TabsTrigger>
-										<TabsTrigger value="custom" className="font-medium">
-											Your Photos
-										</TabsTrigger>
-									</TabsList>
-
-									<TabsContent value="university">
-										<PotentialMatches
-											userGender={userPhoto.gener}
-											onSelectMatch={handleSeletMatch}
-											selectedMatch={selectedMach}
-										/>
-									</TabsContent>
-
-									<TabsContent value="celebrity">
-										<CelebritySearch
-											onSelectCelebrity={handleSelectCelebrity}
-											selectedCelebrity={selectedCelebrity}
-										/>
-									</TabsContent>
-
-									<TabsContent value="custom">
-										<CustomMatchUpload
-											onSelectCustomMatch={handleSelectCustomMatch}
-											selectedCustomMatch={selectedCustomMatch}
-										/>
-									</TabsContent>
-								</Tabs>
-							</div>
-						)}
+						{userPhoto && !showBabyGenerator && <UserMatch />}
 
 						{showBabyGenerator && (
 							<div className="animate-fade-in">
@@ -276,45 +154,7 @@ function HomePage() {
 					</div>
 
 					{/* Right Column - Infinite Live Feed */}
-					<div className="space-y-6">
-						<div className="text-center">
-							<h2 className="text-2xl font-display font-light text-foreground mb-2">
-								Live University Matches
-							</h2>
-							<p className="text-muted-foreground mb-6">
-								Real matches happening now
-							</p>
-							<LiveMatches
-								activeUsers={345}
-								newMatches={10}
-								viewedMatches={14}
-							/>
-						</div>
-
-						<div className="h-[600px] overflow-y-auto space-y-4 pr-2">
-							{matches.map((match, index) => (
-								<MatchCard
-									key={index}
-									user1={match.user1}
-									user2={match.user2}
-									matchPercentage={match.matchPercentage}
-									timestamp={match.timestamp}
-									isNew={match.isNew}
-									onViewMatch={() => handleViewMatch(match.user1, match.user2)}
-								/>
-							))}
-							{displayedMatches < allMatches.length && (
-								<div className="text-center py-4">
-									<button
-										onClick={loadMoreMatches}
-										className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
-									>
-										Load more matches...
-									</button>
-								</div>
-							)}
-						</div>
-					</div>
+					<LiveMatch />
 				</div>
 
 				{/* View Match Modal */}

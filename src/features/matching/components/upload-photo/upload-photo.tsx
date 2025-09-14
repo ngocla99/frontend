@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, Image, RotateCcw, Sparkles, Upload, Zap } from "lucide-react";
+import { Camera, Image, Upload, Zap } from "lucide-react";
 import {
 	type SetStateAction,
 	useCallback,
@@ -7,47 +7,39 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { SimpleProgressBar } from "@/components/ui/progress-indicator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
+import { useFaces } from "@/features/matching/api/get-faces";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { ImageProcessor } from "@/old/lib/imageUtils";
 import { storage } from "@/old/lib/storage";
 
-interface UploadPhotoProps {
-	onPhotoUpload: (photo: string, gender: string) => void;
-	userPhoto?: { photo: string; gender: string };
-}
-
-export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
-	const [selectedGender, setSelectedGender] = useState<string>(
-		userPhoto?.gender || "",
-	);
+export const UploadPhoto = () => {
+	const [selectedGender, setSelectedGender] = useState<string>("male");
 	const [dragActive, setDragActive] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
 	const [showFilters, setShowFilters] = useState(false);
-	const [currentFilter, setCurrentFilter] = useState<
-		"none" | "vintage" | "bw" | "sepia" | "vibrant"
-	>("none");
+	// const [currentFilter, setCurrentFilter] = useState<
+	// 	"none" | "vintage" | "bw" | "sepia" | "vibrant"
+	// >("none");
 	const [compressionLevel, setCompressionLevel] = useState([80]);
 	const [originalImage, setOriginalImage] = useState<string>("");
 
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	const { data: faces } = useFaces();
+	const user = {
+		photo: faces?.[0]?.image_url,
+		// TODO: get gender from user
+		gender: "male",
+	};
 	const uploadFaceMutation = useUploadFace();
-	const maleId = useId();
-	const femaleId = useId();
 
 	const processPhotoUpload = useCallback(
 		async (file: File) => {
@@ -99,7 +91,7 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 				});
 
 				// Call the callback with the image URL from backend or local data URL
-				onPhotoUpload(result.image_url || dataUrl, selectedGender);
+				// onPhotoUpload(result.image_url || dataUrl, selectedGender);
 			} catch (error) {
 				console.error("Upload failed:", error);
 			} finally {
@@ -107,21 +99,21 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 				setUploadProgress(0);
 			}
 		},
-		[selectedGender, compressionLevel, onPhotoUpload, uploadFaceMutation],
+		[selectedGender, compressionLevel, uploadFaceMutation],
 	);
 
-	const applyFilter = async (filter: typeof currentFilter) => {
-		if (!originalImage) return;
+	// const applyFilter = async (filter: typeof currentFilter) => {
+	// 	if (!originalImage) return;
 
-		setCurrentFilter(filter);
+	// 	setCurrentFilter(filter);
 
-		try {
-			const filtered = await ImageProcessor.applyFilter(originalImage, filter);
-			onPhotoUpload(filtered, selectedGender);
-		} catch (error) {
-			console.error("Filter failed:", error);
-		}
-	};
+	// 	try {
+	// 		const filtered = await ImageProcessor.applyFilter(originalImage, filter);
+	// 		onPhotoUpload(filtered, selectedGender);
+	// 	} catch (error) {
+	// 		console.error("Filter failed:", error);
+	// 	}
+	// };
 
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
@@ -147,12 +139,12 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 
 	const resetPhoto = () => {
 		setOriginalImage("");
-		setCurrentFilter("none");
-		onPhotoUpload("", "");
+		// setCurrentFilter("none");
+		// onPhotoUpload("", "");
 		storage.trackEvent("photo_reset");
 	};
 
-	if (userPhoto) {
+	if (user) {
 		return (
 			<Card className="p-6 bg-gradient-card border-0 shadow-soft">
 				<motion.div
@@ -161,17 +153,18 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 					className="text-center space-y-4"
 				>
 					<div className="relative inline-block">
-						<img
-							src={userPhoto.photo}
-							alt="User profile"
-							className="w-32 h-32 rounded-full object-cover border-4 border-primary shadow-match"
-						/>
+						<Avatar className="size-32 rounded-full object-cover border-4 border-primary shadow-match">
+							<AvatarImage src={user.photo} alt="User profile" />
+							<AvatarFallback>
+								{user.gender === "male" ? "👨" : "👩"}
+							</AvatarFallback>
+						</Avatar>
 						<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
-							{userPhoto.gender === "male" ? "👨" : "👩"}
+							{user.gender === "male" ? "👨" : "👩"}
 						</Badge>
 					</div>
 
-					<div className="flex gap-3 justify-center">
+					{/* <div className="flex gap-3 justify-center">
 						<Dialog open={showFilters} onOpenChange={setShowFilters}>
 							<DialogTrigger asChild>
 								<Button variant="outline" size="sm" className="gap-2">
@@ -227,7 +220,7 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 							<RotateCcw className="w-4 h-4" />
 							Change Photo
 						</Button>
-					</div>
+					</div> */}
 				</motion.div>
 			</Card>
 		);
@@ -260,14 +253,14 @@ export const UploadPhoto = ({ onPhotoUpload, userPhoto }: UploadPhotoProps) => {
 						className="flex gap-6 justify-center"
 					>
 						<div className="flex items-center space-x-2">
-							<RadioGroupItem value="male" id={maleId} />
-							<Label htmlFor={maleId} className="cursor-pointer">
+							<RadioGroupItem value="male" id="male" />
+							<Label htmlFor="male" className="cursor-pointer">
 								👨 Male
 							</Label>
 						</div>
 						<div className="flex items-center space-x-2">
-							<RadioGroupItem value="female" id={femaleId} />
-							<Label htmlFor={femaleId} className="cursor-pointer">
+							<RadioGroupItem value="female" id="female" />
+							<Label htmlFor="female" className="cursor-pointer">
 								👩 Female
 							</Label>
 						</div>

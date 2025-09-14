@@ -48,7 +48,8 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noUnknownAtRules": "off"
+				"noUnknownAtRules": "off",
+				"useUniqueElementIds": "off"
 			},
 			"style": {
 				"noNonNullAssertion": "off"
