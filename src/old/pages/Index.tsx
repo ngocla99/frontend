@@ -2,7 +2,13 @@
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <no reason> */
 
 import { useState } from "react";
-import { PhotoUpload } from "@/features/matching/components/photo-upload";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import user1Image from "../assets/user1.jpg";
 import user2Image from "../assets/user2.jpg";
 import user3Image from "../assets/user3.jpg";
@@ -10,22 +16,11 @@ import user4Image from "../assets/user4.jpg";
 import { CelebritySearch } from "../components/CelebritySearch";
 import { CustomMatchUpload } from "../components/CustomMatchUpload";
 import { EnhancedBabyGenerator } from "../components/EnhancedBabyGenerator";
+import { EnhancedPhotoUpload } from "../components/EnhancedPhotoUpload";
 import { FavoritesManager } from "../components/FavoritesManager";
 import { LiveMatches } from "../components/LiveMatches";
 import { MatchCard } from "../components/MatchCard";
 import { PotentialMatches } from "../components/PotentialMatches";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "../components/ui/dialog";
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "../components/ui/tabs";
 
 interface PotentialMatch {
 	id: string;
@@ -195,12 +190,12 @@ const Index = () => {
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
 					{/* Left Column - Upload & Matching */}
 					<div className="space-y-8">
-						{/* <div className="flex gap-4 items-center mb-4">
+						<div className="flex gap-4 items-center mb-4">
 							<FavoritesManager onSelectMatch={handleSelectMatch} />
-						</div> */}
-						<PhotoUpload
+						</div>
+						<EnhancedPhotoUpload
 							onPhotoUpload={handlePhotoUpload}
-							userPhoto={userPhoto || undefined}
+							userPhoto={userPhoto}
 						/>
 
 						{/* Progressive Flow */}
@@ -225,9 +220,9 @@ const Index = () => {
 
 									<TabsContent value="university">
 										<PotentialMatches
-											userGender={userPhoto.gender}
-											onSelectMatch={handleSelectMatch}
-											selectedMatch={selectedMatch}
+											userGender={userPhoto.gener}
+											onSelectMatch={handleSeletMatch}
+											selectedMatch={selectedMach}
 										/>
 									</TabsContent>
 

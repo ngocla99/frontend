@@ -1,6 +1,6 @@
 import { Flame } from "lucide-react";
-import { Badge } from "../components/ui/badge";
-import { Card } from "../components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface LiveMatchesProps {
 	activeUsers: number;
