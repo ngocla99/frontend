@@ -1,3 +1,4 @@
+import { LiveMatching } from "./live-matching";
 import { PhotoUploadForm } from "./photo-upload-form";
 import { VisualGenerationFlow } from "./visual-generation-flow";
 
@@ -25,10 +26,7 @@ export function AIBabyGenerator({
 	return (
 		<div className="grid lg:grid-cols-[1fr_564px] items-center h-full">
 			{/* Left Section - Visual Demo */}
-			<VisualGenerationFlow
-				fatherPhoto={fatherPhoto}
-				motherPhoto={motherPhoto}
-			/>
+			<LiveMatching />
 
 			{/* Right Section - Input Form */}
 			<PhotoUploadForm

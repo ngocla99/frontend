@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { GenderSelection } from "./gender-selection";
-import { GenerateButton } from "./generate-button";
-import { PhotoUploadSection } from "./photo-upload-section";
+import { GenderSelection } from "../../matching/components/gender-selection";
+import { GenerateButton } from "../../matching/components/generate-button";
+import { PhotoUploadSection } from "../../matching/components/photo-upload-section";
 
 interface PhotoUploadFormProps {
 	fatherPhoto: File | null;
