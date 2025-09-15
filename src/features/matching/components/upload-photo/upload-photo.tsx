@@ -1,12 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { Camera, Image, Upload, Zap } from "lucide-react";
-import {
-	type SetStateAction,
-	useCallback,
-	useId,
-	useRef,
-	useState,
-} from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,12 +5,21 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { SimpleProgressBar } from "@/components/ui/progress-indicator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useFaces } from "@/features/matching/api/get-faces";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { ImageProcessor } from "@/old/lib/imageUtils";
 import { storage } from "@/old/lib/storage";
+import { AnimatePresence, motion } from "framer-motion";
+import { Camera, Image, Upload, Zap } from "lucide-react";
+import {
+	type SetStateAction,
+	useCallback,
+	useRef,
+	useState
+} from "react";
+import { useUserUpload } from "../../store/user-upload";
 
 export const UploadPhoto = () => {
+	const userUpload = useUserUpload();
 	const [selectedGender, setSelectedGender] = useState<string>("male");
 	const [dragActive, setDragActive] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -33,12 +33,7 @@ export const UploadPhoto = () => {
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const { data: faces } = useFaces();
-	const user = {
-		photo: faces?.[0]?.image_url,
-		// TODO: get gender from user
-		gender: "male",
-	};
+
 	const uploadFaceMutation = useUploadFace();
 
 	const processPhotoUpload = useCallback(
@@ -144,7 +139,7 @@ export const UploadPhoto = () => {
 		storage.trackEvent("photo_reset");
 	};
 
-	if (user) {
+	if (userUpload?.photo) {
 		return (
 			<Card className="p-6 bg-gradient-card border-0 shadow-soft">
 				<motion.div
@@ -154,13 +149,13 @@ export const UploadPhoto = () => {
 				>
 					<div className="relative inline-block">
 						<Avatar className="size-32 rounded-full object-cover border-4 border-primary shadow-match">
-							<AvatarImage src={user.photo} alt="User profile" />
+							<AvatarImage src={userUpload.photo} alt="User profile" />
 							<AvatarFallback>
-								{user.gender === "male" ? "👨" : "👩"}
+								{userUpload.gender === "male" ? "👨" : "👩"}
 							</AvatarFallback>
 						</Avatar>
 						<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
-							{user.gender === "male" ? "👨" : "👩"}
+							{userUpload.gender === "male" ? "👨" : "👩"}
 						</Badge>
 					</div>
 

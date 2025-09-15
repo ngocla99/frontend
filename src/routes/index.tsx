@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 /** biome-ignore-all lint/a11y/useButtonType: <no reason> */
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <no reason> */
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -15,6 +15,9 @@ import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import { EnhancedBabyGenerator } from "@/old/components/EnhancedBabyGenerator";
 import { FavoritesManager } from "@/old/components/FavoritesManager";
+import { useMe } from "@/features/auth/api/get-me";
+import { useFaces } from "@/features/matching/api/get-faces";
+import { useUserUpload, useUserUploadActions } from "@/features/matching/store/user-upload";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -47,10 +50,11 @@ interface CustomMatch {
 }
 
 function HomePage() {
-	const [userPhoto, setUserPhoto] = useState<{
-		photo: string;
-		gender: string;
-	} | null>(null);
+	const userUpload = useUserUpload();
+	const { setUserUpload } = useUserUploadActions();
+	const { data: user } = useMe();
+	const { data: faces } = useFaces();
+
 	const [selectedMatch, setSelectedMatch] = useState<PotentialMatch | null>(
 		null,
 	);
@@ -60,58 +64,19 @@ function HomePage() {
 	const [selectedCustomMatch, setSelectedCustomMatch] =
 		useState<CustomMatch | null>(null);
 	const [showBabyGenerator, setShowBabyGenerator] = useState(false);
-	const [displayedMatches, setDisplayedMatches] = useState(3);
-	const [activeTab, setActiveTab] = useState("university");
 	const [viewModalOpen, setViewModalOpen] = useState(false);
 	const [viewModalData, setViewModalData] = useState<{
 		user1: any;
 		user2: any;
 	} | null>(null);
 
-	const handlePhotoUpload = (photo: string, gender: string) => {
-		if (photo === "" && gender === "") {
-			// Reset photo
-			setUserPhoto(null);
-			setSelectedMatch(null);
-			setShowBabyGenerator(false);
-			return;
-		}
-		setUserPhoto({ photo, gender });
-	};
+
+	React.useEffect(() => {
+		if (!user || !faces) return
+		setUserUpload({ ...user, photo: faces.find((face) => face.face_id === user.default_face_id)?.image_url });
+	}, [faces, user]);
 
 	const handleSelectMatch = (match: PotentialMatch) => {
-		setSelectedMatch(match);
-		setSelectedCelebrity(null);
-		setSelectedCustomMatch(null);
-		setShowBabyGenerator(true);
-	};
-
-	const handleSelectCelebrity = (celebrity: Celebrity) => {
-		setSelectedCelebrity(celebrity);
-		setSelectedMatch(null);
-		setSelectedCustomMatch(null);
-		setShowBabyGenerator(true);
-	};
-
-	const handleSelectCustomMatch = (customMatch: CustomMatch) => {
-		setSelectedCustomMatch(customMatch);
-		setSelectedMatch(null);
-		setSelectedCelebrity(null);
-		setShowBabyGenerator(true);
-	};
-
-	const handleBackToMatches = () => {
-		setShowBabyGenerator(false);
-		setSelectedMatch(null);
-		setSelectedCelebrity(null);
-		setSelectedCustomMatch(null);
-	};
-
-	const loadMoreMatches = () => {
-		setDisplayedMatches((prev) => prev + 3);
-	};
-
-	const handleSeletMatch = (match: PotentialMatch) => {
 		setSelectedMatch(match);
 		setSelectedCelebrity(null);
 		setSelectedCustomMatch(null);
@@ -131,12 +96,12 @@ function HomePage() {
 						<UploadPhoto />
 
 						{/* Progressive Flow */}
-						{userPhoto && !showBabyGenerator && <UserMatch />}
+						{userUpload.photo && !showBabyGenerator && <UserMatch />}
 
 						{showBabyGenerator && (
 							<div className="animate-fade-in">
 								<EnhancedBabyGenerator
-									userPhoto={userPhoto?.photo}
+									userPhoto={userUpload.photo}
 									matchPhoto={
 										selectedMatch?.image ||
 										selectedCelebrity?.image ||
@@ -147,7 +112,7 @@ function HomePage() {
 										selectedCelebrity?.name ||
 										selectedCustomMatch?.name
 									}
-									onBack={handleBackToMatches}
+									onBack={() => setShowBabyGenerator(false)}
 								/>
 							</div>
 						)}
