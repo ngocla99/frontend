@@ -1,14 +1,14 @@
-import React from "react";
-import { LiveMatches } from "@/features/matching/components/live-match/LiveMatches";
+import { useMe } from "@/features/auth/api/get-me";
+import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
 import user1Image from "@/old/assets/user1.jpg";
 import user2Image from "@/old/assets/user2.jpg";
 import user3Image from "@/old/assets/user3.jpg";
 import user4Image from "@/old/assets/user4.jpg";
+import React from "react";
 import { useLiveMatch } from "../../api/get-live-match";
 import { useLiveMatches } from "../../hooks/use-live-matches";
 import { useUserLiveMatches } from "../../hooks/use-user-live-matches";
-import { useMe } from "@/features/auth/api/get-me";
 
 // Extended demo matches data for infinite scroll
 const allMatches = [
@@ -105,7 +105,7 @@ export function LiveMatch() {
 					Live University Matches
 				</h2>
 				<p className="text-muted-foreground mb-6">Real matches happening now</p>
-				<LiveMatches activeUsers={345} newMatches={10} viewedMatches={14} />
+				<HeadCard activeUsers={345} newMatches={10} viewedMatches={14} />
 			</div>
 
 			<div className="h-[600px] overflow-y-auto space-y-4 pr-2">

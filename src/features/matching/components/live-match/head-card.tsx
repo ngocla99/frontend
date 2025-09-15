@@ -2,17 +2,17 @@ import { Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
-interface LiveMatchesProps {
+interface HeadCardProps {
 	activeUsers: number;
 	newMatches: number;
 	viewedMatches: number;
 }
 
-export const LiveMatches = ({
+export const HeadCard = ({
 	activeUsers,
 	newMatches,
 	viewedMatches,
-}: LiveMatchesProps) => {
+}: HeadCardProps) => {
 	return (
 		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match">
 			<div className="flex items-center gap-2 mb-2">
