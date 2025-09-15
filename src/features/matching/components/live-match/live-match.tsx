@@ -5,6 +5,10 @@ import user1Image from "@/old/assets/user1.jpg";
 import user2Image from "@/old/assets/user2.jpg";
 import user3Image from "@/old/assets/user3.jpg";
 import user4Image from "@/old/assets/user4.jpg";
+import { useLiveMatch } from "../../api/get-live-match";
+import { useLiveMatches } from "../../hooks/use-live-matches";
+import { useUserLiveMatches } from "../../hooks/use-user-live-matches";
+import { useMe } from "@/features/auth/api/get-me";
 
 // Extended demo matches data for infinite scroll
 const allMatches = [
@@ -67,8 +71,24 @@ const allMatches = [
 ];
 
 export function LiveMatch() {
-	const [displayedMatches, setDisplayedMatches] = React.useState(3);
-	const matches = allMatches.slice(0, displayedMatches);
+	const { data: user } = useMe();
+	const { data: liveMatch } = useLiveMatch();
+	
+	// Use socket hooks for real-time matches
+	const { matches: liveMatches } = useLiveMatches();
+	const { matches: userMatches } = useUserLiveMatches(user?.user_id);
+	
+	console.log("🚀 ~ LiveMatch ~ liveMatch:", liveMatch);
+	console.log("🚀 ~ LiveMatch ~ liveMatches:", liveMatches);
+	console.log("🚀 ~ LiveMatch ~ userMatches:", userMatches);
+	
+	const [displayedMatches] = React.useState(3);
+	
+	// Combine demo matches with real-time matches
+	const allRealMatches = [...liveMatches, ...userMatches];
+	const matches = allRealMatches.length > 0 
+		? allRealMatches.slice(0, displayedMatches)
+		: allMatches.slice(0, displayedMatches);
 
 	// const handleViewMatch = (
 	// 	user1: { name: string; image: string },

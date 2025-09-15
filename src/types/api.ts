@@ -5,6 +5,7 @@ export enum Gender {
 }
 
 export type UserApi = {
+	user_id: string;
 	username: string;
 	email: string;
 	avatar: string;
