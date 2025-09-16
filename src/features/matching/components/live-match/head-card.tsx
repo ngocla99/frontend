@@ -3,16 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 interface HeadCardProps {
-	activeUsers: number;
-	newMatches: number;
-	viewedMatches: number;
+	stats: {
+		activeUsers: number;
+		newMatches: number;
+		viewedMatches: number;
+	};
 }
 
-export const HeadCard = ({
-	activeUsers,
-	newMatches,
-	viewedMatches,
-}: HeadCardProps) => {
+export const HeadCard = ({ stats }: HeadCardProps) => {
+	const { activeUsers, newMatches, viewedMatches } = stats;
 	return (
 		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match gap-0 rounded-2xl">
 			<div className="flex items-center gap-2 mb-2">
