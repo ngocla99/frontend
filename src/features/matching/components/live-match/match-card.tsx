@@ -1,4 +1,5 @@
 import { Heart, Zap } from "lucide-react";
+import { AuthGuard } from "@/components/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserMatchesActions } from "../../store/user-matches";
@@ -90,20 +91,22 @@ export const MatchCard = ({
 
 			<div className="flex items-center justify-between text-xs text-muted-foreground">
 				<span>⏰ {timestamp}</span>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="flex items-center gap-1 text-match rounded-full transition-colors h-auto p-1"
-					onClick={() =>
-						onOpen({
-							user1: { name: user1.name, photo: user1.image },
-							user2: { name: user2.name, photo: user2.image },
-						})
-					}
-				>
-					<Zap className="w-3 h-3" />
-					Click to view
-				</Button>
+				<AuthGuard>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="flex items-center gap-1 text-match rounded-full transition-colors h-auto p-1"
+						onClick={() =>
+							onOpen({
+								user1: { name: user1.name, photo: user1.image },
+								user2: { name: user2.name, photo: user2.image },
+							})
+						}
+					>
+						<Zap className="w-3 h-3" />
+						Click to view
+					</Button>
+				</AuthGuard>
 			</div>
 		</Card>
 	);

@@ -16,8 +16,13 @@ import { useAuth } from "@/stores/auth-store";
 export function ProfileDropdown({ className }: { className?: string }) {
 	const { user } = useAuth();
 
-	const signOutMutation = useSignOut();
-
+	const signOutMutation = useSignOut({
+		mutationConfig: {
+			onSuccess: () => {
+				window.location.href = "/";
+			},
+		},
+	});
 	const handleLogout = () => {
 		if (signOutMutation.isPending) return;
 		signOutMutation.mutate(undefined);
