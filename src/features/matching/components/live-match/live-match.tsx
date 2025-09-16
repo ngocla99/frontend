@@ -78,10 +78,6 @@ export function LiveMatch() {
 	const { matches: liveMatches } = useLiveMatches();
 	const { matches: userMatches } = useUserLiveMatches(user?.user_id);
 
-	console.log("🚀 ~ LiveMatch ~ liveMatch:", liveMatch);
-	console.log("🚀 ~ LiveMatch ~ liveMatches:", liveMatches);
-	console.log("🚀 ~ LiveMatch ~ userMatches:", userMatches);
-
 	const [displayedMatches] = React.useState(3);
 
 	// Combine demo matches with real-time matches
@@ -104,7 +100,7 @@ export function LiveMatch() {
 			<div className="h-[600px] overflow-y-auto space-y-4 pr-2">
 				{matches.map((match, index) => (
 					<MatchCard
-						key={index}
+						key={match.user1.name + match.user2.name + index}
 						user1={match.user1}
 						user2={match.user2}
 						matchPercentage={match.matchPercentage}

@@ -1,23 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-
-/** biome-ignore-all lint/a11y/useButtonType: <no reason> */
-/** biome-ignore-all lint/suspicious/noArrayIndexKey: <no reason> */
-
 import React, { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { useMe } from "@/features/auth/api/get-me";
 import { useFaces } from "@/features/matching/api/get-faces";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
-import { EnhancedBabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
+import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
-import { useUserMatchesOpen } from "@/features/matching/store/user-matches";
 import {
 	useUserUpload,
 	useUserUploadActions,
@@ -91,19 +80,17 @@ function HomePage() {
 			<div className="container mx-auto py-4 sm:py-6 lg:py-8">
 				{/* Two Column Layout */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-					{/* Left Column - Upload & Matching */}
 					<div className="space-y-8">
 						<div className="flex gap-4 items-center mb-4">
 							<FavoritesManager onSelectMatch={handleSelectMatch} />
 						</div>
 						<UploadPhoto />
 
-						{/* Progressive Flow */}
 						{userUpload.photo && !showBabyGenerator && <UserMatch />}
 
 						{showBabyGenerator && (
 							<div className="animate-fade-in">
-								<EnhancedBabyGenerator
+								<BabyGenerator
 									userPhoto={userUpload.photo}
 									matchPhoto={
 										selectedMatch?.image ||
@@ -121,7 +108,6 @@ function HomePage() {
 						)}
 					</div>
 
-					{/* Right Column - Infinite Live Feed */}
 					<LiveMatch />
 				</div>
 

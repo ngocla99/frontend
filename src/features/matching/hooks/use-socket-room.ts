@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { RoomConfig } from "@/types/socket";
-import { useSocket } from "./use-socket";
+import { useSocket } from "../../../hooks/use-socket";
 
 export const useSocketRooms = (config: RoomConfig) => {
 	const { socket, joinRoom, leaveRoom, isConnected } = useSocket();
