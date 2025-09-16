@@ -33,8 +33,8 @@ export function LiveMatch() {
 		const interval = setInterval(() => {
 			setDummyMatches((prevMatches) => {
 				const newMatch = generateRandomDummyMatch();
-				// Add new match at the beginning and limit to 20 matches
-				return [newMatch, ...prevMatches].slice(0, 20);
+				// Add new match at the beginning - no limit for infinite scrolling
+				return [newMatch, ...prevMatches];
 			});
 		}, 3000); // Every 3 seconds
 
