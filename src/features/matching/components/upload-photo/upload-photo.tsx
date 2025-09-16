@@ -24,12 +24,16 @@ export const UploadPhoto = () => {
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
 			onSuccess: (data) => {
-				setUserUpload({ ...userUpload, photo: data.image_url });
+				setUserUpload({ ...userUpload, image_url: data.image_url });
 				setShowSettings(false);
 			},
 		},
 	});
 	const updateMeMutation = useUpdateMe();
+
+	React.useEffect(() => {
+		setSelectedGender(userUpload.gender || "");
+	}, [userUpload.gender]);
 
 	const handleUploadFile = (file: File) => {
 		if (uploadFaceMutation.isPending) return;
@@ -40,7 +44,7 @@ export const UploadPhoto = () => {
 		updateMeMutation.mutate({ gender: value });
 	};
 
-	if (userUpload?.photo && !showSettings) {
+	if (userUpload?.image_url && !showSettings) {
 		return <UserPhoto onChangePhoto={() => setShowSettings(true)} />;
 	}
 

@@ -86,19 +86,22 @@ export function FavoriteHistory({ onSelectMatch }: FavoriteHistoryProps) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<AuthGuard>
-					<Button variant="outline" size="sm" className="gap-2">
-						<Heart className="w-4 h-4" />
-						Favorites & History
-						{favorites.length + babyHistory.length > 0 && (
-							<Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
-								{favorites.length + babyHistory.length}
-							</Badge>
-						)}
-					</Button>
-				</AuthGuard>
-			</DialogTrigger>
+			<AuthGuard>
+				<Button
+					variant="outline"
+					size="sm"
+					className="gap-2"
+					onClick={() => setIsOpen(true)}
+				>
+					<Heart className="w-4 h-4" />
+					Favorites & History
+					{favorites.length + babyHistory.length > 0 && (
+						<Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+							{favorites.length + babyHistory.length}
+						</Badge>
+					)}
+				</Button>
+			</AuthGuard>
 			<DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">

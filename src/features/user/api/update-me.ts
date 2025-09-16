@@ -33,7 +33,6 @@ export const useUpdateMe = ({ mutationConfig }: UseUpdateMeOptions = {}) => {
 				queryKey: getMeQueryOptions().queryKey,
 			});
 			onSuccess?.(...args);
-			toast.success("User updated successfully");
 		},
 		onError: (error: Error, ...args) => {
 			const errorMessage =
