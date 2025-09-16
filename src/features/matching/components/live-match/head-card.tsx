@@ -8,9 +8,15 @@ interface HeadCardProps {
 		newMatches: number;
 		viewedMatches: number;
 	};
+	onFilterChange: (filter: "all" | "new" | "viewed") => void;
+	activeFilter: "all" | "new" | "viewed";
 }
 
-export const HeadCard = ({ stats }: HeadCardProps) => {
+export const HeadCard = ({
+	stats,
+	onFilterChange,
+	activeFilter,
+}: HeadCardProps) => {
 	const { activeUsers, newMatches, viewedMatches } = stats;
 	return (
 		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match gap-0 rounded-2xl">
@@ -26,13 +32,34 @@ export const HeadCard = ({ stats }: HeadCardProps) => {
 			<div className="flex gap-2">
 				<Badge
 					variant="secondary"
-					className="bg-white/20 text-white border-0 rounded-full cursor-pointer"
+					className={`rounded-full cursor-pointer transition-all duration-200 ${
+						activeFilter === "all"
+							? "bg-white text-primary shadow-lg"
+							: "bg-white/20 text-white border-transparent hover:bg-white/30"
+					}`}
+					onClick={() => onFilterChange("all")}
+				>
+					🔥 All ({newMatches + viewedMatches})
+				</Badge>
+				<Badge
+					variant="secondary"
+					className={`rounded-full cursor-pointer transition-all duration-200 ${
+						activeFilter === "new"
+							? "bg-white text-primary shadow-lg"
+							: "bg-white/20 text-white border-transparent hover:bg-white/30"
+					}`}
+					onClick={() => onFilterChange("new")}
 				>
 					😍 New ({newMatches})
 				</Badge>
 				<Badge
 					variant="outline"
-					className="bg-transparent text-white border-white/30 rounded-full cursor-pointer"
+					className={`rounded-full cursor-pointer transition-all duration-200 ${
+						activeFilter === "viewed"
+							? "bg-white text-primary border-white shadow-lg"
+							: "bg-transparent text-white border-white/30 hover:bg-white/10"
+					}`}
+					onClick={() => onFilterChange("viewed")}
 				>
 					👀 Viewed ({viewedMatches})
 				</Badge>

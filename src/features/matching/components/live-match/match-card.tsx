@@ -15,6 +15,7 @@ interface MatchCardProps {
 	matchPercentage: number;
 	timestamp: string;
 	isNew?: boolean;
+	isViewed?: boolean;
 }
 
 export const MatchCard = ({
@@ -23,10 +24,15 @@ export const MatchCard = ({
 	matchPercentage,
 	timestamp,
 	isNew,
+	isViewed,
 }: MatchCardProps) => {
 	const { onOpen } = useUserMatchesActions();
 	return (
-		<Card className="p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
+		<Card
+			className={`p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300 ${
+				isViewed ? "opacity-75" : ""
+			}`}
+		>
 			<div className="flex items-center justify-between mb-3">
 				<div className="flex items-center justify-center gap-6">
 					<div className="flex flex-col items-center gap-2">
@@ -70,11 +76,18 @@ export const MatchCard = ({
 					</div>
 				</div>
 
-				{isNew && (
-					<div className="bg-match text-white px-2 py-1 rounded-full text-xs font-medium">
-						NEW MATCH
-					</div>
-				)}
+				<div className="flex gap-2">
+					{isNew && (
+						<div className="bg-match text-white px-2 py-1 rounded-full text-xs font-medium">
+							NEW MATCH
+						</div>
+					)}
+					{isViewed && (
+						<div className="bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs font-medium">
+							VIEWED
+						</div>
+					)}
+				</div>
 			</div>
 
 			<div className="flex items-center justify-between text-xs text-muted-foreground">
