@@ -1,4 +1,5 @@
 import React from "react";
+import { io } from "socket.io-client";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMe } from "@/features/auth/api/get-me";
@@ -11,11 +12,17 @@ import {
 import { useLiveMatches } from "@/features/matching/hooks/use-live-matches";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 
+const socket = io("https://fuzed.jayll.qzz.io/live", {
+	transports: ["websocket"],
+	withCredentials: true,
+});
+
 export function LiveMatch() {
 	// const { data: user } = useMe();
 
 	// Use socket hooks for real-time matches
-	const { matches: liveMatches } = useLiveMatches();
+	// const { matches: liveMatches } = useLiveMatches();
+	// console.log("🚀 ~ LiveMatch ~ liveMatches:", liveMatches);
 	// const { matches: userMatches } = useUserLiveMatches(user?.user_id);
 
 	const [activeFilter, setActiveFilter] = React.useState<
@@ -25,6 +32,20 @@ export function LiveMatch() {
 	// State for dummy matches with real-time updates
 	const [dummyMatches, setDummyMatches] = React.useState(DUMMY_MATCHES);
 	const [isDummyMode] = React.useState(true);
+
+	React.useEffect(() => {
+		socket.on("connect", () => {
+			console.log("connected:", socket.id);
+		});
+
+		// Lắng nghe sự kiện broadcast công khai
+		socket.on("match_found_public", (p) =>
+			console.log("match_found_public:", p),
+		);
+		socket.on("live_task_done", (p) => console.log("live_task_done:", p));
+
+		socket.on("disconnect", () => console.log("disconnected"));
+	}, []);
 
 	// Effect to generate new dummy matches every 3 seconds
 	React.useEffect(() => {

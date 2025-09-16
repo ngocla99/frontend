@@ -106,7 +106,7 @@ export const UploadPhoto = () => {
 								onUploadSuccess={handleUploadFile}
 								acceptedFileTypes={["image/*"]}
 								maxFileSize={10 * 1024 * 1024} // 10MB
-								uploadDelay={2000}
+								uploadDelay={100}
 								validateFile={() => null}
 								className="w-full"
 							/>
