@@ -1,4 +1,5 @@
 import { Flame } from "lucide-react";
+import { SlidingNumber } from "@/components/motion-primitives/sliding-number";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -32,25 +33,25 @@ export const HeadCard = ({
 			<div className="flex gap-2">
 				<Badge
 					variant="secondary"
-					className={`rounded-full cursor-pointer transition-all duration-200 ${
+					className={`rounded-full cursor-pointer transition-all duration-200 gap-0 ${
 						activeFilter === "all"
 							? "bg-white text-primary shadow-lg"
 							: "bg-white/20 text-white border-transparent hover:bg-white/30"
 					}`}
 					onClick={() => onFilterChange("all")}
 				>
-					🔥 All ({newMatches + viewedMatches})
+					🔥 All (<SlidingNumber value={newMatches + viewedMatches} />)
 				</Badge>
 				<Badge
 					variant="secondary"
-					className={`rounded-full cursor-pointer transition-all duration-200 ${
+					className={`rounded-full cursor-pointer transition-all duration-200 gap-0 ${
 						activeFilter === "new"
 							? "bg-white text-primary shadow-lg"
 							: "bg-white/20 text-white border-transparent hover:bg-white/30"
 					}`}
 					onClick={() => onFilterChange("new")}
 				>
-					😍 New ({newMatches})
+					😍 New (<SlidingNumber value={newMatches} />)
 				</Badge>
 				<Badge
 					variant="outline"

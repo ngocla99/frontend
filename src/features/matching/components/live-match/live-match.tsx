@@ -97,19 +97,6 @@ export function LiveMatch() {
 			<ScrollArea className="h-[600px]">
 				<div className="space-y-4">
 					{matches.length > 0 ? (
-						// <AnimatedList>
-						// 	{matches.map((match, index) => (
-						// 		<MatchCard
-						// 			key={match.user1.name + match.user2.name + index}
-						// 			user1={match.user1}
-						// 			user2={match.user2}
-						// 			matchPercentage={match.matchPercentage}
-						// 			timestamp={match.timestamp}
-						// 			isNew={match.isNew}
-						// 			isViewed={match.isViewed}
-						// 		/>
-						// 	))}
-						// </AnimatedList>
 						matches.map((match, index) => (
 							<MatchCard
 								key={match.user1.name + match.user2.name + index}
