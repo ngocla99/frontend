@@ -1,94 +1,32 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, Image, Upload, Zap } from "lucide-react";
-import { type SetStateAction, useCallback, useRef, useState } from "react";
+import { Camera, Image } from "lucide-react";
+import { type SetStateAction, useRef, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
+import FileUpload from "@/components/kokonutui/file-upload";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { SimpleProgressBar } from "@/components/ui/progress-indicator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUploadFace } from "@/features/matching/api/upload-face";
-import { ImageProcessor } from "@/old/lib/imageUtils";
-import { storage } from "@/old/lib/storage";
 import { useUserUpload } from "../../store/user-upload";
 
 export const UploadPhoto = () => {
 	const userUpload = useUserUpload();
 	const [selectedGender, setSelectedGender] = useState<string>("male");
-	const [dragActive, setDragActive] = useState(false);
-	const [uploadProgress, setUploadProgress] = useState(0);
-	const [isUploading, setIsUploading] = useState(false);
 	const [showFilters, setShowFilters] = useState(false);
 	// const [currentFilter, setCurrentFilter] = useState<
 	// 	"none" | "vintage" | "bw" | "sepia" | "vibrant"
 	// >("none");
-	const [compressionLevel, setCompressionLevel] = useState([80]);
 	const [originalImage, setOriginalImage] = useState<string>("");
 
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const uploadFaceMutation = useUploadFace();
 
-	const processPhotoUpload = useCallback(
-		async (file: File) => {
-			if (!selectedGender) {
-				return;
-			}
-
-			setIsUploading(true);
-			setUploadProgress(0);
-
-			try {
-				// Compress image first
-				const quality = compressionLevel[0] / 100;
-				const compressedBlob = await ImageProcessor.compressImage(file, {
-					maxWidth: 1200,
-					maxHeight: 1200,
-					quality,
-					format: "image/jpeg",
-				});
-
-				// Convert to File object for API
-				const compressedFile = new File([compressedBlob], file.name, {
-					type: "image/jpeg",
-				});
-
-				// Update progress
-				setUploadProgress(25);
-
-				// Upload to backend
-				const result = await uploadFaceMutation.mutateAsync({
-					file: compressedFile,
-				});
-
-				setUploadProgress(75);
-
-				// Convert to data URL for display
-				const dataUrl = await ImageProcessor.blobToDataUrl(compressedBlob);
-				setOriginalImage(dataUrl);
-
-				setUploadProgress(100);
-
-				// Track the upload
-				storage.trackEvent("photo_uploaded", {
-					fileSize: file.size,
-					compressionQuality: quality,
-					gender: selectedGender,
-					faceId: result.face_id,
-					imageUrl: result.image_url,
-				});
-
-				// Call the callback with the image URL from backend or local data URL
-				// onPhotoUpload(result.image_url || dataUrl, selectedGender);
-			} catch (error) {
-				console.error("Upload failed:", error);
-			} finally {
-				setIsUploading(false);
-				setUploadProgress(0);
-			}
-		},
-		[selectedGender, compressionLevel, uploadFaceMutation],
-	);
+	const handleUploadFile = (file: File) => {
+		if (uploadFaceMutation.isPending) return;
+		uploadFaceMutation.mutate({ file });
+	};
 
 	// const applyFilter = async (filter: typeof currentFilter) => {
 	// 	if (!originalImage) return;
@@ -103,34 +41,24 @@ export const UploadPhoto = () => {
 	// 	}
 	// };
 
-	const handleDrop = useCallback(
-		(e: React.DragEvent) => {
-			e.preventDefault();
-			setDragActive(false);
-
-			const files = Array.from(e.dataTransfer.files);
-			const imageFile = files.find((file) => file.type.startsWith("image/"));
-
-			if (imageFile && selectedGender) {
-				processPhotoUpload(imageFile);
-			}
-		},
-		[selectedGender, processPhotoUpload],
-	);
-
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			processPhotoUpload(file);
-		}
-	};
-
 	const resetPhoto = () => {
 		setOriginalImage("");
 		// setCurrentFilter("none");
 		// onPhotoUpload("", "");
-		storage.trackEvent("photo_reset");
 	};
+
+	// const applyFilter = async (filter: typeof currentFilter) => {
+	// 	if (!originalImage) return;
+
+	// 	setCurrentFilter(filter);
+
+	// 	try {
+	// 		const filtered = await ImageProcessor.applyFilter(originalImage, filter);
+	// 		onPhotoUpload(filtered, selectedGender);
+	// 	} catch (error) {
+	// 		console.error("Filter failed:", error);
+	// 	}
+	// };
 
 	// if (userUpload?.photo) {
 	// 	return (
@@ -257,7 +185,7 @@ export const UploadPhoto = () => {
 
 				{/* Upload Area */}
 				<AnimatePresence>
-					{selectedGender && !isUploading && (
+					{selectedGender && (
 						<motion.div
 							initial={{ opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: "auto" }}
@@ -292,56 +220,15 @@ export const UploadPhoto = () => {
 								</AuthGuard>
 							</div>
 
-							<button
-								type="button"
-								className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors w-full ${
-									dragActive
-										? "border-primary bg-primary/5"
-										: "border-muted-foreground/25 hover:border-primary/50"
-								}`}
-								onDragEnter={() => setDragActive(true)}
-								onDragLeave={() => setDragActive(false)}
-								onDragOver={(e) => e.preventDefault()}
-								onDrop={handleDrop}
-								onClick={() => inputRef.current?.click()}
-							>
-								<Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-								<p className="text-sm text-muted-foreground">
-									{dragActive
-										? "Drop your photo here!"
-										: "Or drag and drop a photo here"}
-								</p>
-							</button>
-
-							<input
-								ref={inputRef}
-								type="file"
-								accept="image/*"
-								onChange={handleFileChange}
-								className="hidden"
+							<FileUpload
+								onUploadSuccess={handleUploadFile}
+								acceptedFileTypes={["image/*"]}
+								maxFileSize={10 * 1024 * 1024} // 10MB
+								uploadDelay={2000}
+								validateFile={() => null}
+								className="w-full"
+								onFileRemove={resetPhoto}
 							/>
-						</motion.div>
-					)}
-				</AnimatePresence>
-
-				{/* Upload Progress */}
-				<AnimatePresence>
-					{isUploading && (
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -10 }}
-						>
-							<SimpleProgressBar
-								progress={uploadProgress}
-								className="space-y-2"
-							/>
-							<div className="flex items-center justify-center gap-2 mt-3">
-								<Zap className="w-4 h-4 text-primary animate-pulse" />
-								<span className="text-sm text-muted-foreground">
-									Optimizing your photo...
-								</span>
-							</div>
 						</motion.div>
 					)}
 				</AnimatePresence>

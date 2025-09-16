@@ -41,7 +41,7 @@ export const useUploadFace = ({
 		onError: (error: Error, ...args) => {
 			const errorMessage =
 				error instanceof AxiosError
-					? error.response?.data?.message
+					? error.response?.data?.error
 					: "Upload face failed";
 			toast.error(errorMessage);
 			onError?.(error, ...args);
