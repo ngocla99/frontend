@@ -9,19 +9,19 @@ import { Card } from "@/components/ui/card";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";
 import { storage } from "@/old/lib/storage";
 
-interface EnhancedBabyGeneratorProps {
+interface BabyGeneratorProps {
 	userPhoto?: string;
 	matchPhoto?: string;
 	matchName?: string;
 	onBack?: () => void;
 }
 
-export const EnhancedBabyGenerator = ({
+export const BabyGenerator = ({
 	userPhoto,
 	matchPhoto,
 	matchName,
 	onBack,
-}: EnhancedBabyGeneratorProps) => {
+}: BabyGeneratorProps) => {
 	const [babyImage, setBabyImage] = useState<string>("");
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentStep, setCurrentStep] = useState("");

@@ -1,3 +1,6 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { Camera, Image, Upload, Zap } from "lucide-react";
+import { type SetStateAction, useCallback, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,14 +11,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { ImageProcessor } from "@/old/lib/imageUtils";
 import { storage } from "@/old/lib/storage";
-import { AnimatePresence, motion } from "framer-motion";
-import { Camera, Image, Upload, Zap } from "lucide-react";
-import {
-	type SetStateAction,
-	useCallback,
-	useRef,
-	useState
-} from "react";
 import { useUserUpload } from "../../store/user-upload";
 
 export const UploadPhoto = () => {
@@ -32,7 +27,6 @@ export const UploadPhoto = () => {
 	const [originalImage, setOriginalImage] = useState<string>("");
 
 	const inputRef = useRef<HTMLInputElement>(null);
-
 
 	const uploadFaceMutation = useUploadFace();
 

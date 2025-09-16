@@ -1,3 +1,4 @@
+import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
@@ -5,7 +6,6 @@ import user1Image from "@/old/assets/user1.jpg";
 import user2Image from "@/old/assets/user2.jpg";
 import user3Image from "@/old/assets/user3.jpg";
 import user4Image from "@/old/assets/user4.jpg";
-import React from "react";
 import { useLiveMatch } from "../../api/get-live-match";
 import { useLiveMatches } from "../../hooks/use-live-matches";
 import { useUserLiveMatches } from "../../hooks/use-user-live-matches";
@@ -73,30 +73,23 @@ const allMatches = [
 export function LiveMatch() {
 	const { data: user } = useMe();
 	const { data: liveMatch } = useLiveMatch();
-	
+
 	// Use socket hooks for real-time matches
 	const { matches: liveMatches } = useLiveMatches();
 	const { matches: userMatches } = useUserLiveMatches(user?.user_id);
-	
+
 	console.log("🚀 ~ LiveMatch ~ liveMatch:", liveMatch);
 	console.log("🚀 ~ LiveMatch ~ liveMatches:", liveMatches);
 	console.log("🚀 ~ LiveMatch ~ userMatches:", userMatches);
-	
+
 	const [displayedMatches] = React.useState(3);
-	
+
 	// Combine demo matches with real-time matches
 	const allRealMatches = [...liveMatches, ...userMatches];
-	const matches = allRealMatches.length > 0 
-		? allRealMatches.slice(0, displayedMatches)
-		: allMatches.slice(0, displayedMatches);
-
-	// const handleViewMatch = (
-	// 	user1: { name: string; image: string },
-	// 	user2: { name: string; image: string },
-	// ) => {
-	// 	setViewModalData({ user1, user2 });
-	// 	setViewModalOpen(true);
-	// };
+	const matches =
+		allRealMatches.length > 0
+			? allRealMatches.slice(0, displayedMatches)
+			: allMatches.slice(0, displayedMatches);
 
 	return (
 		<div className="space-y-6">
@@ -117,8 +110,6 @@ export function LiveMatch() {
 						matchPercentage={match.matchPercentage}
 						timestamp={match.timestamp}
 						isNew={match.isNew}
-						// onViewMatch={() => handleViewMatch(match.user1, match.user2)}
-						onViewMatch={() => {}}
 					/>
 				))}
 			</div>

@@ -10,14 +10,19 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { LiveMatch } from "@/features/matching/components/live-match/live-match";
-import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
-import { UserMatch } from "@/features/matching/components/user-match/user-match";
-import { EnhancedBabyGenerator } from "@/old/components/EnhancedBabyGenerator";
-import { FavoritesManager } from "@/old/components/FavoritesManager";
 import { useMe } from "@/features/auth/api/get-me";
 import { useFaces } from "@/features/matching/api/get-faces";
-import { useUserUpload, useUserUploadActions } from "@/features/matching/store/user-upload";
+import { LiveMatch } from "@/features/matching/components/live-match/live-match";
+import { EnhancedBabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
+import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
+import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
+import { UserMatch } from "@/features/matching/components/user-match/user-match";
+import { useUserMatchesOpen } from "@/features/matching/store/user-matches";
+import {
+	useUserUpload,
+	useUserUploadActions,
+} from "@/features/matching/store/user-upload";
+import { FavoritesManager } from "@/old/components/FavoritesManager";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -64,16 +69,14 @@ function HomePage() {
 	const [selectedCustomMatch, setSelectedCustomMatch] =
 		useState<CustomMatch | null>(null);
 	const [showBabyGenerator, setShowBabyGenerator] = useState(false);
-	const [viewModalOpen, setViewModalOpen] = useState(false);
-	const [viewModalData, setViewModalData] = useState<{
-		user1: any;
-		user2: any;
-	} | null>(null);
-
 
 	React.useEffect(() => {
-		if (!user || !faces) return
-		setUserUpload({ ...user, photo: faces.find((face) => face.face_id === user.default_face_id)?.image_url });
+		if (!user || !faces) return;
+		setUserUpload({
+			...user,
+			photo: faces.find((face) => face.face_id === user.default_face_id)
+				?.image_url,
+		});
 	}, [faces, user]);
 
 	const handleSelectMatch = (match: PotentialMatch) => {
@@ -122,24 +125,7 @@ function HomePage() {
 					<LiveMatch />
 				</div>
 
-				{/* View Match Modal */}
-				<Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-					<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-						<DialogHeader>
-							<DialogTitle className="text-center font-display text-2xl">
-								{viewModalData?.user1.name} & {viewModalData?.user2.name}'s Baby
-							</DialogTitle>
-						</DialogHeader>
-						{viewModalData && (
-							<EnhancedBabyGenerator
-								userPhoto={viewModalData.user1.image}
-								matchPhoto={viewModalData.user2.image}
-								matchName={viewModalData.user2.name}
-								onBack={() => setViewModalOpen(false)}
-							/>
-						)}
-					</DialogContent>
-				</Dialog>
+				<MatchDialog />
 			</div>
 		</div>
 	);

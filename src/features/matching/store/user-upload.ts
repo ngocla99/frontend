@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { UserApi } from "@/types/api";
+import type { UserApi } from "@/types/api";
 
 export type UserUploadType = UserApi & {
 	photo?: string;
@@ -13,6 +13,7 @@ type UserUploadStore = {
 };
 
 const initialUserUpload: UserUploadType = {
+	user_id: "",
 	username: "",
 	email: "",
 	avatar: "",

@@ -14,7 +14,7 @@ export const HeadCard = ({
 	viewedMatches,
 }: HeadCardProps) => {
 	return (
-		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match">
+		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match gap-0 rounded-2xl">
 			<div className="flex items-center gap-2 mb-2">
 				<Flame className="w-5 h-5" />
 				<h3 className="font-semibold">Live Matches</h3>
@@ -25,12 +25,15 @@ export const HeadCard = ({
 			</p>
 
 			<div className="flex gap-2">
-				<Badge variant="secondary" className="bg-white/20 text-white border-0">
+				<Badge
+					variant="secondary"
+					className="bg-white/20 text-white border-0 rounded-full cursor-pointer"
+				>
 					😍 New ({newMatches})
 				</Badge>
 				<Badge
 					variant="outline"
-					className="bg-transparent text-white border-white/30"
+					className="bg-transparent text-white border-white/30 rounded-full cursor-pointer"
 				>
 					👀 Viewed ({viewedMatches})
 				</Badge>

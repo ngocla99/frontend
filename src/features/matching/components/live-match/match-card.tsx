@@ -1,6 +1,7 @@
 import { Heart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUserMatchesActions } from "../../store/user-matches";
 
 interface MatchCardProps {
 	user1: {
@@ -14,7 +15,6 @@ interface MatchCardProps {
 	matchPercentage: number;
 	timestamp: string;
 	isNew?: boolean;
-	onViewMatch?: () => void;
 }
 
 export const MatchCard = ({
@@ -23,8 +23,8 @@ export const MatchCard = ({
 	matchPercentage,
 	timestamp,
 	isNew,
-	onViewMatch,
 }: MatchCardProps) => {
+	const { onOpen } = useUserMatchesActions();
 	return (
 		<Card className="p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
 			<div className="flex items-center justify-between mb-3">
@@ -82,8 +82,13 @@ export const MatchCard = ({
 				<Button
 					variant="ghost"
 					size="sm"
-					className="flex items-center gap-1 text-match hover:text-match-light transition-colors h-auto p-1"
-					onClick={() => onViewMatch?.()}
+					className="flex items-center gap-1 text-match rounded-full transition-colors h-auto p-1"
+					onClick={() =>
+						onOpen({
+							user1: { name: user1.name, photo: user1.image },
+							user2: { name: user2.name, photo: user2.image },
+						})
+					}
 				>
 					<Zap className="w-3 h-3" />
 					Click to view

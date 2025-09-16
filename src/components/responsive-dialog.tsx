@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 interface ResponsiveDialogProps {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
-	trigger: React.ReactNode;
+	trigger?: React.ReactNode;
 	title: string;
 	description?: string;
 	children: React.ReactNode;
@@ -58,9 +58,11 @@ export function ResponsiveDialog({
 	if (isDesktop) {
 		return (
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<DialogTrigger asChild className={classes?.root}>
-					{trigger}
-				</DialogTrigger>
+				{trigger && (
+					<DialogTrigger asChild className={classes?.root}>
+						{trigger}
+					</DialogTrigger>
+				)}
 				<DialogContent className={cn("sm:max-w-6xl", classes?.dialog)}>
 					<DialogHeader>
 						<DialogTitle>{title}</DialogTitle>
@@ -78,9 +80,11 @@ export function ResponsiveDialog({
 
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
-			<DrawerTrigger asChild className={classes?.root}>
-				{trigger}
-			</DrawerTrigger>
+			{trigger && (
+				<DrawerTrigger asChild className={classes?.root}>
+					{trigger}
+				</DrawerTrigger>
+			)}
 			<DrawerContent className={classes?.drawer}>
 				<DrawerHeader className="text-left">
 					<DrawerTitle>{title}</DrawerTitle>
