@@ -321,9 +321,10 @@ export function FileUpload({
 						if (uploadIntervalRef.current) {
 							clearInterval(uploadIntervalRef.current);
 						}
-						setProgress(0);
-						setStatus("idle");
-						setFile(null);
+						// TODO: Uncomment this when the upload is successful
+						// setProgress(0);
+						// setStatus("idle");
+						// setFile(null);
 						onUploadSuccess?.(uploadingFile);
 					} else {
 						setStatus((prevStatus) => {
