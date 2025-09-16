@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Heart, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AuthGuard } from "@/components/auth-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,11 +19,11 @@ import {
 	storage,
 } from "@/old/lib/storage";
 
-interface FavoritesManagerProps {
+interface FavoriteHistoryProps {
 	onSelectMatch?: (match: any) => void;
 }
 
-export const FavoritesManager = ({ onSelectMatch }: FavoritesManagerProps) => {
+export function FavoriteHistory({ onSelectMatch }: FavoriteHistoryProps) {
 	const [favorites, setFavorites] = useState<FavoriteMatch[]>([]);
 	const [babyHistory, setBabyHistory] = useState<GeneratedBaby[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
@@ -86,15 +87,17 @@ export const FavoritesManager = ({ onSelectMatch }: FavoritesManagerProps) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTrigger asChild>
-				<Button variant="outline" size="sm" className="gap-2">
-					<Heart className="w-4 h-4" />
-					Favorites & History
-					{favorites.length + babyHistory.length > 0 && (
-						<Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
-							{favorites.length + babyHistory.length}
-						</Badge>
-					)}
-				</Button>
+				<AuthGuard>
+					<Button variant="outline" size="sm" className="gap-2">
+						<Heart className="w-4 h-4" />
+						Favorites & History
+						{favorites.length + babyHistory.length > 0 && (
+							<Badge variant="secondary" className="ml-1 px-1.5 py-0.5 text-xs">
+								{favorites.length + babyHistory.length}
+							</Badge>
+						)}
+					</Button>
+				</AuthGuard>
 			</DialogTrigger>
 			<DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
 				<DialogHeader>
@@ -266,4 +269,4 @@ export const FavoritesManager = ({ onSelectMatch }: FavoritesManagerProps) => {
 			</DialogContent>
 		</Dialog>
 	);
-};
+}

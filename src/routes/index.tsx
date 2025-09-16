@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
 import { useFaces } from "@/features/matching/api/get-faces";
+import { FavoriteHistory } from "@/features/matching/components/favorite-history/favorite-history";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
@@ -12,7 +13,6 @@ import {
 	useUserUpload,
 	useUserUploadActions,
 } from "@/features/matching/store/user-upload";
-import { FavoritesManager } from "@/old/components/FavoritesManager";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -86,7 +86,7 @@ function HomePage() {
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
 					<div className="space-y-8">
 						<div className="flex gap-4 items-center mb-4">
-							<FavoritesManager onSelectMatch={handleSelectMatch} />
+							<FavoriteHistory onSelectMatch={handleSelectMatch} />
 						</div>
 						<UploadPhoto />
 

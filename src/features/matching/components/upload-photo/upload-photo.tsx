@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { type SetStateAction, useState } from "react";
+import { AuthGuard } from "@/components/auth-guard";
 import { FileUpload } from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ export const UploadPhoto = () => {
 	};
 
 	if (userUpload?.photo) {
-		return <UserPhoto />;
+		return <UserPhoto onChangePhoto={() => {}} />;
 	}
 
 	return (
@@ -50,27 +51,30 @@ export const UploadPhoto = () => {
 				{/* Gender Selection */}
 				<div className="space-y-3">
 					<Label className="text-sm font-medium">Select your gender:</Label>
-					<RadioGroup
-						value={selectedGender}
-						onValueChange={(value: SetStateAction<string>) => {
-							setSelectedGender(value);
-							handleUpdateMe();
-						}}
-						className="flex gap-6 justify-center"
-					>
-						<div className="flex items-center space-x-2">
-							<RadioGroupItem value="male" id="male" />
-							<Label htmlFor="male" className="cursor-pointer">
-								👨 Male
-							</Label>
-						</div>
-						<div className="flex items-center space-x-2">
-							<RadioGroupItem value="female" id="female" />
-							<Label htmlFor="female" className="cursor-pointer">
-								👩 Female
-							</Label>
-						</div>
-					</RadioGroup>
+
+					<AuthGuard onValueChange={true} onClick={false}>
+						<RadioGroup
+							value={selectedGender}
+							onValueChange={(value: SetStateAction<string>) => {
+								setSelectedGender(value);
+								handleUpdateMe();
+							}}
+							className="flex gap-6 justify-center"
+						>
+							<div className="flex items-center space-x-2">
+								<RadioGroupItem value="male" id="male" />
+								<Label htmlFor="male" className="cursor-pointer">
+									👨 Male
+								</Label>
+							</div>
+							<div className="flex items-center space-x-2">
+								<RadioGroupItem value="female" id="female" />
+								<Label htmlFor="female" className="cursor-pointer">
+									👩 Female
+								</Label>
+							</div>
+						</RadioGroup>
+					</AuthGuard>
 				</div>
 
 				{/* Upload Area */}

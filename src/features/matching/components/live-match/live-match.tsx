@@ -12,11 +12,11 @@ import { useLiveMatches } from "@/features/matching/hooks/use-live-matches";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 
 export function LiveMatch() {
-	const { data: user } = useMe();
+	// const { data: user } = useMe();
 
 	// Use socket hooks for real-time matches
 	const { matches: liveMatches } = useLiveMatches();
-	const { matches: userMatches } = useUserLiveMatches(user?.user_id);
+	// const { matches: userMatches } = useUserLiveMatches(user?.user_id);
 
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
@@ -42,7 +42,7 @@ export function LiveMatch() {
 	}, [isDummyMode]);
 
 	// Combine demo matches with real-time matches
-	const allRealMatches = [...liveMatches, ...userMatches];
+	const allRealMatches = [];
 	const allMatches = isDummyMode
 		? dummyMatches
 		: allRealMatches.length > 0
