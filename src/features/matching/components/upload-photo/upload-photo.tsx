@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Image, Upload, Zap } from "lucide-react";
 import { type SetStateAction, useCallback, useRef, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { AuthGuard } from "@/components/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -266,27 +265,31 @@ export const UploadPhoto = () => {
 							className="space-y-4"
 						>
 							<div className="flex gap-3 justify-center">
-								<Button
-									onClick={() => {
-										inputRef.current?.click();
-									}}
-									className="gap-2 bg-gradient-primary hover:opacity-90 text-white border-0"
-								>
-									<Image className="w-4 h-4" />
-									Photo Library
-								</Button>
+								<AuthGuard>
+									<Button
+										onClick={() => {
+											inputRef.current?.click();
+										}}
+										className="gap-2 bg-gradient-primary hover:opacity-90 text-white border-0"
+									>
+										<Image className="w-4 h-4" />
+										Photo Library
+									</Button>
+								</AuthGuard>
 
-								<Button
-									variant="outline"
-									className="gap-2"
-									onClick={() => {
-										// In a real app, this would trigger camera
-										inputRef.current?.click();
-									}}
-								>
-									<Camera className="w-4 h-4" />
-									Camera
-								</Button>
+								<AuthGuard>
+									<Button
+										variant="outline"
+										className="gap-2"
+										onClick={() => {
+											// In a real app, this would trigger camera
+											inputRef.current?.click();
+										}}
+									>
+										<Camera className="w-4 h-4" />
+										Camera
+									</Button>
+								</AuthGuard>
 							</div>
 
 							<button
