@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState } from "react";
+import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
 import { useFaces } from "@/features/matching/api/get-faces";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
+import { MatchingSkeleton } from "@/features/matching/components/matching-skeleton";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import {
@@ -46,18 +47,16 @@ interface CustomMatch {
 function HomePage() {
 	const userUpload = useUserUpload();
 	const { setUserUpload } = useUserUploadActions();
-	const { data: user } = useMe();
-	const { data: faces } = useFaces();
+	const { data: user, isLoading: isUserLoading } = useMe();
+	const { data: faces, isLoading: isFacesLoading } = useFaces();
 
-	const [selectedMatch, setSelectedMatch] = useState<PotentialMatch | null>(
-		null,
-	);
-	const [selectedCelebrity, setSelectedCelebrity] = useState<Celebrity | null>(
-		null,
-	);
+	const [selectedMatch, setSelectedMatch] =
+		React.useState<PotentialMatch | null>(null);
+	const [selectedCelebrity, setSelectedCelebrity] =
+		React.useState<Celebrity | null>(null);
 	const [selectedCustomMatch, setSelectedCustomMatch] =
-		useState<CustomMatch | null>(null);
-	const [showBabyGenerator, setShowBabyGenerator] = useState(false);
+		React.useState<CustomMatch | null>(null);
+	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
 
 	React.useEffect(() => {
 		if (!user || !faces) return;
@@ -74,6 +73,11 @@ function HomePage() {
 		setSelectedCustomMatch(null);
 		setShowBabyGenerator(true);
 	};
+
+	// Show loading state when either API is loading
+	if (isUserLoading || isFacesLoading) {
+		return <MatchingSkeleton />;
+	}
 
 	return (
 		<div className="pt-20 min-h-screen bg-gradient-subtle">
