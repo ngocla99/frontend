@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserUpload } from "@/features/matching/store/user-upload";
 
-export function UserPhoto() {
+interface UserPhotoProps {
+	onChangePhoto: () => void;
+}
+
+export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 	const userUpload = useUserUpload();
 
 	// const [showFilters, setShowFilters] = useState(false);
@@ -113,7 +117,7 @@ export function UserPhoto() {
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() => {}}
+						onClick={onChangePhoto}
 						className="gap-2"
 					>
 						<RotateCcw className="w-4 h-4" />

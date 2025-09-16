@@ -6,17 +6,25 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useUserUpload } from "@/features/matching/store/user-upload";
+import { useUpdateMe } from "@/features/user/api/update-me";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = () => {
 	const userUpload = useUserUpload();
-	const [selectedGender, setSelectedGender] = useState<string>("male");
+	const [selectedGender, setSelectedGender] = useState<string>(
+		userUpload.gender || "",
+	);
 
 	const uploadFaceMutation = useUploadFace();
+	const updateMeMutation = useUpdateMe();
 
 	const handleUploadFile = (file: File) => {
 		if (uploadFaceMutation.isPending) return;
 		uploadFaceMutation.mutate({ file });
+	};
+
+	const handleUpdateMe = () => {
+		updateMeMutation.mutate({ gender: selectedGender });
 	};
 
 	if (userUpload?.photo) {
@@ -46,6 +54,7 @@ export const UploadPhoto = () => {
 						value={selectedGender}
 						onValueChange={(value: SetStateAction<string>) => {
 							setSelectedGender(value);
+							handleUpdateMe();
 						}}
 						className="flex gap-6 justify-center"
 					>
