@@ -121,7 +121,7 @@ export function Header() {
 							</Link>
 						</motion.div>
 
-						<nav className="hidden items-center space-x-1 lg:flex">
+						{/* <nav className="hidden items-center space-x-1 lg:flex">
 							{navItems.map((item) => (
 								<motion.div
 									key={item.name}
@@ -152,7 +152,7 @@ export function Header() {
 									</Link>
 								</motion.div>
 							))}
-						</nav>
+						</nav> */}
 
 						{isLoading ? (
 							<div className="w-12" />

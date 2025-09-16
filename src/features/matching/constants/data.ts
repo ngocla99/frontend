@@ -3,6 +3,45 @@ import user2Image from "@/features/matching/assets/user2.jpg";
 import user3Image from "@/features/matching/assets/user3.jpg";
 import user4Image from "@/features/matching/assets/user4.jpg";
 
+// Random names for generating dummy matches
+const DUMMY_NAMES = [
+	"Alex",
+	"Jordan",
+	"Taylor",
+	"Casey",
+	"Morgan",
+	"Riley",
+	"Avery",
+	"Quinn",
+	"Blake",
+	"Drew",
+	"Sage",
+	"Maya",
+	"Kai",
+	"Finn",
+	"Luna",
+	"River",
+	"Sky",
+	"Phoenix",
+	"Indigo",
+	"Cedar",
+	"Willow",
+	"Aspen",
+	"Jade",
+	"Ruby",
+	"Sage",
+	"Ember",
+	"Storm",
+	"Ocean",
+	"Forest",
+	"Meadow",
+	"Crystal",
+	"Diamond",
+	"Pearl",
+];
+
+const DUMMY_IMAGES = [user1Image, user2Image, user3Image, user4Image];
+
 export const DUMMY_MATCHES = [
 	{
 		user1: { name: "Sophie", image: user1Image },
@@ -85,3 +124,28 @@ export const DUMMY_MATCHES = [
 		isViewed: true,
 	},
 ];
+
+// Function to generate a random dummy match
+export const generateRandomDummyMatch = () => {
+	const getRandomName = () =>
+		DUMMY_NAMES[Math.floor(Math.random() * DUMMY_NAMES.length)];
+	const getRandomImage = () =>
+		DUMMY_IMAGES[Math.floor(Math.random() * DUMMY_IMAGES.length)];
+	const getRandomMatchPercentage = () => Math.floor(Math.random() * 30) + 70; // 70-99%
+
+	const user1Name = getRandomName();
+	let user2Name = getRandomName();
+	// Ensure different names
+	while (user2Name === user1Name) {
+		user2Name = getRandomName();
+	}
+
+	return {
+		user1: { name: user1Name, image: getRandomImage() },
+		user2: { name: user2Name, image: getRandomImage() },
+		matchPercentage: getRandomMatchPercentage(),
+		timestamp: "just now",
+		isNew: true,
+		isViewed: false,
+	};
+};
