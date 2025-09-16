@@ -24,9 +24,9 @@ export function LiveMatch() {
 
 	// State for dummy matches with real-time updates
 	const [dummyMatches, setDummyMatches] = React.useState(DUMMY_MATCHES);
-	const [isDummyMode, setIsDummyMode] = React.useState(true);
+	const [isDummyMode] = React.useState(true);
 
-	// Effect to generate new dummy matches at intervals
+	// Effect to generate new dummy matches every 3 seconds
 	React.useEffect(() => {
 		if (!isDummyMode) return;
 
@@ -34,17 +34,9 @@ export function LiveMatch() {
 			setDummyMatches((prevMatches) => {
 				const newMatch = generateRandomDummyMatch();
 				// Add new match at the beginning and limit to 20 matches
-				const updatedMatches = [newMatch, ...prevMatches].slice(0, 20);
-
-				// Mark older matches as viewed after some time
-				return updatedMatches.map((match, index) => {
-					if (index > 0 && match.isNew && Math.random() < 0.3) {
-						return { ...match, isNew: false, isViewed: true };
-					}
-					return match;
-				});
+				return [newMatch, ...prevMatches].slice(0, 20);
 			});
-		}, 3000); // Generate new match every 3 seconds
+		}, 3000); // Every 3 seconds
 
 		return () => clearInterval(interval);
 	}, [isDummyMode]);
@@ -91,7 +83,7 @@ export function LiveMatch() {
 				</h2>
 				<p className="text-muted-foreground mb-4">
 					{isDummyMode
-						? "Demo matches (updating every 3 seconds)"
+						? "Demo matches (new match every 3 seconds)"
 						: "Real matches happening now"}
 				</p>
 

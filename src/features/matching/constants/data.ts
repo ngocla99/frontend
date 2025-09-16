@@ -131,7 +131,37 @@ export const generateRandomDummyMatch = () => {
 		DUMMY_NAMES[Math.floor(Math.random() * DUMMY_NAMES.length)];
 	const getRandomImage = () =>
 		DUMMY_IMAGES[Math.floor(Math.random() * DUMMY_IMAGES.length)];
-	const getRandomMatchPercentage = () => Math.floor(Math.random() * 30) + 70; // 70-99%
+	const getRandomMatchPercentage = () => {
+		// More realistic distribution of match percentages
+		const rand = Math.random();
+		if (rand < 0.1) return Math.floor(Math.random() * 5) + 95; // 10% chance for 95-99% (rare high matches)
+		if (rand < 0.3) return Math.floor(Math.random() * 10) + 85; // 20% chance for 85-94% (good matches)
+		if (rand < 0.7) return Math.floor(Math.random() * 15) + 70; // 40% chance for 70-84% (common matches)
+		return Math.floor(Math.random() * 20) + 50; // 30% chance for 50-69% (lower matches)
+	};
+
+	// Generate more realistic timestamps
+	const getRandomTimestamp = () => {
+		const timestamps = [
+			"just now",
+			"just now",
+			"just now", // Higher chance for "just now"
+			"1m ago",
+			"2m ago",
+			"3m ago",
+			"5m ago",
+			"8m ago",
+			"12m ago",
+			"15m ago",
+			"20m ago",
+			"25m ago",
+			"30m ago",
+			"1h ago",
+			"2h ago",
+			"3h ago",
+		];
+		return timestamps[Math.floor(Math.random() * timestamps.length)];
+	};
 
 	const user1Name = getRandomName();
 	let user2Name = getRandomName();
@@ -144,7 +174,7 @@ export const generateRandomDummyMatch = () => {
 		user1: { name: user1Name, image: getRandomImage() },
 		user2: { name: user2Name, image: getRandomImage() },
 		matchPercentage: getRandomMatchPercentage(),
-		timestamp: "just now",
+		timestamp: getRandomTimestamp(),
 		isNew: true,
 		isViewed: false,
 	};
