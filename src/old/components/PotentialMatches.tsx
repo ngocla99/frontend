@@ -1,8 +1,7 @@
 import { Heart, Users, Zap } from "lucide-react";
-import { useState } from "react";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface PotentialMatch {
 	id: string;

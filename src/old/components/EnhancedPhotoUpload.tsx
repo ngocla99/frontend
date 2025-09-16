@@ -4,22 +4,22 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Image, RotateCcw, Sparkles, Upload, Zap } from "lucide-react";
 import { type SetStateAction, useCallback, useRef, useState } from "react";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "../components/ui/dialog";
-import { Label } from "../components/ui/label";
-import { SimpleProgressBar } from "../components/ui/progress-indicator";
-import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-import { Slider } from "../components/ui/slider";
-import { ImageProcessor } from "../lib/imageUtils";
-import { storage } from "../lib/storage";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { SimpleProgressBar } from "@/components/ui/progress-indicator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { ImageProcessor } from "@/old/lib/imageUtils";
+import { storage } from "@/old/lib/storage";
 
 interface EnhancedPhotoUploadProps {
 	onPhotoUpload: (photo: string, gender: string) => void;
