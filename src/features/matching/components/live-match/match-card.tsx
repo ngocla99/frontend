@@ -29,9 +29,7 @@ export const MatchCard = ({
 	const { onOpen } = useUserMatchesActions();
 	return (
 		<Card
-			className={`p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300 ${
-				isViewed ? "opacity-75" : ""
-			}`}
+			className={`p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300`}
 		>
 			<div className="flex items-center justify-between mb-3">
 				<div className="flex items-center justify-center gap-6">
