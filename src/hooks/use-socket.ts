@@ -26,7 +26,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
 
 		try {
 			const manager = createSocketManager({
-				url: import.meta.env.VITE_BASE_API_URL,
+				url: `${import.meta.env.VITE_BASE_API_URL}live`,
 				options: {
 					transports: ["websocket", "polling"],
 					withCredentials: true,

@@ -68,11 +68,11 @@ export const useLiveMatches = (taskId?: string) => {
 			}
 		};
 
-		socket.on("match_found", handleMatchFound);
+		socket.on("match_found_public", handleMatchFound);
 		socket.on("live_task_done", handleTaskDone);
 
 		return () => {
-			socket.off("match_found", handleMatchFound);
+			socket.off("match_found_public", handleMatchFound);
 			socket.off("live_task_done", handleTaskDone);
 		};
 	}, [socket, isConnected, taskId, queryClient]);

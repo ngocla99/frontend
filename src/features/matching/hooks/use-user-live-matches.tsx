@@ -44,10 +44,10 @@ export const useUserLiveMatches = (userId?: string) => {
 			}
 		};
 
-		socket.on("match_found", handleMatchFound);
+		socket.on("match_found_public", handleMatchFound);
 
 		return () => {
-			socket.off("match_found", handleMatchFound);
+			socket.off("match_found_public", handleMatchFound);
 		};
 	}, [socket, isConnected, userId, queryClient]);
 
