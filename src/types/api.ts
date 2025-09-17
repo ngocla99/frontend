@@ -12,6 +12,7 @@ export type UserApi = {
 	age?: number;
 	gender?: Gender | string;
 	default_face_id?: string;
+	image_url?: string;
 };
 
 export type FaceApi = {

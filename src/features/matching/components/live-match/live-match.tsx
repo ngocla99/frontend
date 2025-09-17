@@ -1,23 +1,13 @@
 import React from "react";
-import { AnimatedList } from "@/components/ui/animated-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMe } from "@/features/auth/api/get-me";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
 import {
 	DUMMY_MATCHES,
 	generateRandomDummyMatch,
 } from "@/features/matching/constants/data";
-import { useLiveMatches } from "@/features/matching/hooks/use-live-matches";
-import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 
 export function LiveMatch() {
-	// const { data: user } = useMe();
-
-	// Use socket hooks for real-time matches
-	const { matches: liveMatches } = useLiveMatches();
-	// const { matches: userMatches } = useUserLiveMatches(user?.user_id);
-
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
 	>("all");

@@ -4,6 +4,7 @@ export interface SocketEvents {
 	joined: (data: { room: string }) => void;
 	left: (data: { room: string }) => void;
 	match_found: (data: MatchFoundEvent) => void;
+	match_found_public: (data: MatchFoundEvent) => void;
 	live_task_done: (data: LiveTaskDoneEvent) => void;
 	error: (data: { message: string; code?: string }) => void;
 

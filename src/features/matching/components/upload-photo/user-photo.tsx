@@ -54,7 +54,7 @@ export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 				<div className="relative inline-block">
 					<Avatar className="size-32 rounded-full object-cover border-4 border-primary shadow-match">
 						<AvatarImage
-							src={userUpload.photo}
+							src={userUpload.image_url}
 							alt="User profile"
 							className="object-cover"
 						/>

@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
-import { useFaces } from "@/features/matching/api/get-faces";
 import { FavoriteHistory } from "@/features/matching/components/favorite-history/favorite-history";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
@@ -48,7 +47,6 @@ function HomePage() {
 	const userUpload = useUserUpload();
 	const { setUserUpload } = useUserUploadActions();
 	const { data: user, isLoading: isUserLoading } = useMe();
-	const { data: faces, isLoading: isFacesLoading } = useFaces();
 
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<PotentialMatch | null>(null);
@@ -59,13 +57,11 @@ function HomePage() {
 	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
 
 	React.useEffect(() => {
-		if (!user || !faces) return;
+		if (!user) return;
 		setUserUpload({
 			...user,
-			photo: faces.find((face) => face.face_id === user.default_face_id)
-				?.image_url,
 		});
-	}, [faces, user]);
+	}, [user]);
 
 	const handleSelectMatch = (match: PotentialMatch) => {
 		setSelectedMatch(match);
@@ -74,8 +70,7 @@ function HomePage() {
 		setShowBabyGenerator(true);
 	};
 
-	// Show loading state when either API is loading
-	if (isUserLoading || isFacesLoading) {
+	if (isUserLoading) {
 		return <MatchingSkeleton />;
 	}
 
@@ -90,12 +85,12 @@ function HomePage() {
 						</div>
 						<UploadPhoto />
 
-						{userUpload.photo && !showBabyGenerator && <UserMatch />}
+						{userUpload.image_url && !showBabyGenerator && <UserMatch />}
 
 						{showBabyGenerator && (
 							<div className="animate-fade-in">
 								<BabyGenerator
-									userPhoto={userUpload.photo}
+									userPhoto={userUpload.image_url}
 									matchPhoto={
 										selectedMatch?.image ||
 										selectedCelebrity?.image ||

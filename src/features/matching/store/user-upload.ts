@@ -1,24 +1,22 @@
 import { create } from "zustand";
 import type { UserApi } from "@/types/api";
 
-export type UserUploadType = UserApi & {
-	photo?: string;
-};
 type UserUploadStore = {
-	userUpload: UserUploadType;
+	userUpload: UserApi;
 	actions: {
-		setUserUpload: (userUpload: UserUploadType) => void;
+		setUserUpload: (userUpload: UserApi) => void;
 		clearUserUpload: () => void;
 	};
 };
 
-const initialUserUpload: UserUploadType = {
+const initialUserUpload: UserApi = {
 	user_id: "",
+	default_face_id: "",
 	username: "",
 	email: "",
 	avatar: "",
 	gender: "",
-	photo: "",
+	image_url: "",
 };
 
 const useUserUploadStore = create<UserUploadStore>()((set) => ({

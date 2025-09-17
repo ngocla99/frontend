@@ -29,8 +29,9 @@ interface ResponsiveDialogProps {
 	footer?: React.ReactNode;
 	classes?: {
 		root?: string;
-		dialog?: string;
+		content?: string;
 		drawer?: string;
+		trigger?: string;
 	};
 }
 
@@ -59,11 +60,11 @@ export function ResponsiveDialog({
 		return (
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
 				{trigger && (
-					<DialogTrigger asChild className={classes?.root}>
+					<DialogTrigger asChild className={classes?.trigger}>
 						{trigger}
 					</DialogTrigger>
 				)}
-				<DialogContent className={cn("sm:max-w-6xl", classes?.dialog)}>
+				<DialogContent className={cn("sm:max-w-6xl", classes?.content)}>
 					<DialogHeader>
 						<DialogTitle>{title}</DialogTitle>
 						{description && (
@@ -81,7 +82,7 @@ export function ResponsiveDialog({
 	return (
 		<Drawer open={isOpen} onOpenChange={setIsOpen}>
 			{trigger && (
-				<DrawerTrigger asChild className={classes?.root}>
+				<DrawerTrigger asChild className={classes?.trigger}>
 					{trigger}
 				</DrawerTrigger>
 			)}
