@@ -9,7 +9,7 @@ export function UserMatch() {
 	return (
 		<div className="animate-fade-in">
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-				<TabsList className="grid w-full grid-cols-2 mb-8 bg-card border border-border">
+				<TabsList className="grid w-full grid-cols-2 mb-8 bg-card border border-border h-[38px]">
 					<TabsTrigger value="university" className="font-medium">
 						University
 					</TabsTrigger>

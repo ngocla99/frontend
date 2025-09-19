@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserUpload } from "@/features/matching/store/user-upload";
+import { FavoriteHistory } from "../favorite-history/favorite-history";
 
 interface UserPhotoProps {
 	onChangePhoto: () => void;
@@ -18,7 +19,7 @@ export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 			<motion.div
 				initial={{ opacity: 0, scale: 0.9 }}
 				animate={{ opacity: 1, scale: 1 }}
-				className="text-center space-y-4"
+				className="text-center space-y-8"
 			>
 				<div className="relative inline-block">
 					<ImageLoader
@@ -33,7 +34,8 @@ export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 					</Badge>
 				</div>
 
-				<div className="flex gap-3 justify-center">
+				<div className="flex gap-3 justify-center mb-2">
+					<FavoriteHistory onSelectMatch={() => {}} />
 					<Button
 						variant="outline"
 						size="sm"

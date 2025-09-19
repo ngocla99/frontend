@@ -7,6 +7,8 @@ import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export interface UniversityMatch {
 	user: {
@@ -26,23 +28,28 @@ export const UniversityMatchTab = () => {
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
 	const { matches: userMatches } = useUserLiveMatches();
+	const isMobile = useIsMobile();
 
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0 ? userMatches : [];
 
 	return (
 		<div className="w-full max-w-4xl mx-auto">
-			{/* Main Card with Pink/Peach Theme */}
-			<Card className="p-0 sm:p-8 bg-transparent sm:bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50 border-0 shadow-none sm:shadow-xl hover:shadow-2xl transition-all duration-300 ease-out">
+			<Card
+				className={cn(
+					"p-0 sm:p-6 border-0 shadow-none sm:shadow-soft bg-gradient-card",
+					isMobile && "bg-transparent",
+				)}
+			>
 				{/* Header Section */}
 				<div className="text-center mb-8">
-					<div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-						<Users className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+					<div className="size-12 sm:size-16 mx-auto mb-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+						<Users className="w-6 sm:w-8 text-white" />
 					</div>
-					<h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-3">
+					<h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
 						Your Potential Matches
 					</h2>
-					<p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+					<p className="text-sm sm:text-base text-gray-600 leading-relaxed">
 						Click on someone to see your baby together!
 					</p>
 				</div>
@@ -89,24 +96,14 @@ export const UniversityMatchTab = () => {
 											</p>
 										</div>
 
-										{/* Baby Button */}
-										<div className="flex-shrink-0">
-											{isSelected ? (
-												<div className="text-orange-500 font-semibold text-sm sm:text-base text-center">
-													<Zap className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 fill-orange-500" />
-													Selected
-												</div>
-											) : (
-												<Button
-													variant="ghost"
-													size="sm"
-													className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm sm:text-base h-10 sm:h-11 px-4 sm:px-5 font-semibold"
-												>
-													<Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-													<span className="hidden sm:inline">View </span>Baby
-												</Button>
-											)}
-										</div>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm h-8 sm:h-10 px-3 sm:px-4 font-semibold rounded-full gap-0"
+										>
+											<span className="hidden sm:inline mr-1">View </span>
+											Baby
+										</Button>
 									</div>
 								</div>
 							);

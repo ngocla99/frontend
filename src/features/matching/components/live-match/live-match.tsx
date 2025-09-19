@@ -41,12 +41,12 @@ export function LiveMatch() {
 	return (
 		<div className="space-y-6">
 			<motion.div
-				className="text-center"
+				className="text-center m-0 mb-4 sm:mx-4"
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
 			>
-				<motion.h2
+				{/* <motion.h2
 					className="text-2xl font-display font-light text-foreground mb-2"
 					animate={{
 						backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -73,7 +73,7 @@ export function LiveMatch() {
 					transition={{ delay: 0.3, duration: 0.4 }}
 				>
 					Real matches happening now
-				</motion.p>
+				</motion.p> */}
 
 				<HeadCard
 					stats={stats}
@@ -91,8 +91,8 @@ export function LiveMatch() {
 					ease: [0.25, 0.46, 0.45, 0.94],
 				}}
 			>
-				<ScrollArea className="h-[600px]">
-					<div className="space-y-4">
+				<ScrollArea className="h-[716px]">
+					<div className="space-y-4 p-0 sm:p-4">
 						{isLoading ? (
 							<div className="text-center py-8 text-muted-foreground">
 								<p>Loading matches...</p>
