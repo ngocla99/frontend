@@ -1,5 +1,6 @@
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
 import {
@@ -16,6 +17,18 @@ export function LiveMatch() {
 	const [dummyMatches, setDummyMatches] = React.useState(DUMMY_MATCHES);
 	const [isDummyMode] = React.useState(true);
 
+	// State to track newly added matches for animation
+	const [newlyAddedMatches, setNewlyAddedMatches] = React.useState<Set<string>>(
+		new Set(),
+	);
+
+	// const { data: matchesData, isLoading } = useLiveMatch();
+	const { data: matchesDataInfinite } = useLiveMatchInfinite();
+	console.log(
+		"🚀 ~ file: live-match.tsx:23 ~ matchesDataInfinite:",
+		matchesDataInfinite,
+	);
+
 	// Effect to generate new dummy matches every 3 seconds
 	React.useEffect(() => {
 		if (!isDummyMode) return;
@@ -23,8 +36,22 @@ export function LiveMatch() {
 		const interval = setInterval(() => {
 			setDummyMatches((prevMatches) => {
 				const newMatch = generateRandomDummyMatch();
+				const matchId = `${newMatch.user1.name}-${newMatch.user2.name}-${Date.now()}`;
+
+				// Track this as a newly added match for animation
+				setNewlyAddedMatches((prev) => new Set([...prev, matchId]));
+
+				// Remove from newly added after animation completes
+				setTimeout(() => {
+					setNewlyAddedMatches((prev) => {
+						const newSet = new Set(prev);
+						newSet.delete(matchId);
+						return newSet;
+					});
+				}, 300); // Animation duration
+
 				// Add new match at the beginning - no limit for infinite scrolling
-				return [newMatch, ...prevMatches];
+				return [{ ...newMatch, id: matchId }, ...prevMatches];
 			});
 		}, 3000); // Every 3 seconds
 
@@ -32,7 +59,7 @@ export function LiveMatch() {
 	}, [isDummyMode]);
 
 	// Combine demo matches with real-time matches
-	const allRealMatches = [];
+	const allRealMatches: typeof DUMMY_MATCHES = [];
 	const allMatches = isDummyMode
 		? dummyMatches
 		: allRealMatches.length > 0
@@ -87,17 +114,25 @@ export function LiveMatch() {
 			<ScrollArea className="h-[600px]">
 				<div className="space-y-4">
 					{matches.length > 0 ? (
-						dummyMatches.map((match, index) => (
-							<MatchCard
-								key={match.user1.name + match.user2.name + index}
-								user1={match.user1}
-								user2={match.user2}
-								matchPercentage={match.matchPercentage}
-								timestamp={match.timestamp}
-								isNew={match.isNew}
-								isViewed={match.isViewed}
-							/>
-						))
+						matches.map((match, index) => {
+							const matchId =
+								(match as { id?: string }).id ||
+								`${match.user1.name}-${match.user2.name}-${index}`;
+							const isNewlyAdded = newlyAddedMatches.has(matchId);
+
+							return (
+								<MatchCard
+									key={matchId}
+									user1={match.user1}
+									user2={match.user2}
+									matchPercentage={match.matchPercentage}
+									timestamp={match.timestamp}
+									isNew={match.isNew}
+									isViewed={match.isViewed}
+									isNewlyAdded={isNewlyAdded}
+								/>
+							);
+						})
 					) : (
 						<div className="text-center py-8 text-muted-foreground">
 							<p>No matches found for the selected filter.</p>

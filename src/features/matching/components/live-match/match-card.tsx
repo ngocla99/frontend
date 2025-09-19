@@ -18,6 +18,7 @@ interface MatchCardProps {
 	timestamp: string;
 	isNew?: boolean;
 	isViewed?: boolean;
+	isNewlyAdded?: boolean;
 }
 
 export const MatchCard = ({
@@ -27,11 +28,18 @@ export const MatchCard = ({
 	timestamp,
 	isNew,
 	isViewed,
+	isNewlyAdded = false,
 }: MatchCardProps) => {
 	const { onOpen } = useUserMatchesActions();
 
 	return (
-		<Card className="p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
+		<Card
+			className={`p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300 ${
+				isNewlyAdded
+					? "animate-in slide-in-from-top-2 fade-in-0 duration-300 ease-out"
+					: ""
+			} hover:scale-[1.02] hover:-translate-y-1`}
+		>
 			<div className="relative">
 				{/* Header with status badges */}
 
@@ -62,9 +70,7 @@ export const MatchCard = ({
 							<Heart className="relative w-6 h-6 text-pink-500 animate-pulse" />
 						</div>
 						<div className="text-center">
-							<span
-								className={`text-2xl font-black bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent`}
-							>
+							<span className="text-2xl font-black bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
 								{matchPercentage}%
 							</span>
 							<div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
