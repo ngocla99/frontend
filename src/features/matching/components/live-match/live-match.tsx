@@ -4,68 +4,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
-import {
-	DUMMY_MATCHES,
-	generateRandomDummyMatch,
-} from "@/features/matching/constants/data";
 
 export function LiveMatch() {
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
 	>("all");
 
-	// State for dummy matches with real-time updates
-	const [dummyMatches, setDummyMatches] = React.useState(DUMMY_MATCHES);
-	const [isDummyMode] = React.useState(true);
-
-	// State to track newly added matches for animation
-	const [newlyAddedMatches, setNewlyAddedMatches] = React.useState<Set<string>>(
-		new Set(),
-	);
-
-	// const { data: matchesData, isLoading } = useLiveMatch();
-	const { data: matchesDataInfinite } = useLiveMatchInfinite();
-	console.log(
-		"🚀 ~ file: live-match.tsx:23 ~ matchesDataInfinite:",
-		matchesDataInfinite,
-	);
-
-	// Effect to generate new dummy matches every 3 seconds
-	React.useEffect(() => {
-		if (!isDummyMode) return;
-
-		const interval = setInterval(() => {
-			setDummyMatches((prevMatches) => {
-				const newMatch = generateRandomDummyMatch();
-				const matchId = `${newMatch.user1.name}-${newMatch.user2.name}-${Date.now()}`;
-
-				// Track this as a newly added match for animation
-				setNewlyAddedMatches((prev) => new Set([...prev, matchId]));
-
-				// Remove from newly added after animation completes
-				setTimeout(() => {
-					setNewlyAddedMatches((prev) => {
-						const newSet = new Set(prev);
-						newSet.delete(matchId);
-						return newSet;
-					});
-				}, 300); // Animation duration
-
-				// Add new match at the beginning - no limit for infinite scrolling
-				return [{ ...newMatch, id: matchId }, ...prevMatches];
-			});
-		}, 3000); // Every 3 seconds
-
-		return () => clearInterval(interval);
-	}, [isDummyMode]);
-
-	// Combine demo matches with real-time matches
-	const allRealMatches: typeof DUMMY_MATCHES = [];
-	const allMatches = isDummyMode
-		? dummyMatches
-		: allRealMatches.length > 0
-			? allRealMatches
-			: DUMMY_MATCHES;
+	const { data: liveMatchData, isLoading, error } = useLiveMatchInfinite();
+	const allMatches = liveMatchData || [];
 
 	const matches = React.useMemo(() => {
 		switch (activeFilter) {
@@ -73,7 +19,6 @@ export function LiveMatch() {
 				return allMatches.filter((match) => match.isNew === true);
 			case "viewed":
 				return allMatches.filter((match) => match.isViewed === true);
-			case "all":
 			default:
 				return allMatches;
 		}
@@ -87,7 +32,7 @@ export function LiveMatch() {
 		).length;
 
 		return {
-			activeUsers: 345,
+			activeUsers: allMatches.length, // Use actual match count as active users indicator
 			newMatches: newCount,
 			viewedMatches: viewedCount,
 		};
@@ -127,9 +72,7 @@ export function LiveMatch() {
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.3, duration: 0.4 }}
 				>
-					{isDummyMode
-						? "Demo matches (new match every 3 seconds)"
-						: "Real matches happening now"}
+					Real matches happening now
 				</motion.p>
 
 				<HeadCard
@@ -150,20 +93,19 @@ export function LiveMatch() {
 			>
 				<ScrollArea className="h-[600px]">
 					<div className="space-y-4">
-						{matches.length > 0 ? (
+						{isLoading ? (
+							<div className="text-center py-8 text-muted-foreground">
+								<p>Loading matches...</p>
+							</div>
+						) : error ? (
+							<div className="text-center py-8 text-destructive">
+								<p>Failed to load matches. Please try again.</p>
+							</div>
+						) : matches.length > 0 ? (
 							matches.map((match, index) => {
-								const matchId =
-									(match as { id?: string }).id ||
-									`${match.user1.name}-${match.user2.name}-${index}`;
-								const isNewlyAdded = newlyAddedMatches.has(matchId);
+								const matchId = `${match.user1.name}-${match.user2.name}-${index}`;
 
-								return (
-									<MatchCard
-										key={matchId}
-										data={match}
-										isNewlyAdded={isNewlyAdded}
-									/>
-								);
+								return <MatchCard key={matchId} data={match} />;
 							})
 						) : (
 							<div className="text-center py-8 text-muted-foreground">

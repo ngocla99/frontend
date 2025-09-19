@@ -6,13 +6,17 @@ import {
 import apiClient from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
+import type { LiveMatchApi } from "@/types/api";
+import { transformApiMatchesToCardData } from "../utils/transform-api-data";
 
 export type LiveMatchInput = {
 	limit: number;
 	offset: number;
 };
 
-export const getLiveMatchApi = (input: LiveMatchInput): Promise<any> => {
+export const getLiveMatchApi = (
+	input: LiveMatchInput,
+): Promise<LiveMatchApi[]> => {
 	return apiClient.get("/api/v1/matching/top", {
 		params: input,
 	});
@@ -45,7 +49,7 @@ export const useLiveMatch = ({
 
 type UseLiveMatchInfiniteOptions = {
 	input?: LiveMatchInput;
-	queryConfig?: QueryConfig<any>;
+	queryConfig?: QueryConfig<typeof getLiveMatchApi>;
 };
 
 export const useLiveMatchInfinite = ({
@@ -70,7 +74,7 @@ export const useLiveMatchInfinite = ({
 		},
 		initialPageParam: PAGINATION.DEFAULT_OFFSET,
 		select: (data) => {
-			return data.pages.flat();
+			return data.pages.flatMap((page) => transformApiMatchesToCardData(page));
 		},
 		...queryConfig,
 	});

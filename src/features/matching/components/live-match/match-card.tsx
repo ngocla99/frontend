@@ -5,9 +5,14 @@ import { AuthGuard } from "@/components/auth-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useUserMatchesActions } from "../../store/user-matches";
 
-interface MatchCardProps {
+export interface MatchCardProps {
 	data: {
 		user1: {
 			name: string;
@@ -24,6 +29,36 @@ interface MatchCardProps {
 	};
 	isNewlyAdded?: boolean;
 }
+
+// Helper component for name with tooltip
+const NameWithTooltip = ({
+	name,
+	className,
+}: {
+	name: string;
+	className: string;
+}) => {
+	const MAX_LENGTH = 8; // Adjust this value as needed
+	const shouldTruncate = name.length > MAX_LENGTH;
+	const displayName = shouldTruncate
+		? `${name.substring(0, MAX_LENGTH)}...`
+		: name;
+
+	if (shouldTruncate) {
+		return (
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<span className={className}>{displayName}</span>
+				</TooltipTrigger>
+				<TooltipContent>
+					<p>{name}</p>
+				</TooltipContent>
+			</Tooltip>
+		);
+	}
+
+	return <span className={className}>{name}</span>;
+};
 
 export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 	const { user1, user2, matchPercentage, timestamp, isNew, isViewed } = data;
@@ -114,9 +149,10 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									<Heart className="w-2.5 h-2.5 text-white fill-white" />
 								</motion.div>
 							</div>
-							<span className="text-sm font-semibold text-gray-800 group-hover:text-pink-600 transition-colors duration-300">
-								{user1.name}
-							</span>
+							<NameWithTooltip
+								name={user1.name}
+								className="text-xs font-semibold text-gray-800 group-hover:text-pink-600 transition-colors duration-300"
+							/>
 						</div>
 
 						{/* Match percentage */}
@@ -200,9 +236,10 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									<Heart className="w-2.5 h-2.5 text-white fill-white" />
 								</motion.div>
 							</div>
-							<span className="text-sm font-semibold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
-								{user2.name}
-							</span>
+							<NameWithTooltip
+								name={user2.name}
+								className="text-xs font-semibold text-gray-800 group-hover:text-purple-600 transition-colors duration-300"
+							/>
 						</div>
 
 						<div className="flex items-center mb-7">
