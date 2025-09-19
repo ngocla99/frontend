@@ -1,5 +1,6 @@
-/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
-/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: interactive elements with click handlers */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: interactive elements with click handlers */
+
 import { Heart, Users, Zap } from "lucide-react";
 import React from "react";
 import { ImageLoader } from "@/components/image-loader";
@@ -30,107 +31,101 @@ export const UniversityMatchTab = () => {
 		userMatches && userMatches.length > 0 ? userMatches : [];
 
 	return (
-		<Card className="p-4 sm:p-6 bg-gradient-card shadow-soft border-0 hover:shadow-match transition-all duration-300">
-			<div className="text-center mb-4 sm:mb-6">
-				<div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-gradient-primary rounded-full flex items-center justify-center">
-					<Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+		<div className="w-full max-w-4xl mx-auto">
+			{/* Main Card with Pink/Peach Theme */}
+			<Card className="p-0 sm:p-8 bg-transparent sm:bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50 border-0 shadow-none sm:shadow-xl hover:shadow-2xl transition-all duration-300 ease-out">
+				{/* Header Section */}
+				<div className="text-center mb-8">
+					<div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+						<Users className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+					</div>
+					<h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-3">
+						Your Potential Matches
+					</h2>
+					<p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+						Click on someone to see your baby together!
+					</p>
 				</div>
-				<h2 className="text-xl sm:text-2xl font-display font-bold text-foreground mb-2">
-					Your Potential Matches
-				</h2>
-				<p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-					Click on someone to see your baby together!
-				</p>
-			</div>
 
-			<div className="space-y-3 sm:space-y-4">
-				{universityMatch.length > 0 ? (
-					universityMatch.map((match) => {
-						const isSelected = selectedMatch?.user.name === match.user.name;
+				{/* Matches List */}
+				<div className="space-y-4 mb-8">
+					{universityMatch.length > 0 ? (
+						universityMatch.map((match) => {
+							const isSelected = selectedMatch?.user.name === match.user.name;
 
-						return (
-							<div
-								key={match.user.name}
-								className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all hover:shadow-match text-left ${
-									isSelected
-										? "border-primary bg-primary/5"
-										: "border-border hover:border-primary/50"
-								}`}
-								onClick={() => setSelectedMatch(match)}
-							>
-								<div className="flex items-center gap-3 sm:gap-4">
-									<div className="relative">
+							return (
+								<div
+									key={match.user.name}
+									className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg ${
+										isSelected
+											? "border-pink-300 bg-pink-50 shadow-md"
+											: "border-gray-200 bg-white hover:border-pink-200 hover:bg-pink-25"
+									}`}
+									onClick={() => setSelectedMatch(match)}
+								>
+									<div className="flex items-center gap-4">
 										<ImageLoader
 											src={match.user.image}
 											alt={match.user.name}
-											width={64}
-											height={64}
-											className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-white shadow-sm"
+											width={72}
+											height={72}
+											className="w-16 h-16 sm:w-18 sm:h-18 rounded-full border-3 border-white shadow-md"
 										/>
-										<div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-love rounded-full flex items-center justify-center">
-											<Heart className="w-2 h-2 sm:w-3 sm:h-3 text-white" />
-										</div>
-									</div>
 
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between mb-1 sm:mb-2">
-											<h3 className="font-bold text-foreground text-sm sm:text-base truncate">
-												{match.user.name}, {match.user.age}
-											</h3>
-											<div className="flex items-center gap-1 flex-shrink-0 ml-2">
-												<Heart className="w-3 h-3 sm:w-4 sm:h-4 text-love" />
-												<span className="font-bold text-love text-sm sm:text-base">
-													{match.matchPercentage}%
-												</span>
+										<div className="flex-1 min-w-0">
+											<div className="flex items-center justify-between mb-2">
+												<h3 className="font-bold text-gray-800 text-base sm:text-lg truncate">
+													{match.user.name}, {match.user.age}
+												</h3>
+												<div className="flex items-center gap-1 flex-shrink-0 ml-3">
+													<Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
+													<span className="font-bold text-pink-500 text-base sm:text-lg">
+														{match.matchPercentage}%
+													</span>
+												</div>
 											</div>
+											<p className="text-sm sm:text-base text-gray-600 truncate">
+												{match.user.university}
+											</p>
 										</div>
 
-										<p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 truncate">
-											{match.user.university}
-										</p>
-									</div>
-
-									<div className="text-center flex-shrink-0">
-										{isSelected ? (
-											<div className="text-primary font-medium text-xs sm:text-sm">
-												<Zap className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1" />
-												Selected
-											</div>
-										) : (
-											<Button
-												variant="ghost"
-												size="sm"
-												className="text-match hover:text-match-light text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
-											>
-												<Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-												<span className="hidden sm:inline">View </span>Baby
-											</Button>
-										)}
+										{/* Baby Button */}
+										<div className="flex-shrink-0">
+											{isSelected ? (
+												<div className="text-orange-500 font-semibold text-sm sm:text-base text-center">
+													<Zap className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 fill-orange-500" />
+													Selected
+												</div>
+											) : (
+												<Button
+													variant="ghost"
+													size="sm"
+													className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm sm:text-base h-10 sm:h-11 px-4 sm:px-5 font-semibold"
+												>
+													<Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+													<span className="hidden sm:inline">View </span>Baby
+												</Button>
+											)}
+										</div>
 									</div>
 								</div>
+							);
+						})
+					) : (
+						<div className="text-center py-12">
+							<div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+								<Users className="w-8 h-8 text-gray-400" />
 							</div>
-						);
-					})
-				) : (
-					<div className="text-center py-8">
-						<h3 className="text-lg font-semibold text-gray-600 mb-2">
-							No Matches Found
-						</h3>
-						<p className="text-sm text-gray-500">
-							We're still processing matches for you. Check back soon!
-						</p>
-					</div>
-				)}
-			</div>
-
-			{universityMatch.length > 0 && (
-				<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-					<p className="text-xs sm:text-sm text-blue-700 text-center leading-relaxed">
-						💡 All matches are from your university. Click any profile to
-						generate your future baby!
-					</p>
+							<h3 className="text-xl font-semibold text-gray-600 mb-2">
+								No Matches Found
+							</h3>
+							<p className="text-gray-500">
+								We're still processing matches for you. Check back soon!
+							</p>
+						</div>
+					)}
 				</div>
-			)}
-		</Card>
+			</Card>
+		</div>
 	);
 };

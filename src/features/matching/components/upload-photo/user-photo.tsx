@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import { ImageLoader } from "@/components/image-loader";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
