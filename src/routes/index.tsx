@@ -75,14 +75,11 @@ function HomePage() {
 	}
 
 	return (
-		<div className="pt-20 min-h-screen bg-gradient-subtle">
-			<div className="container mx-auto py-4 sm:py-6 lg:py-8">
+		<div className="pt-24 min-h-screen bg-gradient-subtle px-4 sm:px-6 lg:px-8">
+			<div className="container mx-auto pb-4 sm:pb-6 lg:pb-8">
 				{/* Two Column Layout */}
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-					<div className="space-y-8">
-						<div className="flex gap-4 items-center mb-4">
-							<FavoriteHistory onSelectMatch={handleSelectMatch} />
-						</div>
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-6xl mx-auto">
+					<div className="space-y-8 mx-0 sm:mx-4">
 						<UploadPhoto />
 
 						{userUpload.image_url && !showBabyGenerator && <UserMatch />}

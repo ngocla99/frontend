@@ -23,7 +23,7 @@ interface ResponsiveDialogProps {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	trigger?: React.ReactNode;
-	title: string;
+	title: string | React.ReactNode;
 	description?: string;
 	children: React.ReactNode;
 	footer?: React.ReactNode;
@@ -91,7 +91,7 @@ export function ResponsiveDialog({
 					<DrawerTitle>{title}</DrawerTitle>
 					{description && <DrawerDescription>{description}</DrawerDescription>}
 				</DrawerHeader>
-				<ResponsiveDialogContent className="px-4">
+				<ResponsiveDialogContent className={classes?.content}>
 					{children}
 				</ResponsiveDialogContent>
 				{footer && <DrawerFooter className="pt-2">{footer}</DrawerFooter>}

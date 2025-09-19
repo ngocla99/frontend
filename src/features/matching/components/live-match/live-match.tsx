@@ -1,43 +1,17 @@
+import { motion } from "framer-motion";
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
-import {
-	DUMMY_MATCHES,
-	generateRandomDummyMatch,
-} from "@/features/matching/constants/data";
 
 export function LiveMatch() {
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
 	>("all");
 
-	// State for dummy matches with real-time updates
-	const [dummyMatches, setDummyMatches] = React.useState(DUMMY_MATCHES);
-	const [isDummyMode] = React.useState(true);
-
-	// Effect to generate new dummy matches every 3 seconds
-	React.useEffect(() => {
-		if (!isDummyMode) return;
-
-		const interval = setInterval(() => {
-			setDummyMatches((prevMatches) => {
-				const newMatch = generateRandomDummyMatch();
-				// Add new match at the beginning - no limit for infinite scrolling
-				return [newMatch, ...prevMatches];
-			});
-		}, 3000); // Every 3 seconds
-
-		return () => clearInterval(interval);
-	}, [isDummyMode]);
-
-	// Combine demo matches with real-time matches
-	const allRealMatches = [];
-	const allMatches = isDummyMode
-		? dummyMatches
-		: allRealMatches.length > 0
-			? allRealMatches
-			: DUMMY_MATCHES;
+	const { data: liveMatchData, isLoading, error } = useLiveMatchInfinite();
+	const allMatches = liveMatchData || [];
 
 	const matches = React.useMemo(() => {
 		switch (activeFilter) {
@@ -45,7 +19,6 @@ export function LiveMatch() {
 				return allMatches.filter((match) => match.isNew === true);
 			case "viewed":
 				return allMatches.filter((match) => match.isViewed === true);
-			case "all":
 			default:
 				return allMatches;
 		}
@@ -59,7 +32,7 @@ export function LiveMatch() {
 		).length;
 
 		return {
-			activeUsers: 345,
+			activeUsers: allMatches.length, // Use actual match count as active users indicator
 			newMatches: newCount,
 			viewedMatches: viewedCount,
 		};
@@ -67,44 +40,81 @@ export function LiveMatch() {
 
 	return (
 		<div className="space-y-6">
-			<div className="text-center">
-				<h2 className="text-2xl font-display font-light text-foreground mb-2">
+			<motion.div
+				className="text-center m-0 mb-4 sm:mx-4"
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+			>
+				{/* <motion.h2
+					className="text-2xl font-display font-light text-foreground mb-2"
+					animate={{
+						backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+					}}
+					transition={{
+						duration: 3,
+						repeat: Infinity,
+						ease: "linear",
+					}}
+					style={{
+						background: "linear-gradient(90deg, #ec4899, #f43f5e, #ec4899)",
+						backgroundSize: "200% 100%",
+						WebkitBackgroundClip: "text",
+						WebkitTextFillColor: "transparent",
+						backgroundClip: "text",
+					}}
+				>
 					Live University Matches
-				</h2>
-				<p className="text-muted-foreground mb-4">
-					{isDummyMode
-						? "Demo matches (new match every 3 seconds)"
-						: "Real matches happening now"}
-				</p>
+				</motion.h2>
+				<motion.p
+					className="text-muted-foreground mb-4"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 0.3, duration: 0.4 }}
+				>
+					Real matches happening now
+				</motion.p> */}
 
 				<HeadCard
 					stats={stats}
 					onFilterChange={setActiveFilter}
 					activeFilter={activeFilter}
 				/>
-			</div>
+			</motion.div>
 
-			<ScrollArea className="h-[600px]">
-				<div className="space-y-4">
-					{matches.length > 0 ? (
-						matches.map((match, index) => (
-							<MatchCard
-								key={match.user1.name + match.user2.name + index}
-								user1={match.user1}
-								user2={match.user2}
-								matchPercentage={match.matchPercentage}
-								timestamp={match.timestamp}
-								isNew={match.isNew}
-								isViewed={match.isViewed}
-							/>
-						))
-					) : (
-						<div className="text-center py-8 text-muted-foreground">
-							<p>No matches found for the selected filter.</p>
-						</div>
-					)}
-				</div>
-			</ScrollArea>
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{
+					delay: 0.4,
+					duration: 0.5,
+					ease: [0.25, 0.46, 0.45, 0.94],
+				}}
+			>
+				<ScrollArea className="h-[716px]">
+					<div className="space-y-4 p-0 sm:p-4">
+						{isLoading ? (
+							<div className="text-center py-8 text-muted-foreground">
+								<p>Loading matches...</p>
+							</div>
+						) : error ? (
+							<div className="text-center py-8 text-destructive">
+								<p>Failed to load matches. Please try again.</p>
+							</div>
+						) : matches.length > 0 ? (
+							matches.map((match, index) => {
+								const matchId = `${match.user1.name}-${match.user2.name}-${index}`;
+
+								return <MatchCard key={matchId} data={match} />;
+							})
+						) : (
+							<div className="text-center py-8 text-muted-foreground">
+								<p>No matches found for the selected filter.</p>
+							</div>
+						)}
+					</div>
+				</ScrollArea>
+			</motion.div>
 		</div>
 	);
 }

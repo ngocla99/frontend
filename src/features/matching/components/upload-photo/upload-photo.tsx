@@ -1,7 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { AuthGuard } from "@/components/auth-guard";
-import { FileUpload } from "@/components/kokonutui/file-upload";
+import {
+	FileUpload,
+	type FileUploadRef,
+} from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -11,21 +14,28 @@ import {
 	useUserUploadActions,
 } from "@/features/matching/store/user-upload";
 import { useUpdateMe } from "@/features/user/api/update-me";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = () => {
+	const isMobile = useIsMobile();
 	const userUpload = useUserUpload();
 	const { setUserUpload } = useUserUploadActions();
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
 	const [selectedGender, setSelectedGender] = React.useState<string>(
 		userUpload.gender || "",
 	);
+	const fileUploadRef = React.useRef<FileUploadRef>(null);
 
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
 			onSuccess: (data) => {
 				setUserUpload({ ...userUpload, image_url: data.image_url });
 				setShowSettings(false);
+			},
+			onError: () => {
+				fileUploadRef.current?.reset();
 			},
 		},
 	});
@@ -49,7 +59,12 @@ export const UploadPhoto = () => {
 	}
 
 	return (
-		<Card className="p-6 bg-gradient-card border-0 shadow-soft">
+		<Card
+			className={cn(
+				"p-0 shadow-none sm:p-6 bg-gradient-card border-0 sm:shadow-soft",
+				isMobile && "bg-transparent",
+			)}
+		>
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -95,7 +110,7 @@ export const UploadPhoto = () => {
 
 				{/* Upload Area */}
 				<AnimatePresence>
-					{selectedGender && (
+					{["male", "female"].includes(selectedGender) && (
 						<motion.div
 							initial={{ opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: "auto" }}
@@ -103,6 +118,7 @@ export const UploadPhoto = () => {
 							className="space-y-4"
 						>
 							<FileUpload
+								ref={fileUploadRef}
 								onUploadSuccess={handleUploadFile}
 								acceptedFileTypes={["image/*"]}
 								maxFileSize={10 * 1024 * 1024} // 10MB
@@ -114,7 +130,7 @@ export const UploadPhoto = () => {
 					)}
 				</AnimatePresence>
 
-				{!selectedGender && (
+				{!["male", "female"].includes(selectedGender) && (
 					<div className="text-center py-4">
 						<p className="text-sm text-muted-foreground">
 							👆 Please select your gender first
