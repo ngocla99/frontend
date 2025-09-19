@@ -87,7 +87,7 @@ export function LiveMatch() {
 			<ScrollArea className="h-[600px]">
 				<div className="space-y-4">
 					{matches.length > 0 ? (
-						matches.map((match, index) => (
+						dummyMatches.map((match, index) => (
 							<MatchCard
 								key={match.user1.name + match.user2.name + index}
 								user1={match.user1}
