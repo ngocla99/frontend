@@ -14,9 +14,12 @@ import {
 	useUserUploadActions,
 } from "@/features/matching/store/user-upload";
 import { useUpdateMe } from "@/features/user/api/update-me";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = () => {
+	const isMobile = useIsMobile();
 	const userUpload = useUserUpload();
 	const { setUserUpload } = useUserUploadActions();
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
@@ -56,7 +59,12 @@ export const UploadPhoto = () => {
 	}
 
 	return (
-		<Card className="p-0 bg-transparent shadow-none sm:p-6 sm:bg-gradient-card border-0 sm:shadow-soft">
+		<Card
+			className={cn(
+				"p-0 shadow-none sm:p-6 bg-gradient-card border-0 sm:shadow-soft",
+				isMobile && "bg-transparent",
+			)}
+		>
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
