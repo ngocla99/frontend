@@ -13,37 +13,6 @@ interface UserPhotoProps {
 export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 	const userUpload = useUserUpload();
 
-	// const [showFilters, setShowFilters] = useState(false);
-	// const [currentFilter, setCurrentFilter] = useState<
-	// 	"none" | "vintage" | "bw" | "sepia" | "vibrant"
-	// >("none");
-
-	// const applyFilter = async (filter: typeof currentFilter) => {
-	// 	if (!originalImage) return;
-
-	// 	setCurrentFilter(filter);
-
-	// 	try {
-	// 		const filtered = await ImageProcessor.applyFilter(originalImage, filter);
-	// 		onPhotoUpload(filtered, selectedGender);
-	// 	} catch (error) {
-	// 		console.error("Filter failed:", error);
-	// 	}
-	// };
-
-	// const applyFilter = async (filter: typeof currentFilter) => {
-	// 	if (!originalImage) return;
-
-	// 	setCurrentFilter(filter);
-
-	// 	try {
-	// 		const filtered = await ImageProcessor.applyFilter(originalImage, filter);
-	// 		onPhotoUpload(filtered, selectedGender);
-	// 	} catch (error) {
-	// 		console.error("Filter failed:", error);
-	// 	}
-	// };
-
 	return (
 		<Card className="p-6 bg-gradient-card border-0 shadow-soft">
 			<motion.div
@@ -68,52 +37,6 @@ export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 				</div>
 
 				<div className="flex gap-3 justify-center">
-					{/* <Dialog open={showFilters} onOpenChange={setShowFilters}>
-						<DialogTrigger asChild>
-							<Button variant="outline" size="sm" className="gap-2">
-								<Sparkles className="w-4 h-4" />
-								Filters
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="max-w-md">
-							<DialogHeader>
-								<DialogTitle>Photo Filters</DialogTitle>
-							</DialogHeader>
-
-							<div className="space-y-4">
-								<div className="grid grid-cols-2 gap-2">
-									{(["none", "vintage", "bw", "sepia", "vibrant"] as const).map(
-										(filter) => (
-											<Button
-												key={filter}
-												variant={
-													currentFilter === filter ? "default" : "outline"
-												}
-												size="sm"
-												onClick={() => applyFilter(filter)}
-												className="capitalize"
-											>
-												{filter === "none" ? "Original" : filter}
-											</Button>
-										),
-									)}
-								</div>
-
-								<div className="space-y-2">
-									<Label>Compression Quality: {compressionLevel[0]}%</Label>
-									<Slider
-										value={compressionLevel}
-										onValueChange={setCompressionLevel}
-										max={100}
-										min={10}
-										step={10}
-										className="w-full"
-									/>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog> */}
-
 					<Button
 						variant="outline"
 						size="sm"

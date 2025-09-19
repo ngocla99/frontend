@@ -8,6 +8,10 @@ export const useUserLiveMatches = () => {
 	const { socket, isConnected } = useSocket();
 
 	const { data: userMatches, isLoading, error } = useUserMatch();
+	console.log(
+		"🚀 ~ file: use-user-live-matches.tsx:11 ~ userMatches:",
+		userMatches,
+	);
 
 	// Listen for real-time match events for this user
 	useEffect(() => {

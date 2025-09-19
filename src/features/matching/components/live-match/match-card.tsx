@@ -134,7 +134,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									alt={user1.name}
 									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
-								<motion.div
+								{/* <motion.div
 									className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-md"
 									animate={{
 										scale: [1, 1.1, 1],
@@ -147,7 +147,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									}}
 								>
 									<Heart className="w-2.5 h-2.5 text-white fill-white" />
-								</motion.div>
+								</motion.div> */}
 							</div>
 							<NameWithTooltip
 								name={user1.name}
@@ -221,7 +221,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									alt={user2.name}
 									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
-								<motion.div
+								{/* <motion.div
 									className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-md"
 									animate={{
 										scale: [1, 1.1, 1],
@@ -234,7 +234,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									}}
 								>
 									<Heart className="w-2.5 h-2.5 text-white fill-white" />
-								</motion.div>
+								</motion.div> */}
 							</div>
 							<NameWithTooltip
 								name={user2.name}
@@ -266,7 +266,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 										>
 											<Sparkles className="w-3 h-3 mr-1" />
 										</motion.div>
-										NEW MATCH
+										NEW
 									</Badge>
 								</motion.div>
 							)}
@@ -304,19 +304,6 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 										})
 									}
 								>
-									<motion.div
-										animate={{
-											scale: [1, 1.1, 1],
-											rotate: [0, 5, -5, 0],
-										}}
-										transition={{
-											duration: 2,
-											repeat: Infinity,
-											ease: "easeInOut",
-										}}
-									>
-										<Zap className="size-3.5 text-pink-500 group-hover/btn:text-white" />
-									</motion.div>
 									<span className="font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent group-hover/btn:text-white">
 										View Match
 									</span>

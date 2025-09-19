@@ -56,7 +56,7 @@ export const UploadPhoto = () => {
 	}
 
 	return (
-		<Card className="p-6 bg-gradient-card border-0 shadow-soft">
+		<Card className="p-0 bg-transparent shadow-none sm:p-6 sm:bg-gradient-card border-0 sm:shadow-soft">
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export const UploadPhoto = () => {
 
 				{/* Upload Area */}
 				<AnimatePresence>
-					{selectedGender && (
+					{["male", "female"].includes(selectedGender) && (
 						<motion.div
 							initial={{ opacity: 0, height: 0 }}
 							animate={{ opacity: 1, height: "auto" }}
@@ -122,7 +122,7 @@ export const UploadPhoto = () => {
 					)}
 				</AnimatePresence>
 
-				{!selectedGender && (
+				{!["male", "female"].includes(selectedGender) && (
 					<div className="text-center py-4">
 						<p className="text-sm text-muted-foreground">
 							👆 Please select your gender first

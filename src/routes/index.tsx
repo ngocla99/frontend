@@ -75,7 +75,7 @@ function HomePage() {
 	}
 
 	return (
-		<div className="pt-20 min-h-screen bg-gradient-subtle">
+		<div className="pt-20 min-h-screen bg-gradient-subtle px-4 sm:px-6 lg:px-8">
 			<div className="container mx-auto pb-4 sm:pb-6 lg:pb-8">
 				{/* Two Column Layout */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
