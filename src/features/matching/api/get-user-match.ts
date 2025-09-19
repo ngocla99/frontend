@@ -1,13 +1,9 @@
-import {
-	queryOptions,
-	useInfiniteQuery,
-	useQuery,
-} from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
-import type { LiveMatchApi } from "@/types/api";
-import { transformApiMatchesToCardData } from "../utils/transform-api-data";
+import type { UserMatchApi } from "@/types/api";
+import { transformApiUserMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type UserMatchInput = {
 	limit: number;
@@ -16,7 +12,7 @@ export type UserMatchInput = {
 
 export const getUserMatchApi = (
 	input: UserMatchInput,
-): Promise<LiveMatchApi[]> => {
+): Promise<UserMatchApi[]> => {
 	return apiClient.get("/api/v1/me/matches", {
 		params: input,
 	});
@@ -44,5 +40,6 @@ export const useUserMatch = ({
 	return useQuery({
 		...getUserMatchQueryOptions(input),
 		...queryConfig,
+		select: (data) => transformApiUserMatchesToDisplayData(data),
 	});
 };

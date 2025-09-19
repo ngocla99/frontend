@@ -1,73 +1,37 @@
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 import { Heart, Users, Zap } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
-import { useUserUpload } from "@/features/matching/store/user-upload";
 
-interface BackendMatch {
-	task_id: string;
-	source_user_id: string;
-	source_face_id: string;
-	target_user_id: string;
-	target_face_id: string;
-	similarity: number;
-	target_image_url: string | null;
-}
-
-interface UniversityMatch {
-	id: string;
-	name: string;
-	image: string;
-	age: number;
-	university: string;
-	similarity?: number;
-	target_user_id?: string;
+export interface UniversityMatch {
+	user: {
+		name: string;
+		image: string;
+		age: number;
+		university: string;
+	};
 	target_face_id?: string;
+	matchPercentage: number;
+	timestamp: string;
+	isNew: boolean;
+	isViewed: boolean;
 }
 
 interface UniversityMatchProps {
-	userGender: string;
 	onSelectMatch: (match: UniversityMatch) => void;
 	selectedMatch?: UniversityMatch;
 }
 
 export const UniversityMatchTab = ({
-	userGender,
 	onSelectMatch,
 	selectedMatch,
 }: UniversityMatchProps) => {
 	const { matches: userMatches } = useUserLiveMatches();
-	console.log("🚀 ~ UniversityMatchTab ~ userMatches:", userMatches);
 
-	// Extract name from email address
-	const extractNameFromEmail = (email: string): string => {
-		return email.split("@")[0];
-	};
-
-	// Transform backend match data to UniversityMatch format
-	const transformMatches = (matches: BackendMatch[]): UniversityMatch[] => {
-		return matches.map((match, index) => ({
-			id: match.target_face_id || `match-${index}`,
-			name: extractNameFromEmail(match.target_user_id),
-			image:
-				match.target_image_url ||
-				(userGender === "male"
-					? "https://images.unsplash.com/photo-1494790108755-2616b612b647?w=400&h=400&fit=crop&crop=face"
-					: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"),
-			age: 22 + (index % 3), // Vary age between 22-24
-			university: "Stanford University",
-			similarity: match.similarity,
-			target_user_id: match.target_user_id,
-			target_face_id: match.target_face_id,
-		}));
-	};
-
-	// Transform real matches if available, otherwise return empty array
 	const universityMatch: UniversityMatch[] =
-		userMatches && userMatches.length > 0
-			? transformMatches(userMatches as unknown as BackendMatch[])
-			: [];
+		userMatches && userMatches.length > 0 ? userMatches : [];
 
 	return (
 		<Card className="p-4 sm:p-6 bg-gradient-card shadow-soft border-0 hover:shadow-match transition-all duration-300">
@@ -86,15 +50,11 @@ export const UniversityMatchTab = ({
 			<div className="space-y-3 sm:space-y-4">
 				{universityMatch.length > 0 ? (
 					universityMatch.map((match) => {
-						const matchPercentage = match.similarity
-							? Math.round(match.similarity)
-							: 0;
-						const isSelected = selectedMatch?.id === match.id;
+						const isSelected = selectedMatch?.user.name === match.user.name;
 
 						return (
-							<button
-								key={match.id}
-								type="button"
+							<div
+								key={match.user.name}
 								className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all hover:shadow-match text-left ${
 									isSelected
 										? "border-primary bg-primary/5"
@@ -105,8 +65,8 @@ export const UniversityMatchTab = ({
 								<div className="flex items-center gap-3 sm:gap-4">
 									<div className="relative">
 										<img
-											src={match.image}
-											alt={match.name}
+											src={match.user.image}
+											alt={match.user.name}
 											className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm"
 										/>
 										<div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-love rounded-full flex items-center justify-center">
@@ -117,18 +77,18 @@ export const UniversityMatchTab = ({
 									<div className="flex-1 min-w-0">
 										<div className="flex items-center justify-between mb-1 sm:mb-2">
 											<h3 className="font-bold text-foreground text-sm sm:text-base truncate">
-												{match.name}, {match.age}
+												{match.user.name}, {match.user.age}
 											</h3>
 											<div className="flex items-center gap-1 flex-shrink-0 ml-2">
 												<Heart className="w-3 h-3 sm:w-4 sm:h-4 text-love" />
 												<span className="font-bold text-love text-sm sm:text-base">
-													{matchPercentage}%
+													{match.matchPercentage}%
 												</span>
 											</div>
 										</div>
 
 										<p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 truncate">
-											{match.university}
+											{match.user.university}
 										</p>
 									</div>
 
@@ -150,7 +110,7 @@ export const UniversityMatchTab = ({
 										)}
 									</div>
 								</div>
-							</button>
+							</div>
 						);
 					})
 				) : (

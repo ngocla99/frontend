@@ -31,3 +31,11 @@ export type LiveMatchApi = {
 	user_b_image_url: string;
 	user_b_name: string;
 };
+
+export type UserMatchApi = {
+	created_at: string;
+	image_url: string;
+	name: string;
+	similarity: number;
+	user_id: string;
+};

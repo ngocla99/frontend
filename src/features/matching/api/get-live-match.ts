@@ -7,7 +7,7 @@ import apiClient from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { LiveMatchApi } from "@/types/api";
-import { transformApiMatchesToCardData } from "../utils/transform-api-data";
+import { transformApiMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type LiveMatchInput = {
 	limit: number;
@@ -74,7 +74,9 @@ export const useLiveMatchInfinite = ({
 		},
 		initialPageParam: PAGINATION.DEFAULT_OFFSET,
 		select: (data) => {
-			return data.pages.flatMap((page) => transformApiMatchesToCardData(page));
+			return data.pages.flatMap((page) =>
+				transformApiMatchesToDisplayData(page),
+			);
 		},
 		...queryConfig,
 	});
