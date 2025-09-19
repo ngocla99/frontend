@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
@@ -94,52 +95,84 @@ export function LiveMatch() {
 
 	return (
 		<div className="space-y-6">
-			<div className="text-center">
-				<h2 className="text-2xl font-display font-light text-foreground mb-2">
+			<motion.div
+				className="text-center"
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+			>
+				<motion.h2
+					className="text-2xl font-display font-light text-foreground mb-2"
+					animate={{
+						backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+					}}
+					transition={{
+						duration: 3,
+						repeat: Infinity,
+						ease: "linear",
+					}}
+					style={{
+						background: "linear-gradient(90deg, #ec4899, #f43f5e, #ec4899)",
+						backgroundSize: "200% 100%",
+						WebkitBackgroundClip: "text",
+						WebkitTextFillColor: "transparent",
+						backgroundClip: "text",
+					}}
+				>
 					Live University Matches
-				</h2>
-				<p className="text-muted-foreground mb-4">
+				</motion.h2>
+				<motion.p
+					className="text-muted-foreground mb-4"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 0.3, duration: 0.4 }}
+				>
 					{isDummyMode
 						? "Demo matches (new match every 3 seconds)"
 						: "Real matches happening now"}
-				</p>
+				</motion.p>
 
 				<HeadCard
 					stats={stats}
 					onFilterChange={setActiveFilter}
 					activeFilter={activeFilter}
 				/>
-			</div>
+			</motion.div>
 
-			<ScrollArea className="h-[600px]">
-				<div className="space-y-4">
-					{matches.length > 0 ? (
-						matches.map((match, index) => {
-							const matchId =
-								(match as { id?: string }).id ||
-								`${match.user1.name}-${match.user2.name}-${index}`;
-							const isNewlyAdded = newlyAddedMatches.has(matchId);
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{
+					delay: 0.4,
+					duration: 0.5,
+					ease: [0.25, 0.46, 0.45, 0.94],
+				}}
+			>
+				<ScrollArea className="h-[600px]">
+					<div className="space-y-4">
+						{matches.length > 0 ? (
+							matches.map((match, index) => {
+								const matchId =
+									(match as { id?: string }).id ||
+									`${match.user1.name}-${match.user2.name}-${index}`;
+								const isNewlyAdded = newlyAddedMatches.has(matchId);
 
-							return (
-								<MatchCard
-									key={matchId}
-									user1={match.user1}
-									user2={match.user2}
-									matchPercentage={match.matchPercentage}
-									timestamp={match.timestamp}
-									isNew={match.isNew}
-									isViewed={match.isViewed}
-									isNewlyAdded={isNewlyAdded}
-								/>
-							);
-						})
-					) : (
-						<div className="text-center py-8 text-muted-foreground">
-							<p>No matches found for the selected filter.</p>
-						</div>
-					)}
-				</div>
-			</ScrollArea>
+								return (
+									<MatchCard
+										key={matchId}
+										data={match}
+										isNewlyAdded={isNewlyAdded}
+									/>
+								);
+							})
+						) : (
+							<div className="text-center py-8 text-muted-foreground">
+								<p>No matches found for the selected filter.</p>
+							</div>
+						)}
+					</div>
+				</ScrollArea>
+			</motion.div>
 		</div>
 	);
 }
