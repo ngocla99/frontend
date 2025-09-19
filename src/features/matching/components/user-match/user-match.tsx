@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CelebritySearch } from "@/old/components/CelebritySearch";
+import { CelebrityMatchTab } from "./celebrity-match-tab";
 import { UniversityMatchTab } from "./university-match-tab";
 
 export function UserMatch() {
@@ -23,7 +23,7 @@ export function UserMatch() {
 				</TabsContent>
 
 				<TabsContent value="celebrity">
-					<CelebritySearch />
+					<CelebrityMatchTab />
 				</TabsContent>
 			</Tabs>
 		</div>

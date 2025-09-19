@@ -70,7 +70,7 @@ export const UniversityMatchTab = () => {
 									}`}
 									onClick={() => setSelectedMatch(match)}
 								>
-									<div className="flex items-center gap-4">
+									<div className="flex items-center gap-3 sm:gap-4">
 										<ImageLoader
 											src={match.user.image}
 											alt={match.user.name}
