@@ -1,47 +1,32 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/use-socket";
+import { useUserMatch } from "../api/get-user-match";
 
-export const useUserLiveMatches = (userId?: string) => {
+export const useUserLiveMatches = () => {
 	const queryClient = useQueryClient();
 	const { socket, isConnected } = useSocket();
 
-	// Query for user's matches
-	const userMatchesQuery = useQuery({
-		queryKey: ["user-live-matches", userId],
-		queryFn: async () => {
-			if (!userId) return [];
-
-			const response = await fetch(`/api/user-matches/${userId}`);
-			if (!response.ok) throw new Error("Failed to fetch user matches");
-			return response.json();
-		},
-		enabled: !!userId,
-	});
+	const { data: userMatches, isLoading, error } = useUserMatch();
 
 	// Listen for real-time match events for this user
 	useEffect(() => {
-		if (!socket || !isConnected || !userId) return;
+		if (!socket || !isConnected) return;
 
 		const handleMatchFound = (data: any) => {
-			if (data.source_user_id === userId || data.target_user_id === userId) {
-				// Update user matches cache
-				queryClient.setQueryData(
-					["user-live-matches", userId],
-					(oldData: any[] = []) => {
-						const exists = oldData.some(
-							(match) =>
-								match.source_face_id === data.source_face_id &&
-								match.target_face_id === data.target_face_id,
-						);
-
-						if (!exists) {
-							return [...oldData, data];
-						}
-						return oldData;
-					},
+			// Update user matches cache
+			queryClient.setQueryData(["user-live-matches"], (oldData: any[] = []) => {
+				const exists = oldData.some(
+					(match) =>
+						match.source_face_id === data.source_face_id &&
+						match.target_face_id === data.target_face_id,
 				);
-			}
+
+				if (!exists) {
+					return [...oldData, data];
+				}
+				return oldData;
+			});
 		};
 
 		socket.on("match_found_public", handleMatchFound);
@@ -49,12 +34,11 @@ export const useUserLiveMatches = (userId?: string) => {
 		return () => {
 			socket.off("match_found_public", handleMatchFound);
 		};
-	}, [socket, isConnected, userId, queryClient]);
+	}, [socket, isConnected, queryClient]);
 
 	return {
-		matches: userMatchesQuery.data || [],
-		isLoading: userMatchesQuery.isLoading,
-		error: userMatchesQuery.error,
-		refetch: userMatchesQuery.refetch,
+		matches: userMatches || [],
+		isLoading: isLoading,
+		error: error,
 	};
 };

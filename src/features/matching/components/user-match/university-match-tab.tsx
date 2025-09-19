@@ -21,8 +21,6 @@ interface UniversityMatch {
 	image: string;
 	age: number;
 	university: string;
-	major?: string;
-	interests?: string[];
 	similarity?: number;
 	target_user_id?: string;
 	target_face_id?: string;
@@ -39,8 +37,7 @@ export const UniversityMatchTab = ({
 	onSelectMatch,
 	selectedMatch,
 }: UniversityMatchProps) => {
-	const userUpload = useUserUpload();
-	const { matches: userMatches } = useUserLiveMatches(userUpload?.user_id);
+	const { matches: userMatches } = useUserLiveMatches();
 	console.log("🚀 ~ UniversityMatchTab ~ userMatches:", userMatches);
 
 	// Extract name from email address
@@ -60,15 +57,6 @@ export const UniversityMatchTab = ({
 					: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"),
 			age: 22 + (index % 3), // Vary age between 22-24
 			university: "Stanford University",
-			major: ["Computer Science", "Psychology", "Biology", "Business"][
-				index % 4
-			],
-			interests: [
-				["Photography", "Travel", "Coffee"],
-				["Music", "Art", "Hiking"],
-				["Science", "Movies", "Cooking"],
-				["Sports", "Reading", "Gaming"],
-			][index % 4],
 			similarity: match.similarity,
 			target_user_id: match.target_user_id,
 			target_face_id: match.target_face_id,
@@ -78,7 +66,7 @@ export const UniversityMatchTab = ({
 	// Transform real matches if available, otherwise return empty array
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0
-			? transformMatches(userMatches as BackendMatch[])
+			? transformMatches(userMatches as unknown as BackendMatch[])
 			: [];
 
 	return (
@@ -140,28 +128,8 @@ export const UniversityMatchTab = ({
 										</div>
 
 										<p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 truncate">
-											{match.major} • {match.university}
+											{match.university}
 										</p>
-
-										<div className="flex gap-1 mb-2 sm:mb-3 flex-wrap">
-											{match.interests?.slice(0, 2).map((interest, idx) => (
-												<Badge
-													key={idx}
-													variant="secondary"
-													className="text-xs px-2 py-0.5"
-												>
-													{interest}
-												</Badge>
-											))}
-											{match.interests && match.interests.length > 2 && (
-												<Badge
-													variant="secondary"
-													className="text-xs px-2 py-0.5"
-												>
-													+{match.interests.length - 2}
-												</Badge>
-											)}
-										</div>
 									</div>
 
 									<div className="text-center flex-shrink-0">

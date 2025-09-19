@@ -1,7 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { AuthGuard } from "@/components/auth-guard";
-import { FileUpload } from "@/components/kokonutui/file-upload";
+import {
+	FileUpload,
+	type FileUploadRef,
+} from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -20,12 +23,16 @@ export const UploadPhoto = () => {
 	const [selectedGender, setSelectedGender] = React.useState<string>(
 		userUpload.gender || "",
 	);
+	const fileUploadRef = React.useRef<FileUploadRef>(null);
 
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
 			onSuccess: (data) => {
 				setUserUpload({ ...userUpload, image_url: data.image_url });
 				setShowSettings(false);
+			},
+			onError: () => {
+				fileUploadRef.current?.reset();
 			},
 		},
 	});
@@ -103,6 +110,7 @@ export const UploadPhoto = () => {
 							className="space-y-4"
 						>
 							<FileUpload
+								ref={fileUploadRef}
 								onUploadSuccess={handleUploadFile}
 								acceptedFileTypes={["image/*"]}
 								maxFileSize={10 * 1024 * 1024} // 10MB
