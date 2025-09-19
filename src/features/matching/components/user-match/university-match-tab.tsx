@@ -1,6 +1,8 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 import { Heart, Users, Zap } from "lucide-react";
+import React from "react";
+import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
@@ -19,15 +21,9 @@ export interface UniversityMatch {
 	isViewed: boolean;
 }
 
-interface UniversityMatchProps {
-	onSelectMatch: (match: UniversityMatch) => void;
-	selectedMatch?: UniversityMatch;
-}
-
-export const UniversityMatchTab = ({
-	onSelectMatch,
-	selectedMatch,
-}: UniversityMatchProps) => {
+export const UniversityMatchTab = () => {
+	const [selectedMatch, setSelectedMatch] =
+		React.useState<UniversityMatch | null>(null);
 	const { matches: userMatches } = useUserLiveMatches();
 
 	const universityMatch: UniversityMatch[] =
@@ -60,14 +56,16 @@ export const UniversityMatchTab = ({
 										? "border-primary bg-primary/5"
 										: "border-border hover:border-primary/50"
 								}`}
-								onClick={() => onSelectMatch(match)}
+								onClick={() => setSelectedMatch(match)}
 							>
 								<div className="flex items-center gap-3 sm:gap-4">
 									<div className="relative">
-										<img
+										<ImageLoader
 											src={match.user.image}
 											alt={match.user.name}
-											className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white shadow-sm"
+											width={64}
+											height={64}
+											className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-white shadow-sm"
 										/>
 										<div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-love rounded-full flex items-center justify-center">
 											<Heart className="w-2 h-2 sm:w-3 sm:h-3 text-white" />

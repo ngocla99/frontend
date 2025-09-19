@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
+import { ImageLoader } from "@/components/image-loader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,17 +22,14 @@ export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
 				className="text-center space-y-4"
 			>
 				<div className="relative inline-block">
-					<Avatar className="size-32 rounded-full object-cover border-4 border-primary shadow-match">
-						<AvatarImage
-							src={userUpload.image_url}
-							alt="User profile"
-							className="object-cover"
-						/>
-						<AvatarFallback>
-							{userUpload.gender === "male" ? "👨" : "👩"}
-						</AvatarFallback>
-					</Avatar>
-					<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
+					<ImageLoader
+						src={userUpload.image_url || ""}
+						alt="User profile"
+						width={128}
+						height={128}
+						className="rounded-full shadow-match"
+					/>
+					<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
 						{userUpload.gender === "male" ? "👨" : "👩"}
 					</Badge>
 				</div>

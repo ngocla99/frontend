@@ -1,5 +1,7 @@
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 import { Heart, Search, Star } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,15 +17,9 @@ interface Celebrity {
 	popularity: number;
 }
 
-interface CelebritySearchProps {
-	onSelectCelebrity: (celebrity: Celebrity) => void;
-	selectedCelebrity?: Celebrity;
-}
-
-export const CelebritySearch = ({
-	onSelectCelebrity,
-	selectedCelebrity,
-}: CelebritySearchProps) => {
+export const CelebritySearch = () => {
+	const [selectedCelebrity, setSelectedCelebrity] =
+		React.useState<Celebrity | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 
 	// Placeholder celebrity database
@@ -144,7 +140,7 @@ export const CelebritySearch = ({
 									? "border-primary bg-primary/5"
 									: "border-border hover:border-primary/50"
 							}`}
-							onClick={() => onSelectCelebrity(celebrity)}
+							onClick={() => setSelectedCelebrity(celebrity)}
 						>
 							<div className="flex items-center gap-3 sm:gap-4">
 								<div className="relative">
