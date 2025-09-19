@@ -224,20 +224,20 @@ const UploadingAnimation = ({ progress }: { progress: number }) => (
 				strokeDasharray="18% 40%"
 				mask="url(#progress-mask)"
 			>
-				<circle r="150" cx="120" cy="120" stroke="#FF2E7E" opacity="0.95" />
-				<circle r="140" cx="120" cy="120" stroke="#FFD600" opacity="0.95" />
-				<circle r="130" cx="120" cy="120" stroke="#00E5FF" opacity="0.95" />
-				<circle r="120" cx="120" cy="120" stroke="#FF3D71" opacity="0.95" />
-				<circle r="110" cx="120" cy="120" stroke="#4ADE80" opacity="0.95" />
-				<circle r="100" cx="120" cy="120" stroke="#2196F3" opacity="0.95" />
-				<circle r="90" cx="120" cy="120" stroke="#FFA726" opacity="0.95" />
-				<circle r="80" cx="120" cy="120" stroke="#FF1493" opacity="0.95" />
-				<circle r="70" cx="120" cy="120" stroke="#FFEB3B" opacity="0.95" />
-				<circle r="60" cx="120" cy="120" stroke="#00BCD4" opacity="0.95" />
-				<circle r="50" cx="120" cy="120" stroke="#FF4081" opacity="0.95" />
-				<circle r="40" cx="120" cy="120" stroke="#76FF03" opacity="0.95" />
-				<circle r="30" cx="120" cy="120" stroke="#448AFF" opacity="0.95" />
-				<circle r="20" cx="120" cy="120" stroke="#FF3D00" opacity="0.95" />
+				<circle r="150" cx="120" cy="120" stroke="#ec4899" opacity="0.95" />
+				<circle r="140" cx="120" cy="120" stroke="#f43f5e" opacity="0.95" />
+				<circle r="130" cx="120" cy="120" stroke="#f97316" opacity="0.95" />
+				<circle r="120" cx="120" cy="120" stroke="#eab308" opacity="0.95" />
+				<circle r="110" cx="120" cy="120" stroke="#22c55e" opacity="0.95" />
+				<circle r="100" cx="120" cy="120" stroke="#06b6d4" opacity="0.95" />
+				<circle r="90" cx="120" cy="120" stroke="#3b82f6" opacity="0.95" />
+				<circle r="80" cx="120" cy="120" stroke="#8b5cf6" opacity="0.95" />
+				<circle r="70" cx="120" cy="120" stroke="#ec4899" opacity="0.95" />
+				<circle r="60" cx="120" cy="120" stroke="#f43f5e" opacity="0.95" />
+				<circle r="50" cx="120" cy="120" stroke="#f97316" opacity="0.95" />
+				<circle r="40" cx="120" cy="120" stroke="#eab308" opacity="0.95" />
+				<circle r="30" cx="120" cy="120" stroke="#22c55e" opacity="0.95" />
+				<circle r="20" cx="120" cy="120" stroke="#06b6d4" opacity="0.95" />
 			</g>
 		</svg>
 	</div>
@@ -462,13 +462,13 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 				role="complementary"
 				aria-label="File upload"
 			>
-				<div className="group relative w-full rounded-xl bg-white dark:bg-black ring-1 ring-gray-200 dark:ring-white/10 p-0.5">
-					<div className="absolute inset-x-0 -top-px h-px w-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+				<div className="group relative w-full rounded-xl bg-white dark:bg-black ring-1 ring-pink-200/50 dark:ring-pink-500/20 p-0.5">
+					<div className="absolute inset-x-0 -top-px h-px w-full bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
 
-					<div className="relative w-full rounded-[10px] bg-gray-50/50 dark:bg-white/[0.02] p-1.5">
+					<div className="relative w-full rounded-[10px] bg-gradient-to-br from-pink-50/30 via-white to-rose-50/30 dark:from-pink-950/20 dark:via-black dark:to-rose-950/20 p-1.5">
 						<div
 							className={cn(
-								"relative mx-auto w-full overflow-hidden rounded-lg border border-gray-100 dark:border-white/[0.08] bg-white dark:bg-black/50",
+								"relative mx-auto w-full overflow-hidden rounded-lg border border-pink-100/50 dark:border-pink-500/10 bg-white/90 dark:bg-black/50 backdrop-blur-sm",
 								error ? "border-red-500/50" : "",
 							)}
 						>
@@ -478,14 +478,14 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 									status === "dragging" ? "opacity-100" : "opacity-0",
 								)}
 							>
-								<div className="absolute inset-x-0 top-0 h-[20%] bg-gradient-to-b from-blue-500/10 to-transparent" />
-								<div className="absolute inset-x-0 bottom-0 h-[20%] bg-gradient-to-t from-blue-500/10 to-transparent" />
-								<div className="absolute inset-y-0 left-0 w-[20%] bg-gradient-to-r from-blue-500/10 to-transparent" />
-								<div className="absolute inset-y-0 right-0 w-[20%] bg-gradient-to-l from-blue-500/10 to-transparent" />
-								<div className="absolute inset-[20%] bg-blue-500/5 rounded-lg transition-all duration-300 animate-pulse" />
+								<div className="absolute inset-x-0 top-0 h-[20%] bg-gradient-to-b from-pink-500/10 to-transparent" />
+								<div className="absolute inset-x-0 bottom-0 h-[20%] bg-gradient-to-t from-rose-500/10 to-transparent" />
+								<div className="absolute inset-y-0 left-0 w-[20%] bg-gradient-to-r from-pink-500/10 to-transparent" />
+								<div className="absolute inset-y-0 right-0 w-[20%] bg-gradient-to-l from-rose-500/10 to-transparent" />
+								<div className="absolute inset-[20%] bg-pink-500/5 rounded-lg transition-all duration-300 animate-pulse" />
 							</div>
 
-							<div className="absolute -right-4 -top-4 h-8 w-8 bg-gradient-to-br from-blue-500/20 to-transparent blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+							<div className="absolute -right-4 -top-4 h-8 w-8 bg-gradient-to-br from-pink-500/20 to-transparent blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
 							<div className="relative h-[240px]">
 								<AnimatePresence mode="wait">
@@ -566,7 +566,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 													<span className="text-gray-500 dark:text-gray-400">
 														{formatBytes(file?.size || 0)}
 													</span>
-													<span className="font-medium text-blue-500">
+													<span className="font-medium text-pink-500">
 														{Math.round(progress)}%
 													</span>
 												</div>
@@ -575,7 +575,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 											<button
 												onClick={resetState}
 												type="button"
-												className="w-4/5 flex items-center justify-center gap-2 rounded-lg bg-gray-100 dark:bg-white/10 px-4 py-2.5 text-sm font-semibold text-gray-900 dark:text-white transition-all duration-200 hover:bg-gray-200 dark:hover:bg-white/20"
+												className="w-4/5 flex items-center justify-center gap-2 rounded-xl bg-gray-100/80 dark:bg-white/10 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 transition-all duration-200 hover:bg-gray-200/80 dark:hover:bg-white/20 hover:scale-105"
 											>
 												Cancel
 											</button>
@@ -590,7 +590,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 										initial={{ opacity: 0, y: 10 }}
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -10 }}
-										className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg"
+										className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm"
 									>
 										<p className="text-sm text-red-500 dark:text-red-400">
 											{error.message}
