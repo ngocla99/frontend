@@ -32,27 +32,40 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 	const motionConfig = React.useMemo(() => {
 		if (isNewlyAdded) {
 			return {
-				initial: { opacity: 0, y: -20, scale: 0.95 },
-				animate: { opacity: 1, y: 0, scale: 1 },
+				initial: {
+					opacity: 0,
+					y: -20,
+					scale: 0.9,
+					filter: "blur(4px)",
+				},
+				animate: {
+					opacity: 1,
+					y: 0,
+					scale: 1,
+					filter: "blur(0px)",
+				},
 				transition: {
-					duration: 0.5,
+					duration: 0.8,
 					type: "spring" as const,
-					ease: [0.25, 0.46, 0.45, 0.94] as const,
-					stiffness: 300,
-					damping: 30,
+					stiffness: 200,
+					damping: 25,
+					mass: 1,
+					// Stagger different properties for smoother effect
+					opacity: { duration: 0.4, ease: "easeOut" },
+					y: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+					scale: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] },
+					filter: { duration: 0.5, ease: "easeOut", delay: 0.1 },
 				},
 			};
 		}
 
 		return {
-			initial: { opacity: 1, y: 0, scale: 1 },
-			animate: {},
+			initial: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
 			transition: {
-				duration: 0.5,
+				duration: 0.3,
 				type: "spring" as const,
-				ease: [0.25, 0.46, 0.45, 0.94] as const,
-				stiffness: 300,
-				damping: 30,
+				stiffness: 400,
+				damping: 35,
 			},
 		};
 	}, [isNewlyAdded]);
