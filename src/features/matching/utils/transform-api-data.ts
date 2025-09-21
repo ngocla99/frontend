@@ -34,19 +34,24 @@ export const transformApiMatchesToDisplayData = (
 
 // Transform function for the new user match format
 export const transformApiUserMatchToDisplayData = (
-	userMatch: UserMatchApi & { target_face_id?: string },
+	userMatch: UserMatchApi,
 ): UniversityMatch => {
 	return {
-		user: {
-			name: userMatch.celebrity.name,
-			image: userMatch.celebrity.image_url,
+		user1: {
+			name: userMatch.users.a.name,
+			image: userMatch.users.a.image,
 			age: 22,
-			university: "Stanford University",
+			school: "Stanford University",
 		},
-		target_face_id: userMatch?.target_face_id,
+		user2: {
+			name: userMatch.users.b.name,
+			image: userMatch.users.b.image,
+			age: 22,
+			school: "Stanford University",
+		},
 		matchPercentage: Math.round(userMatch.similarity_score),
 		timestamp: getTimeAgo(userMatch.created_at),
-		isNew: true, // All matches from API are considered new initially
+		isNew: true,
 		isViewed: false, // All matches from API are unviewed initially
 	};
 };

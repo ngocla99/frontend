@@ -41,13 +41,21 @@ export type LiveMatchApi = {
 };
 
 export type UserMatchApi = {
-	celebrity: {
-		id: string;
-		image_url: string;
-		name: string;
-	};
 	created_at: string;
 	id: string;
 	reactions: Record<string, unknown>;
 	similarity_score: number;
+	type: "user-user" | "celebrity";
+	users: {
+		a: {
+			id: string;
+			image: string;
+			name: string;
+		};
+		b: {
+			id: string;
+			image: string;
+			name: string;
+		};
+	};
 };

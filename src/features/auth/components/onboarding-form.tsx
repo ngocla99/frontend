@@ -46,7 +46,6 @@ export function OnboardingForm() {
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
 			onSuccess: () => {
-				console.log("Onboarding successful");
 				navigate({ to: "/" });
 			},
 			onError: (error) => {
