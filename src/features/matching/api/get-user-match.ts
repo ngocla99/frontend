@@ -14,7 +14,7 @@ export const getUserMatchApi = (
 	input: UserMatchInput,
 ): Promise<UserMatchApi[]> => {
 	return apiClient.get("/api/v1/me/matches", {
-		params: input,
+		params: { ...input, filter: "user" },
 	});
 };
 
