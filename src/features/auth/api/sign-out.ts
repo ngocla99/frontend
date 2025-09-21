@@ -26,12 +26,12 @@ export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 			reset();
 			queryClient.clear();
 			toast.success("Logged out successfully");
-			router.navigate({ to: "/" });
+			router.navigate({ to: "/auth/sign-in" });
 		},
 		onError: (error: Error, ...args) => {
 			reset();
 			toast.success("Logged out successfully");
-			router.navigate({ to: "/" });
+			router.navigate({ to: "/auth/sign-in" });
 			onError?.(error, ...args);
 		},
 		...restConfig,
