@@ -14,10 +14,7 @@ interface NavItem {
 	href: string;
 }
 
-const navItems: NavItem[] = [
-	{ name: "Home", href: "/" },
-	{ name: "Favorites", href: "/favorites" },
-];
+const navItems: NavItem[] = [{ name: "Home", href: "/" }];
 
 export function Header() {
 	const { user, setUser } = useAuth();
@@ -206,17 +203,19 @@ export function Header() {
 						>
 							<div className="space-y-6 p-6">
 								<div className="space-y-1">
-									{navItems.map((item) => (
-										<motion.div key={item.name} variants={mobileItemVariants}>
-											<Link
-												to={item.href}
-												className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
-												onClick={() => setIsMobileMenuOpen(false)}
-											>
-												{item.name}
-											</Link>
-										</motion.div>
-									))}
+									{[...navItems, { name: "Profile", href: "/profile" }].map(
+										(item) => (
+											<motion.div key={item.name} variants={mobileItemVariants}>
+												<Link
+													to={item.href}
+													className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
+													onClick={() => setIsMobileMenuOpen(false)}
+												>
+													{item.name}
+												</Link>
+											</motion.div>
+										),
+									)}
 								</div>
 
 								<motion.div
