@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
@@ -16,6 +16,7 @@ type UseSignOutOptions = {
 export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 	const { reset } = useAuth();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 
@@ -23,6 +24,7 @@ export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 		onSuccess: (...args) => {
 			onSuccess?.(...args);
 			reset();
+			queryClient.clear();
 			toast.success("Logged out successfully");
 			router.navigate({ to: "/" });
 		},

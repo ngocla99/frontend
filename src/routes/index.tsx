@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
@@ -49,7 +49,15 @@ function HomePage() {
 		React.useState<CustomMatch | null>(null);
 	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
 
-	if (isUserLoading) {
+	// TODO: Add a check for age
+	const isOnboarding = user && (!user.name || !user.school || !user.gender);
+
+	// Check if user needs onboarding
+	if (isOnboarding) {
+		return <Navigate to="/onboarding" />;
+	}
+
+	if (isUserLoading || isOnboarding) {
 		return <MatchingSkeleton />;
 	}
 

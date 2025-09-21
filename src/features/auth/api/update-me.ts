@@ -10,6 +10,8 @@ import type { UserApi } from "@/types/api";
 export const updateMeSchema = z.object({
 	age: z.number().optional(),
 	gender: z.string().optional(),
+	name: z.string().optional(),
+	school: z.string().optional(),
 });
 
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
@@ -32,10 +34,10 @@ export const useUpdateMe = ({ mutationConfig }: UseUpdateMeOptions = {}) => {
 			queryClient.invalidateQueries({
 				queryKey: getMeQueryOptions().queryKey,
 			});
+			toast.success("Profile updated successfully!");
 			onSuccess?.(...args);
 		},
 		onError: (error: Error, ...args) => {
-			console.log("🚀 ~ useUpdateMe ~ error:", error);
 			const errorMessage =
 				error instanceof AxiosError
 					? error.response?.data?.error
