@@ -8,14 +8,14 @@ export const transformApiMatchToDisplayData = (
 ): MatchCardProps["data"] => {
 	return {
 		user1: {
-			name: apiMatch.user_a_name,
-			image: apiMatch.user_a_image_url,
+			name: apiMatch.users.a.name,
+			image: apiMatch.users.a.image,
 		},
 		user2: {
-			name: apiMatch.user_b_name,
-			image: apiMatch.user_b_image_url,
+			name: apiMatch.users.b.name,
+			image: apiMatch.users.b.image,
 		},
-		matchPercentage: Math.round(apiMatch.similarity),
+		matchPercentage: Math.round(apiMatch.similarity_score),
 		timestamp: getTimeAgo(apiMatch.created_at),
 		isNew: true, // All matches from API are considered new initially
 		isViewed: false, // All matches from API are unviewed initially
@@ -25,6 +25,10 @@ export const transformApiMatchToDisplayData = (
 export const transformApiMatchesToDisplayData = (
 	apiMatches: LiveMatchApi[],
 ): MatchCardProps["data"][] => {
+	console.log(
+		"🚀 ~ transformApiMatchesToDisplayData ~ apiMatches:",
+		apiMatches.map(transformApiMatchToDisplayData),
+	);
 	return apiMatches.map(transformApiMatchToDisplayData);
 };
 
@@ -34,13 +38,13 @@ export const transformApiUserMatchToDisplayData = (
 ): UniversityMatch => {
 	return {
 		user: {
-			name: userMatch.name,
-			image: userMatch.image_url,
+			name: userMatch.celebrity.name,
+			image: userMatch.celebrity.image_url,
 			age: 22,
 			university: "Stanford University",
 		},
 		target_face_id: userMatch?.target_face_id,
-		matchPercentage: Math.round(userMatch.similarity),
+		matchPercentage: Math.round(userMatch.similarity_score),
 		timestamp: getTimeAgo(userMatch.created_at),
 		isNew: true, // All matches from API are considered new initially
 		isViewed: false, // All matches from API are unviewed initially

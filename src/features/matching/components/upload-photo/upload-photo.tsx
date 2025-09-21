@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { AuthGuard } from "@/components/auth-guard";
@@ -8,7 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useMe } from "@/features/auth/api/get-me";
+import { getMeQueryOptions, useMe } from "@/features/auth/api/get-me";
 import { useUpdateMe } from "@/features/auth/api/update-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,7 +18,8 @@ import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = () => {
 	const isMobile = useIsMobile();
-	const { data: user } = useMe();
+	const queryClient = useQueryClient();
+	const user = queryClient.getQueryData(getMeQueryOptions().queryKey);
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
 	const [selectedGender, setSelectedGender] = React.useState<string>(
 		user?.gender || "",

@@ -17,7 +17,7 @@ export type LiveMatchInput = {
 export const getLiveMatchApi = (
 	input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
-	return apiClient.get("/api/v1/matching/top", {
+	return apiClient.get("/api/v1/matches/top", {
 		params: input,
 	});
 };
