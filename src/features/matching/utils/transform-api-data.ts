@@ -25,10 +25,6 @@ export const transformApiMatchToDisplayData = (
 export const transformApiMatchesToDisplayData = (
 	apiMatches: LiveMatchApi[],
 ): MatchCardProps["data"][] => {
-	console.log(
-		"🚀 ~ transformApiMatchesToDisplayData ~ apiMatches:",
-		apiMatches.map(transformApiMatchToDisplayData),
-	);
 	return apiMatches.map(transformApiMatchToDisplayData);
 };
 

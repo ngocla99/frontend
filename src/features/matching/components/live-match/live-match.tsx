@@ -12,7 +12,6 @@ export function LiveMatch() {
 
 	const { data: liveMatchData, isLoading, error } = useLiveMatchInfinite();
 	const allMatches = liveMatchData || [];
-	console.log("🚀 ~ LiveMatch ~ allMatches:", allMatches);
 
 	const matches = React.useMemo(() => {
 		switch (activeFilter) {

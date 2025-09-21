@@ -18,7 +18,7 @@ export const getLiveMatchApi = (
 	input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
 	return apiClient.get("/api/v1/matches/top", {
-		params: input,
+		params: { ...input, filter: "user" },
 	});
 };
 
@@ -74,9 +74,14 @@ export const useLiveMatchInfinite = ({
 		},
 		initialPageParam: PAGINATION.DEFAULT_OFFSET,
 		select: (data) => {
-			return data.pages.flatMap((page) =>
-				transformApiMatchesToDisplayData(page),
-			);
+			return data.pages.flatMap((page) => {
+				console.log("🚀 ~ useLiveMatchInfinite ~ page:", page);
+				console.log(
+					"🚀 ~ useLiveMatchInfinite ~ page:",
+					transformApiMatchesToDisplayData(page),
+				);
+				return transformApiMatchesToDisplayData(page);
+			});
 		},
 		...queryConfig,
 	});
