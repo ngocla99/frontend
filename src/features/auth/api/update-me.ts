@@ -35,9 +35,10 @@ export const useUpdateMe = ({ mutationConfig }: UseUpdateMeOptions = {}) => {
 			onSuccess?.(...args);
 		},
 		onError: (error: Error, ...args) => {
+			console.log("🚀 ~ useUpdateMe ~ error:", error);
 			const errorMessage =
 				error instanceof AxiosError
-					? error.response?.data?.message
+					? error.response?.data?.error
 					: "User update failed";
 			toast.error(errorMessage);
 			onError?.(error, ...args);

@@ -11,7 +11,7 @@ export function OAuthCallback() {
 	const { setAccessToken, setUser } = useAuth();
 
 	const searchParams = useSearch({ from: "/auth/callback" });
-	const accessToken = searchParams.access_token;
+	const accessToken = searchParams.token;
 
 	const { data: user } = useMe({
 		queryConfig: {

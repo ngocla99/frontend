@@ -1,17 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import React from "react";
 import { useMe } from "@/features/auth/api/get-me";
-import { FavoriteHistory } from "@/features/matching/components/favorite-history/favorite-history";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
 import { MatchingSkeleton } from "@/features/matching/components/matching-skeleton";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
-import {
-	useUserUpload,
-	useUserUploadActions,
-} from "@/features/matching/store/user-upload";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -44,8 +39,6 @@ interface CustomMatch {
 }
 
 function HomePage() {
-	const userUpload = useUserUpload();
-	const { setUserUpload } = useUserUploadActions();
 	const { data: user, isLoading: isUserLoading } = useMe();
 
 	const [selectedMatch, setSelectedMatch] =
@@ -55,20 +48,6 @@ function HomePage() {
 	const [selectedCustomMatch, setSelectedCustomMatch] =
 		React.useState<CustomMatch | null>(null);
 	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
-
-	React.useEffect(() => {
-		if (!user) return;
-		setUserUpload({
-			...user,
-		});
-	}, [user]);
-
-	const handleSelectMatch = (match: PotentialMatch) => {
-		setSelectedMatch(match);
-		setSelectedCelebrity(null);
-		setSelectedCustomMatch(null);
-		setShowBabyGenerator(true);
-	};
 
 	if (isUserLoading) {
 		return <MatchingSkeleton />;
@@ -82,12 +61,12 @@ function HomePage() {
 					<div className="space-y-8 mx-0 sm:mx-4">
 						<UploadPhoto />
 
-						{userUpload.image_url && !showBabyGenerator && <UserMatch />}
+						{user?.image && !showBabyGenerator && <UserMatch />}
 
 						{showBabyGenerator && (
 							<div className="animate-fade-in">
 								<BabyGenerator
-									userPhoto={userUpload.image_url}
+									userPhoto={user?.image}
 									matchPhoto={
 										selectedMatch?.image ||
 										selectedCelebrity?.image ||

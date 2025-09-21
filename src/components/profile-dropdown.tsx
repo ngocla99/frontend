@@ -36,15 +36,19 @@ export function ProfileDropdown({ className }: { className?: string }) {
 					className={cn("relative size-9 rounded-full", className)}
 				>
 					<Avatar className="size-9">
-						<AvatarImage src={user?.avatar} alt={user?.username} />
-						<AvatarFallback>{user?.username?.charAt(0)}</AvatarFallback>
+						<AvatarImage
+							className="object-cover"
+							src={user?.image || "/images/default-avatar.png"}
+							alt={user?.name}
+						/>
+						<AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
 					</Avatar>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>
 				<DropdownMenuLabel className="font-normal">
 					<div className="flex flex-col space-y-1">
-						<p className="text-sm leading-none font-medium">{user?.username}</p>
+						<p className="text-sm leading-none font-medium">{user?.name}</p>
 						<p className="text-muted-foreground text-xs leading-none">
 							{user?.email}
 						</p>

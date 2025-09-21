@@ -1,9 +1,11 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getMeQueryOptions } from "@/features/auth/api/get-me";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
+import type { UserApi } from "@/types/api";
 
 export const uploadFaceSchema = z.object({
 	file: z.instanceof(File),
@@ -17,7 +19,7 @@ export const uploadFaceApi = (
 	const formData = new FormData();
 	formData.append("file", input.file);
 
-	return apiClient.post("/api/v1/faces", formData, {
+	return apiClient.post("/api/v1/me/faces", formData, {
 		headers: {
 			"Content-Type": "multipart/form-data",
 		},
@@ -31,12 +33,20 @@ type UseUploadFaceOptions = {
 export const useUploadFace = ({
 	mutationConfig,
 }: UseUploadFaceOptions = {}) => {
+	const queryClient = useQueryClient();
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 
 	return useMutation({
-		onSuccess: (...args) => {
-			onSuccess?.(...args);
+		onSuccess: (data, ...args) => {
+			onSuccess?.(data, ...args);
 			toast.success("Upload face success");
+			queryClient.setQueryData(
+				getMeQueryOptions().queryKey,
+				(oldData?: UserApi) => {
+					if (!oldData) return oldData;
+					return { ...oldData, image: data.image_url };
+				},
+			);
 		},
 		onError: (error: Error, ...args) => {
 			const errorMessage =

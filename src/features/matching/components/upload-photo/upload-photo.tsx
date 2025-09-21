@@ -8,30 +8,25 @@ import {
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useMe } from "@/features/auth/api/get-me";
+import { useUpdateMe } from "@/features/auth/api/update-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
-import {
-	useUserUpload,
-	useUserUploadActions,
-} from "@/features/matching/store/user-upload";
-import { useUpdateMe } from "@/features/user/api/update-me";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = () => {
 	const isMobile = useIsMobile();
-	const userUpload = useUserUpload();
-	const { setUserUpload } = useUserUploadActions();
+	const { data: user } = useMe();
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
 	const [selectedGender, setSelectedGender] = React.useState<string>(
-		userUpload.gender || "",
+		user?.gender || "",
 	);
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
-			onSuccess: (data) => {
-				setUserUpload({ ...userUpload, image_url: data.image_url });
+			onSuccess: () => {
 				setShowSettings(false);
 			},
 			onError: () => {
@@ -42,8 +37,8 @@ export const UploadPhoto = () => {
 	const updateMeMutation = useUpdateMe();
 
 	React.useEffect(() => {
-		setSelectedGender(userUpload.gender || "");
-	}, [userUpload.gender]);
+		setSelectedGender(user?.gender || "");
+	}, [user?.gender]);
 
 	const handleUploadFile = (file: File) => {
 		if (uploadFaceMutation.isPending) return;
@@ -54,7 +49,7 @@ export const UploadPhoto = () => {
 		updateMeMutation.mutate({ gender: value });
 	};
 
-	if (userUpload?.image_url && !showSettings) {
+	if (user?.image && !showSettings) {
 		return <UserPhoto onChangePhoto={() => setShowSettings(true)} />;
 	}
 

@@ -5,14 +5,14 @@ export enum Gender {
 }
 
 export type UserApi = {
-	user_id: string;
-	username: string;
+	id: string;
+	name: string;
 	email: string;
-	avatar: string;
 	age?: number;
 	gender?: Gender | string;
 	default_face_id?: string;
-	image_url?: string;
+	image?: string;
+	school?: string;
 };
 
 export type FaceApi = {
