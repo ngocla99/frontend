@@ -23,8 +23,8 @@
 	--muted: hsl(20 50% 96%);
 	--muted-foreground: hsl(25 5% 45%);
 
-	--accent: hsl(330 100% 88%);
-	--accent-foreground: hsl(330 85% 25%);
+	--accent: hsl(0 0% 93.3333%);
+	--accent-foreground: hsl(220.9091 39.2857% 10.9804%);
 
 	--destructive: hsl(0 84.2% 60.2%);
 	--destructive-foreground: hsl(210 40% 98%);
@@ -164,14 +164,6 @@
 		font-feature-settings:
 			"rlig" 1,
 			"calt" 1;
-	}
-
-	.bg-gradient-primary {
-		background: linear-gradient(135deg, hsl(15 100% 60%), hsl(330 100% 70%));
-	}
-
-	.bg-gradient-subtle {
-		background: linear-gradient(180deg, hsl(20 100% 98%), hsl(330 100% 95%));
 	}
 
 	.bg-gradient-card {
