@@ -87,8 +87,7 @@ export default function Stepper({
 			{...rest}
 		>
 			<div
-				className={`mx-auto w-full max-w-md rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
-				style={{ border: "1px solid #222" }}
+				className={`mx-auto w-full max-w-md rounded-4xl shadow-xl border ${stepCircleContainerClassName}`}
 			>
 				<div
 					className={`${stepContainerClassName} flex w-full items-center p-8`}
@@ -155,7 +154,7 @@ export default function Stepper({
 							)}
 							<button
 								onClick={isLastStep ? handleComplete : handleNext}
-								className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+								className="duration-350 flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-rose-500 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:from-pink-400 hover:to-rose-400 active:from-pink-600 active:to-rose-600"
 								{...nextButtonProps}
 							>
 								{isLastStep ? "Complete" : nextButtonText}
