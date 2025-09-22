@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { UserApi } from "@/types/api";
@@ -23,4 +23,9 @@ export const useMe = ({ queryConfig }: UseMeOptions = {}) => {
 		...getMeQueryOptions(),
 		...queryConfig,
 	});
+};
+
+export const useReadMeQuery = () => {
+	const queryClient = useQueryClient();
+	return queryClient.getQueryData<UserApi>(getMeQueryOptions().queryKey);
 };

@@ -1,11 +1,10 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import React from "react";
-import { useMe } from "@/features/auth/api/get-me";
+import { useReadMeQuery } from "@/features/auth/api/get-me";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
 import { MatchNav } from "@/features/matching/components/match-nav";
-import { MatchingSkeleton } from "@/features/matching/components/matching-skeleton";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,8 +41,8 @@ interface CustomMatch {
 }
 
 function HomePage() {
-	const { data: user, isLoading: isUserLoading } = useMe();
 	const isMobile = useIsMobile();
+	const user = useReadMeQuery();
 
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<PotentialMatch | null>(null);
@@ -59,10 +58,6 @@ function HomePage() {
 	// Check if user needs onboarding
 	if (isOnboarding) {
 		return <Navigate to="/onboarding" />;
-	}
-
-	if (isUserLoading || isOnboarding) {
-		return <MatchingSkeleton />;
 	}
 
 	return (

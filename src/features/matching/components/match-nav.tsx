@@ -1,5 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { FloatingNav } from "@/components/layout/floating-navbar";
+import { useReadMeQuery } from "@/features/auth/api/get-me";
 
 const navItems = [
 	{ name: "Your Matches", link: "/your-matches" },
@@ -7,8 +7,7 @@ const navItems = [
 ];
 
 export const MatchNav = () => {
-	const queryClient = useQueryClient();
-	const user = queryClient.getQueryData(["auth", "me"]);
+	const user = useReadMeQuery();
 
 	if (!user) return null;
 
