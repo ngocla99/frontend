@@ -1,29 +1,22 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
-import { AuthGuard } from "@/components/auth-guard";
 import {
 	FileUpload,
 	type FileUploadRef,
 } from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getMeQueryOptions, useMe } from "@/features/auth/api/get-me";
-import { useUpdateMe } from "@/features/auth/api/update-me";
+import { getMeQueryOptions } from "@/features/auth/api/get-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { UserPhoto } from "./user-photo";
 
-export const UploadPhoto = () => {
+export const UploadPhoto = ({ className }: { className?: string }) => {
 	const isMobile = useIsMobile();
 	const queryClient = useQueryClient();
 	const user = queryClient.getQueryData(getMeQueryOptions().queryKey);
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
-	const [selectedGender, setSelectedGender] = React.useState<string>(
-		user?.gender || "",
-	);
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 
 	const uploadFaceMutation = useUploadFace({
@@ -36,23 +29,13 @@ export const UploadPhoto = () => {
 			},
 		},
 	});
-	const updateMeMutation = useUpdateMe();
-
-	React.useEffect(() => {
-		setSelectedGender(user?.gender || "");
-	}, [user?.gender]);
-
 	const handleUploadFile = (file: File) => {
 		if (uploadFaceMutation.isPending) return;
 		uploadFaceMutation.mutate({ file });
 	};
 
-	const handleUpdateMe = (value: string) => {
-		updateMeMutation.mutate({ gender: value });
-	};
-
 	if (user?.image && !showSettings) {
-		return <UserPhoto onChangePhoto={() => setShowSettings(true)} />;
+		return <UserPhoto />;
 	}
 
 	return (
@@ -60,6 +43,7 @@ export const UploadPhoto = () => {
 			className={cn(
 				"p-0 shadow-none sm:p-6 bg-gradient-card border-0 sm:shadow-soft",
 				isMobile && "bg-transparent",
+				className,
 			)}
 		>
 			<motion.div
@@ -72,68 +56,28 @@ export const UploadPhoto = () => {
 						Upload Your Photo
 					</h3>
 					<p className="text-muted-foreground text-sm">
-						Start by selecting your gender and uploading a clear photo
+						Start by uploading a clear photo
 					</p>
 				</div>
 
-				{/* Gender Selection */}
-				<div className="space-y-3">
-					<Label className="text-sm font-medium">Select your gender:</Label>
-
-					<AuthGuard onValueChange={true} onClick={false}>
-						<RadioGroup
-							value={selectedGender}
-							onValueChange={(value: string) => {
-								setSelectedGender(value);
-								handleUpdateMe(value);
-							}}
-							className="flex gap-6 justify-center"
-						>
-							<div className="flex items-center space-x-2">
-								<RadioGroupItem value="male" id="male" />
-								<Label htmlFor="male" className="cursor-pointer">
-									👨 Male
-								</Label>
-							</div>
-							<div className="flex items-center space-x-2">
-								<RadioGroupItem value="female" id="female" />
-								<Label htmlFor="female" className="cursor-pointer">
-									👩 Female
-								</Label>
-							</div>
-						</RadioGroup>
-					</AuthGuard>
-				</div>
-
-				{/* Upload Area */}
 				<AnimatePresence>
-					{["male", "female"].includes(selectedGender) && (
-						<motion.div
-							initial={{ opacity: 0, height: 0 }}
-							animate={{ opacity: 1, height: "auto" }}
-							exit={{ opacity: 0, height: 0 }}
-							className="space-y-4"
-						>
-							<FileUpload
-								ref={fileUploadRef}
-								onUploadSuccess={handleUploadFile}
-								acceptedFileTypes={["image/*"]}
-								maxFileSize={10 * 1024 * 1024} // 10MB
-								uploadDelay={100}
-								validateFile={() => null}
-								className="w-full"
-							/>
-						</motion.div>
-					)}
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: "auto" }}
+						exit={{ opacity: 0, height: 0 }}
+						className="space-y-4"
+					>
+						<FileUpload
+							ref={fileUploadRef}
+							onUploadSuccess={handleUploadFile}
+							acceptedFileTypes={["image/*"]}
+							maxFileSize={10 * 1024 * 1024} // 10MB
+							uploadDelay={100}
+							validateFile={() => null}
+							className="w-full"
+						/>
+					</motion.div>
 				</AnimatePresence>
-
-				{!["male", "female"].includes(selectedGender) && (
-					<div className="text-center py-4">
-						<p className="text-sm text-muted-foreground">
-							👆 Please select your gender first
-						</p>
-					</div>
-				)}
 			</motion.div>
 		</Card>
 	);

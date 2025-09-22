@@ -1,52 +1,110 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
+import React from "react";
 import { ImageLoader } from "@/components/image-loader";
+import {
+	FileUpload,
+	type FileUploadRef,
+} from "@/components/kokonutui/file-upload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useMe } from "@/features/auth/api/get-me";
+import { cn } from "@/lib/utils";
+import { useUploadFace } from "../../api/upload-face";
 import { FavoriteHistory } from "../favorite-history/favorite-history";
 
-interface UserPhotoProps {
-	onChangePhoto: () => void;
-}
-
-export function UserPhoto({ onChangePhoto }: UserPhotoProps) {
+export function UserPhoto() {
 	const { data: user } = useMe();
+	const fileUploadRef = React.useRef<FileUploadRef>(null);
+	const [isUploading, setIsUploading] = React.useState<boolean>(false);
+
+	const uploadFaceMutation = useUploadFace({
+		mutationConfig: {
+			onSuccess: (data) => {
+				console.log("🚀 ~ file: user-photo.tsx:29 ~ data:", data);
+				setIsUploading(false);
+				fileUploadRef.current?.reset();
+			},
+			onError: () => {
+				fileUploadRef.current?.reset();
+			},
+		},
+	});
+
+	const handleUploadFile = (file: File) => {
+		if (uploadFaceMutation.isPending) return;
+		uploadFaceMutation.mutate({ file });
+	};
+
+	const handleChangePhoto = () => {
+		console.log("handleChangePhoto", fileUploadRef.current);
+		fileUploadRef.current?.triggerFileInput();
+	};
+
+	const handleSelectFile = () => {
+		setIsUploading(true);
+	};
 
 	return (
-		<Card className="p-6 bg-gradient-card border-0 shadow-soft">
-			<motion.div
-				initial={{ opacity: 0, scale: 0.9 }}
-				animate={{ opacity: 1, scale: 1 }}
-				className="text-center space-y-8"
+		<>
+			<Card
+				className={cn(
+					"p-6 bg-gradient-card border-0 shadow-soft",
+					isUploading ? "hidden" : "block",
+				)}
 			>
-				<div className="relative inline-block">
-					<ImageLoader
-						src={user?.image || ""}
-						alt="User profile"
-						width={128}
-						height={128}
-						className="rounded-full shadow-match"
-					/>
-					<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
-						{user?.gender === "male" ? "👨" : "👩"}
-					</Badge>
-				</div>
+				<motion.div
+					initial={{ opacity: 0, scale: 0.9 }}
+					animate={{ opacity: 1, scale: 1 }}
+					className="text-center space-y-8"
+				>
+					<div className="relative inline-block">
+						<ImageLoader
+							src={user?.image || ""}
+							alt="User profile"
+							width={128}
+							height={128}
+							className="rounded-full shadow-match"
+						/>
+						<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
+							{user?.gender === "male" ? "👨" : "👩"}
+						</Badge>
+					</div>
 
-				<div className="flex gap-3 justify-center mb-2">
-					<FavoriteHistory />
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={onChangePhoto}
-						className="gap-2"
-					>
-						<RotateCcw className="w-4 h-4" />
-						Change Photo
-					</Button>
-				</div>
-			</motion.div>
-		</Card>
+					<div className="flex gap-3 justify-center mb-2">
+						<FavoriteHistory />
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleChangePhoto}
+							className="gap-2"
+						>
+							<RotateCcw className="w-4 h-4" />
+							Change Photo
+						</Button>
+					</div>
+				</motion.div>
+			</Card>
+			<AnimatePresence>
+				<motion.div
+					initial={{ opacity: 0, height: 0 }}
+					animate={{ opacity: 1, height: "auto" }}
+					exit={{ opacity: 0, height: 0 }}
+					className={cn("space-y-4", isUploading ? "block" : "sr-only")}
+				>
+					<FileUpload
+						ref={fileUploadRef}
+						onUploadSuccess={handleUploadFile}
+						onSelectFile={handleSelectFile}
+						acceptedFileTypes={["image/*"]}
+						maxFileSize={10 * 1024 * 1024} // 10MB
+						uploadDelay={100}
+						validateFile={() => null}
+						className="w-full"
+					/>
+				</motion.div>
+			</AnimatePresence>
+		</>
 	);
 }

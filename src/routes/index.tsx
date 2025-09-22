@@ -7,6 +7,8 @@ import { MatchDialog } from "@/features/matching/components/match-dialog/match-d
 import { MatchingSkeleton } from "@/features/matching/components/matching-skeleton";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
@@ -40,6 +42,7 @@ interface CustomMatch {
 
 function HomePage() {
 	const { data: user, isLoading: isUserLoading } = useMe();
+	const isMobile = useIsMobile();
 
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<PotentialMatch | null>(null);
@@ -67,7 +70,7 @@ function HomePage() {
 				{/* Two Column Layout */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-6xl mx-auto">
 					<div className="space-y-8 mx-0 sm:mx-4">
-						<UploadPhoto />
+						<UploadPhoto className={cn(isMobile && !user && "hidden")} />
 
 						{user?.image && !showBabyGenerator && <UserMatch />}
 

@@ -31,6 +31,7 @@ interface FileError {
 interface FileUploadProps {
 	onUploadSuccess?: (file: File) => void;
 	onUploadError?: (error: FileError) => void;
+	onSelectFile?: (file: File) => void;
 	acceptedFileTypes?: string[];
 	maxFileSize?: number;
 	currentFile?: File | null;
@@ -45,6 +46,8 @@ interface FileUploadProps {
 export interface FileUploadRef {
 	/** Reset the component to initial state */
 	reset: () => void;
+	/** Trigger the file input */
+	triggerFileInput: () => void;
 }
 
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -248,6 +251,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 		{
 			onUploadSuccess = () => {},
 			onUploadError = () => {},
+			onSelectFile = () => {},
 			acceptedFileTypes = [],
 			maxFileSize = DEFAULT_MAX_FILE_SIZE,
 			currentFile: initialFile = null,
@@ -383,6 +387,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 					return;
 				}
 
+				onSelectFile?.(selectedFile);
 				setFile(selectedFile);
 				setStatus("uploading");
 				setProgress(0);
@@ -430,10 +435,10 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 			[handleFileSelect],
 		);
 
-		const triggerFileInput = useCallback(() => {
+		const triggerFileInput = () => {
 			if (status === "uploading") return;
 			fileInputRef.current?.click();
-		}, [status]);
+		};
 
 		const resetState = useCallback(() => {
 			setFile(null);
@@ -452,6 +457,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 					setProgress(0);
 					setError(null);
 				},
+				triggerFileInput,
 			}),
 			[onFileRemove],
 		);
