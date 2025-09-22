@@ -38,22 +38,6 @@
 	--match: hsl(15 100% 60%);
 	--match-light: hsl(15 100% 80%);
 
-	--gradient-primary: linear-gradient(
-		135deg,
-		hsl(15 100% 60%),
-		hsl(330 100% 70%)
-	);
-	--gradient-subtle: linear-gradient(
-		180deg,
-		hsl(20 100% 98%),
-		hsl(330 100% 95%)
-	);
-	--gradient-card: linear-gradient(
-		145deg,
-		rgba(255, 255, 255, 0.8),
-		rgba(255, 255, 255, 0.4)
-	);
-
 	--shadow-soft: 0 4px 20px -2px hsl(15 100% 60% / 0.1);
 	--shadow-match: 0 8px 30px -8px hsl(330 100% 70% / 0.3);
 
@@ -164,6 +148,14 @@
 		font-feature-settings:
 			"rlig" 1,
 			"calt" 1;
+	}
+
+	.bg-gradient-primary {
+		background: linear-gradient(135deg, hsl(15 100% 60%), hsl(330 100% 70%));
+	}
+
+	.bg-gradient-subtle {
+		background: linear-gradient(180deg, hsl(20 100% 98%), hsl(330 100% 95%));
 	}
 
 	.bg-gradient-card {
