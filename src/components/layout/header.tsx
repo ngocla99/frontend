@@ -15,7 +15,13 @@ interface NavItem {
 	href: string;
 }
 
-const navItems: NavItem[] = [{ name: "Home", href: "/" }];
+const navItems: NavItem[] = [];
+
+const navItemsMobile: NavItem[] = [
+	{ name: "Live Matches", href: "/" },
+	{ name: "Your Matches", href: "/your-matches" },
+	{ name: "Profile", href: "/profile" },
+];
 
 export function Header() {
 	const { user, setUser } = useAuth();
@@ -119,7 +125,7 @@ export function Header() {
 							</Link>
 						</motion.div>
 
-						{/* <nav className="hidden items-center space-x-1 lg:flex">
+						<nav className="hidden items-center space-x-1 lg:flex">
 							{navItems.map((item) => (
 								<motion.div
 									key={item.name}
@@ -150,7 +156,7 @@ export function Header() {
 									</Link>
 								</motion.div>
 							))}
-						</nav> */}
+						</nav>
 
 						{isLoading ? (
 							<div className="w-12" />
@@ -206,22 +212,20 @@ export function Header() {
 								{user && (
 									<>
 										<div className="space-y-1">
-											{[...navItems, { name: "Profile", href: "/profile" }].map(
-												(item) => (
-													<motion.div
-														key={item.name}
-														variants={mobileItemVariants}
+											{navItemsMobile.map((item) => (
+												<motion.div
+													key={item.name}
+													variants={mobileItemVariants}
+												>
+													<Link
+														to={item.href}
+														className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
+														onClick={() => setIsMobileMenuOpen(false)}
 													>
-														<Link
-															to={item.href}
-															className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
-															onClick={() => setIsMobileMenuOpen(false)}
-														>
-															{item.name}
-														</Link>
-													</motion.div>
-												),
-											)}
+														{item.name}
+													</Link>
+												</motion.div>
+											))}
 										</div>
 										<Separator />
 									</>

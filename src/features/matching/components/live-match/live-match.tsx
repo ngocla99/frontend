@@ -91,7 +91,7 @@ export function LiveMatch() {
 					ease: [0.25, 0.46, 0.45, 0.94],
 				}}
 			>
-				<ScrollArea className="h-[716px]">
+				<ScrollArea className="sm:h-[716px]">
 					<div className="space-y-4 p-0 sm:p-4">
 						{isLoading ? (
 							<div className="text-center py-8 text-muted-foreground">

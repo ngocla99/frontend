@@ -68,6 +68,7 @@ const router = createRouter({
 	context: { queryClient, auth: undefined },
 	defaultPreload: "intent",
 	defaultPreloadStaleTime: 0,
+	scrollRestoration: true,
 });
 
 // Register the router instance for type safety
