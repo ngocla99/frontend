@@ -1,8 +1,17 @@
 import { cn } from "@/lib/utils";
 import { useSignOut } from "../api/sign-out";
 
-export function SignOutButton({ className }: { className?: string }) {
-	const signOutMutation = useSignOut();
+interface SignOutButtonProps {
+	className?: string;
+	onClose?: () => void;
+}
+
+export function SignOutButton({ className, onClose }: SignOutButtonProps) {
+	const signOutMutation = useSignOut({
+		mutationConfig: {
+			onSuccess: () => onClose?.(),
+		},
+	});
 
 	const handleSignOut = () => {
 		signOutMutation.mutate(undefined);
