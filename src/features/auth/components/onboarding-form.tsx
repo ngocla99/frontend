@@ -1,15 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
+import React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import Stepper, { Step } from "@/components/stepper";
 import {
 	Form,
 	FormControl,
@@ -32,17 +26,19 @@ import { useUpdateMe } from "../api/update-me";
 const onboardingSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
 	school: z.string().min(1, { message: "School is required" }),
-	age: z
-		.number({
-			error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
-		})
-		.min(16, { message: "Age must be at least 16" })
-		.max(100, { message: "Age must be less than 100" }),
+	// age: z
+	// 	.number({
+	// 		error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
+	// 	})
+	// 	.min(16, { message: "Age must be at least 16" })
+	// 	.max(100, { message: "Age must be less than 100" }),
 	gender: z.string().min(1, { message: "Gender is required" }),
 });
 
 export function OnboardingForm() {
 	const navigate = useNavigate();
+	const [currentStep, setCurrentStep] = React.useState(1);
+
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
 			onSuccess: () => {
@@ -59,8 +55,8 @@ export function OnboardingForm() {
 		defaultValues: {
 			name: "",
 			school: "",
-			age: undefined,
 			gender: "",
+			// age: undefined,
 		},
 	});
 
@@ -69,81 +65,122 @@ export function OnboardingForm() {
 		updateMeMutation.mutate(values);
 	};
 
+	// Watch form values to determine if current step is valid
+	form.watch();
+
+	const isCurrentStepValid = (step: number) => {
+		const currentStepFields = getStepFields(step);
+		return currentStepFields.every((field) => {
+			const value = form.getValues(
+				field as keyof z.infer<typeof onboardingSchema>,
+			);
+			return value !== undefined && value !== "";
+		});
+	};
+
+	const handleStepChange = (step: number) => {
+		setCurrentStep(step);
+	};
+
+	const getStepFields = (step: number) => {
+		switch (step) {
+			case 1:
+				return ["name"];
+			case 2:
+				return ["school"];
+			case 3:
+				return ["gender"];
+			default:
+				return [];
+		}
+	};
+
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-transparent sm:bg-gradient-subtle px-4">
-			<Card className="w-full max-w-md">
-				<CardHeader className="text-center">
-					<CardTitle className="text-2xl font-bold">Welcome!</CardTitle>
-					<CardDescription>
-						Let's set up your profile to get started with AI matching
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-							<FormField
-								control={form.control}
-								name="name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>First Name *</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your first name" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="school"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>School *</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Enter your school or university"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<div className="grid sm:grid-cols-2 gap-4 align-start">
+		<div className="min-h-screen flex flex-col gap-4 items-stretch justify-center bg-transparent sm:bg-gradient-subtle px-4">
+			<div className="text-center">
+				<h2 className="text-2xl font-bold">Welcome!</h2>
+				<p className="text-muted-foreground">
+					Let's set up your profile to get started
+				</p>
+			</div>
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(onSubmit)}>
+					<Stepper
+						initialStep={1}
+						onStepChange={handleStepChange}
+						onFinalStepCompleted={() => {
+							// Validate all fields before final submission
+							form.handleSubmit(onSubmit)();
+						}}
+						backButtonText="Previous"
+						nextButtonText="Next"
+						nextButtonProps={{
+							disabled:
+								!isCurrentStepValid(currentStep) || updateMeMutation.isPending,
+							className: `duration-350 flex items-center justify-center rounded-full py-1.5 px-3.5 font-medium tracking-tight text-white transition ${
+								!isCurrentStepValid(currentStep) || updateMeMutation.isPending
+									? "bg-gray-300 cursor-not-allowed opacity-50"
+									: "bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 active:from-pink-600 active:to-rose-600"
+							}`,
+						}}
+						className="p-0 sm:p-4"
+					>
+						<Step className="pb-1">
+							<div className="space-y-4">
+								<h2 className="text-xl font-semibold text-center">
+									What's your name?
+								</h2>
 								<FormField
 									control={form.control}
-									name="age"
+									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Age *</FormLabel>
+											<FormLabel>First Name</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter your first name" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+						</Step>
+
+						<Step className="pb-1">
+							<div className="space-y-4">
+								<h2 className="text-xl font-semibold text-center">
+									Where do you study?
+								</h2>
+								<FormField
+									control={form.control}
+									name="school"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>School</FormLabel>
 											<FormControl>
 												<Input
-													type="number"
-													placeholder="Enter your age"
+													placeholder="Enter your school or university"
 													{...field}
-													onChange={(e) => {
-														const value = e.target.value;
-														field.onChange(
-															value === "" ? undefined : Number(value),
-														);
-													}}
-													value={field.value ?? ""}
 												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
+							</div>
+						</Step>
 
+						<Step className="pb-1">
+							<div className="space-y-4">
+								<h2 className="text-xl font-semibold text-center">
+									What's your gender?
+								</h2>
 								<FormField
 									control={form.control}
 									name="gender"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Gender *</FormLabel>
+											<FormLabel>Gender</FormLabel>
 											<FormControl>
 												<Select
 													value={field.value || ""}
@@ -163,20 +200,10 @@ export function OnboardingForm() {
 									)}
 								/>
 							</div>
-
-							<Button
-								type="submit"
-								className="w-full"
-								disabled={updateMeMutation.isPending}
-							>
-								{updateMeMutation.isPending
-									? "Setting up..."
-									: "Complete Setup"}
-							</Button>
-						</form>
-					</Form>
-				</CardContent>
-			</Card>
+						</Step>
+					</Stepper>
+				</form>
+			</Form>
 		</div>
 	);
 }

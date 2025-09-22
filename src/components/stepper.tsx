@@ -7,6 +7,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import { cn } from "@/lib/utils";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
 	children: ReactNode;
@@ -257,11 +258,12 @@ const stepVariants: Variants = {
 };
 
 interface StepProps {
+	className?: string;
 	children: ReactNode;
 }
 
-export function Step({ children }: StepProps) {
-	return <div className="px-8">{children}</div>;
+export function Step({ className, children }: StepProps) {
+	return <div className={cn("px-8", className)}>{children}</div>;
 }
 
 interface StepIndicatorProps {

@@ -34,13 +34,13 @@ import { useUpdateMe } from "../api/update-me";
 const profileUpdateSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
 	school: z.string().min(1, { message: "School is required" }),
-	age: z
-		.number({
-			error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
-		})
-		.min(16, { message: "Age must be at least 16" })
-		.max(100, { message: "Age must be less than 100" })
-		.optional(),
+	// age: z
+	// 	.number({
+	// 		error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
+	// 	})
+	// 	.min(16, { message: "Age must be at least 16" })
+	// 	.max(100, { message: "Age must be less than 100" })
+	// 	.optional(),
 	gender: z.string().min(1, { message: "Gender is required" }),
 });
 
@@ -63,14 +63,14 @@ export function ProfileUpdateForm() {
 		defaultValues: {
 			name: user?.name || "",
 			school: user?.school || "",
-			age: user?.age,
+			// age: user?.age,
 			gender: user?.gender || "",
 		},
 		values: user
 			? {
 					name: user.name || "",
 					school: user.school || "",
-					age: user.age,
+					// age: user.age,
 					gender: user.gender || "",
 				}
 			: undefined,
@@ -80,7 +80,7 @@ export function ProfileUpdateForm() {
 		const updateData: UpdateMeInput = {
 			name: values.name,
 			school: values.school,
-			age: values.age,
+			// age: values.age,
 			gender: values.gender,
 		};
 		updateMeMutation.mutate(updateData);
@@ -161,8 +161,8 @@ export function ProfileUpdateForm() {
 							)}
 						/>
 
-						<div className="grid sm:grid-cols-2 gap-4 align-start">
-							<FormField
+						<div className="grid sm:grid-cols-1 gap-4 align-start">
+							{/* <FormField
 								control={form.control}
 								name="age"
 								render={({ field }) => (
@@ -184,7 +184,7 @@ export function ProfileUpdateForm() {
 										<FormMessage />
 									</FormItem>
 								)}
-							/>
+							/> */}
 
 							<FormField
 								control={form.control}
@@ -201,7 +201,6 @@ export function ProfileUpdateForm() {
 											<SelectContent>
 												<SelectItem value="male">Male</SelectItem>
 												<SelectItem value="female">Female</SelectItem>
-												<SelectItem value="other">Other</SelectItem>
 											</SelectContent>
 										</Select>
 										<FormMessage />
