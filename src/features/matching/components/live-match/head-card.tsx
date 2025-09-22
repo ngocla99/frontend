@@ -21,7 +21,7 @@ export const HeadCard = ({
 }: HeadCardProps) => {
 	const { activeUsers, newMatches, viewedMatches } = stats;
 	const context = useRouteContext({ from: "/" });
-	const isAuthenticated = (context as any).auth.isAuthenticated;
+	const isAuthenticated = context.auth?.isAuthenticated;
 
 	return (
 		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match gap-0 rounded-2xl">

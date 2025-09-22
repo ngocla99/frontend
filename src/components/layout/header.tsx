@@ -8,6 +8,7 @@ import { SignOutButton } from "@/features/auth/components/signout-button";
 import { SignUpButton } from "@/features/auth/components/signup-button";
 import { useAuth } from "@/stores/auth-store";
 import { ProfileDropdown } from "../profile-dropdown";
+import { Separator } from "../ui/separator";
 
 interface NavItem {
 	name: string;
@@ -202,28 +203,36 @@ export function Header() {
 							exit="closed"
 						>
 							<div className="space-y-6 p-6">
-								<div className="space-y-1">
-									{[...navItems, { name: "Profile", href: "/profile" }].map(
-										(item) => (
-											<motion.div key={item.name} variants={mobileItemVariants}>
-												<Link
-													to={item.href}
-													className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
-													onClick={() => setIsMobileMenuOpen(false)}
-												>
-													{item.name}
-												</Link>
-											</motion.div>
-										),
-									)}
-								</div>
+								{user && (
+									<>
+										<div className="space-y-1">
+											{[...navItems, { name: "Profile", href: "/profile" }].map(
+												(item) => (
+													<motion.div
+														key={item.name}
+														variants={mobileItemVariants}
+													>
+														<Link
+															to={item.href}
+															className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
+															onClick={() => setIsMobileMenuOpen(false)}
+														>
+															{item.name}
+														</Link>
+													</motion.div>
+												),
+											)}
+										</div>
+										<Separator />
+									</>
+								)}
 
-								<motion.div
-									className="border-border space-y-3 border-t pt-6"
-									variants={mobileItemVariants}
-								>
+								<motion.div className="space-y-3" variants={mobileItemVariants}>
 									{user ? (
-										<SignOutButton className="h-12 w-full" />
+										<SignOutButton
+											className="h-12 w-full"
+											onClose={() => setIsMobileMenuOpen(false)}
+										/>
 									) : (
 										<>
 											<SignInButton className="h-12 w-full" />
