@@ -20,6 +20,9 @@ import {
 	useState,
 } from "react";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/stores/auth-store";
+import { AuthGuard } from "../auth-guard";
+import confirm from "../confirm";
 
 type FileStatus = "idle" | "dragging" | "uploading" | "error";
 
@@ -402,13 +405,17 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 			],
 		);
 
+		// TODO: Add auth guard
+		const authUser = useUser();
 		const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
+			if (!authUser) return;
 			e.preventDefault();
 			e.stopPropagation();
 			setStatus((prev) => (prev !== "uploading" ? "dragging" : prev));
 		}, []);
 
 		const handleDragLeave = useCallback((e: DragEvent<HTMLDivElement>) => {
+			if (!authUser) return;
 			e.preventDefault();
 			e.stopPropagation();
 			setStatus((prev) => (prev === "dragging" ? "idle" : prev));
@@ -416,6 +423,14 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 
 		const handleDrop = useCallback(
 			(e: DragEvent<HTMLDivElement>) => {
+				if (!authUser)
+					return confirm({
+						type: "warning",
+						title: "Authentication Required",
+						description: "You need to sign in to upload a file.",
+						confirmText: "Sign In",
+						cancelText: "Cancel",
+					});
 				e.preventDefault();
 				e.stopPropagation();
 				if (status === "uploading") return;
@@ -530,14 +545,16 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 												</p>
 											</div>
 
-											<button
-												type="button"
-												onClick={triggerFileInput}
-												className="w-4/5 flex items-center bg-gradient-primary justify-center gap-2 rounded-lg dark:bg-white/10 px-4 py-2.5 text-sm font-semibold text-white dark:text-white transition-all duration-200 hover:bg-gray-200 dark:hover:bg-white/20 group"
-											>
-												<span>Upload File</span>
-												<UploadCloud className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-											</button>
+											<AuthGuard>
+												<button
+													type="button"
+													onClick={triggerFileInput}
+													className="w-4/5 flex items-center bg-gradient-primary justify-center gap-2 rounded-lg dark:bg-white/10 px-4 py-2.5 text-sm font-semibold text-white dark:text-white transition-all duration-200 hover:bg-gray-200 dark:hover:bg-white/20 group"
+												>
+													<span>Upload File</span>
+													<UploadCloud className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+												</button>
+											</AuthGuard>
 
 											<p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
 												or drag and drop your file here
