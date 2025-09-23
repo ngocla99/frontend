@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MatchNav } from "@/features/matching/components/match-nav";
+import { MatchNavMobile } from "@/features/matching/components/match-nav-mobile";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 
@@ -33,7 +33,7 @@ function RouteComponent() {
 				</div>
 			)} */}
 			</div>
-			<MatchNav />
+			<MatchNavMobile />
 		</section>
 	);
 }

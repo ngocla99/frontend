@@ -4,7 +4,7 @@ import { useReadMeQuery } from "@/features/auth/api/get-me";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
-import { MatchNav } from "@/features/matching/components/match-nav";
+import { MatchNavMobile } from "@/features/matching/components/match-nav-mobile";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -97,7 +97,7 @@ function HomePage() {
 
 				<MatchDialog />
 			</div>
-			<MatchNav />
+			<MatchNavMobile />
 		</main>
 	);
 }
