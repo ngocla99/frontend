@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: interactive elements with click handlers */
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: interactive elements with click handlers */
 
-import { Heart, Users, Zap } from "lucide-react";
+import { Heart, Users } from "lucide-react";
 import React from "react";
 import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export interface UniversityMatch {
+	id: string;
 	user1: {
 		name: string;
 		image: string;
@@ -63,11 +64,11 @@ export const UniversityMatchTab = () => {
 				<div className="space-y-4 mb-8">
 					{universityMatch.length > 0 ? (
 						universityMatch.map((match) => {
-							const isSelected = selectedMatch?.user1.name === match.user1.name;
+							const isSelected = selectedMatch?.id === match.id;
 
 							return (
 								<div
-									key={match.user1.name}
+									key={match.id}
 									className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg ${
 										isSelected
 											? "border-pink-300 bg-pink-50 shadow-md"
@@ -77,8 +78,8 @@ export const UniversityMatchTab = () => {
 								>
 									<div className="flex items-center gap-3 sm:gap-4">
 										<ImageLoader
-											src={match.user1.image}
-											alt={match.user1.name}
+											src={match.user2.image}
+											alt={match.user2.name}
 											width={72}
 											height={72}
 											className="w-16 h-16 sm:w-18 sm:h-18 rounded-full border-3 border-white shadow-md"
@@ -87,7 +88,7 @@ export const UniversityMatchTab = () => {
 										<div className="flex-1 min-w-0">
 											<div className="flex items-center justify-between mb-2">
 												<h3 className="font-bold text-gray-800 text-base sm:text-lg truncate">
-													{match.user1.name}, {match.user1.age}
+													{match.user2.name}
 												</h3>
 												<div className="flex items-center gap-1 flex-shrink-0 ml-3">
 													<Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
@@ -97,7 +98,7 @@ export const UniversityMatchTab = () => {
 												</div>
 											</div>
 											<p className="text-sm sm:text-base text-gray-600 truncate">
-												{match.user1.school}
+												{match.user2.school}
 											</p>
 										</div>
 

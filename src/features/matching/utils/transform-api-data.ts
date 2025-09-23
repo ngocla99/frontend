@@ -32,18 +32,22 @@ export const transformApiMatchesToDisplayData = (
 export const transformApiUserMatchToDisplayData = (
 	userMatch: UserMatchApi,
 ): UniversityMatch => {
+	// Let user1 is current user
+	const user1 = userMatch.me;
+	const user2 = userMatch.other;
 	return {
+		id: userMatch.id,
 		user1: {
-			name: userMatch.users.a.name,
-			image: userMatch.users.a.image,
+			name: user1.name,
+			image: user1.image,
 			age: 22,
-			school: "Stanford University",
+			school: user1.school,
 		},
 		user2: {
-			name: userMatch.users.b.name,
-			image: userMatch.users.b.image,
+			name: user2.name,
+			image: user2.image,
 			age: 22,
-			school: "Stanford University",
+			school: user2.school,
 		},
 		matchPercentage: Math.round(userMatch.similarity_score),
 		timestamp: getTimeAgo(userMatch.created_at),
@@ -55,5 +59,7 @@ export const transformApiUserMatchToDisplayData = (
 export const transformApiUserMatchesToDisplayData = (
 	userMatches: UserMatchApi[],
 ): UniversityMatch[] => {
-	return userMatches.map(transformApiUserMatchToDisplayData);
+	return userMatches.map((userMatch) =>
+		transformApiUserMatchToDisplayData(userMatch),
+	);
 };

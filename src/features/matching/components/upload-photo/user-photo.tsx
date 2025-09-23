@@ -21,8 +21,7 @@ export function UserPhoto() {
 
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
-			onSuccess: (data) => {
-				console.log("🚀 ~ file: user-photo.tsx:29 ~ data:", data);
+			onSuccess: () => {
 				setIsUploading(false);
 				fileUploadRef.current?.reset();
 			},
@@ -38,7 +37,6 @@ export function UserPhoto() {
 	};
 
 	const handleChangePhoto = () => {
-		console.log("handleChangePhoto", fileUploadRef.current);
 		fileUploadRef.current?.triggerFileInput();
 	};
 
