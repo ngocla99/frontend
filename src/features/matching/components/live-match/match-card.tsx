@@ -288,11 +288,8 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 							<span className="font-medium">{timestamp}</span>
 						</div>
 
-						<AuthGuard>
-							<motion.div
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
-							>
+						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+							<AuthGuard>
 								<Button
 									variant="ghost"
 									size="sm"
@@ -308,8 +305,8 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 										View Match
 									</span>
 								</Button>
-							</motion.div>
-						</AuthGuard>
+							</AuthGuard>
+						</motion.div>
 					</div>
 				</div>
 			</Card>
