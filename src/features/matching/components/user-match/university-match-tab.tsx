@@ -7,6 +7,7 @@ import React from "react";
 import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -32,11 +33,30 @@ export interface UniversityMatch {
 	isFavorited?: boolean;
 }
 
+const MatchCardSkeleton = () => (
+	<div className="w-full p-4 sm:p-5 rounded-xl border-2 border-gray-200 bg-white">
+		<div className="flex items-center gap-3 sm:gap-4">
+			<Skeleton className="w-16 h-16 sm:w-18 sm:h-18 rounded-full" />
+			<div className="flex-1 min-w-0">
+				<div className="flex items-center justify-between mb-2">
+					<Skeleton className="h-5 w-32" />
+					<div className="flex items-center gap-1 flex-shrink-0 ml-3">
+						<Skeleton className="w-4 h-4 rounded-full" />
+						<Skeleton className="h-5 w-10" />
+					</div>
+				</div>
+				<Skeleton className="h-4 w-40" />
+			</div>
+			<Skeleton className="h-6 sm:h-8 w-16 sm:w-20 rounded-full" />
+		</div>
+	</div>
+);
+
 export const UniversityMatchTab = () => {
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
 	const [favorites, setFavorites] = React.useState<Set<string>>(new Set());
-	const { matches: userMatches } = useUserLiveMatches();
+	const { matches: userMatches, isLoading } = useUserLiveMatches();
 	const isMobile = useIsMobile();
 
 	const handleFavoriteToggle = (matchId: string, e: React.MouseEvent) => {
@@ -79,7 +99,12 @@ export const UniversityMatchTab = () => {
 
 				{/* Matches List */}
 				<div className="space-y-4 mb-8">
-					{universityMatch.length > 0 ? (
+					{isLoading ? (
+						// Show skeleton cards while loading
+						Array.from({ length: 3 }).map((_, index) => (
+							<MatchCardSkeleton key={index} />
+						))
+					) : universityMatch.length > 0 ? (
 						universityMatch.map((match) => {
 							const isSelected = selectedMatch?.id === match.id;
 

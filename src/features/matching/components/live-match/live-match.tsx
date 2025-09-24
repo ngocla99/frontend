@@ -1,9 +1,51 @@
 import { motion } from "framer-motion";
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
+
+const MatchCardSkeleton = () => (
+	<Card className="py-6 px-6 bg-gradient-card gap-0 shadow-soft border-0">
+		<div className="flex items-center justify-between mb-4">
+			{/* User 1 */}
+			<div className="flex flex-col items-center gap-2">
+				<Skeleton className="w-14 h-14 rounded-full" />
+				<Skeleton className="h-3 w-12" />
+			</div>
+
+			{/* Match percentage */}
+			<div className="flex flex-col items-center gap-1 px-3">
+				<Skeleton className="w-6 h-6 rounded-full" />
+				<div className="text-center">
+					<Skeleton className="h-8 w-12 mb-1" />
+					<Skeleton className="h-3 w-10" />
+				</div>
+				{/* Status badges area */}
+				<div className="flex items-center justify-center gap-2 mt-4">
+					<Skeleton className="h-6 w-12 rounded-full" />
+				</div>
+			</div>
+
+			{/* User 2 */}
+			<div className="flex flex-col items-center gap-2">
+				<Skeleton className="w-14 h-14 rounded-full" />
+				<Skeleton className="h-3 w-12" />
+			</div>
+		</div>
+
+		{/* Footer */}
+		<div className="flex items-center justify-between">
+			<div className="flex items-center gap-1.5">
+				<Skeleton className="w-3.5 h-3.5 rounded-full" />
+				<Skeleton className="h-3 w-16" />
+			</div>
+			<Skeleton className="h-7 w-20 rounded-full" />
+		</div>
+	</Card>
+);
 
 export function LiveMatch() {
 	const [activeFilter, setActiveFilter] = React.useState<
@@ -46,35 +88,6 @@ export function LiveMatch() {
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
 			>
-				{/* <motion.h2
-					className="text-2xl font-display font-light text-foreground mb-2"
-					animate={{
-						backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-					}}
-					transition={{
-						duration: 3,
-						repeat: Infinity,
-						ease: "linear",
-					}}
-					style={{
-						background: "linear-gradient(90deg, #ec4899, #f43f5e, #ec4899)",
-						backgroundSize: "200% 100%",
-						WebkitBackgroundClip: "text",
-						WebkitTextFillColor: "transparent",
-						backgroundClip: "text",
-					}}
-				>
-					Live University Matches
-				</motion.h2>
-				<motion.p
-					className="text-muted-foreground mb-4"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.3, duration: 0.4 }}
-				>
-					Real matches happening now
-				</motion.p> */}
-
 				<HeadCard
 					stats={stats}
 					onFilterChange={setActiveFilter}
@@ -94,9 +107,10 @@ export function LiveMatch() {
 				<ScrollArea className="sm:h-[716px]">
 					<div className="space-y-4 p-0 sm:p-4">
 						{isLoading ? (
-							<div className="text-center py-8 text-muted-foreground">
-								<p>Loading matches...</p>
-							</div>
+							// Show skeleton cards while loading
+							Array.from({ length: 4 }).map((_, index) => (
+								<MatchCardSkeleton key={index} />
+							))
 						) : error ? (
 							<div className="text-center py-8 text-destructive">
 								<p>Failed to load matches. Please try again.</p>
