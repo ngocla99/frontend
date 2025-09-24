@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, Heart, Sparkles, Zap } from "lucide-react";
+import { Clock, Heart, Sparkles } from "lucide-react";
 import React from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ export interface MatchCardProps {
 		timestamp: string;
 		isNew?: boolean;
 		isViewed?: boolean;
+		isFavorited?: boolean;
 	};
 	isNewlyAdded?: boolean;
 }
@@ -61,8 +62,23 @@ const NameWithTooltip = ({
 };
 
 export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
-	const { user1, user2, matchPercentage, timestamp, isNew, isViewed } = data;
+	const {
+		user1,
+		user2,
+		matchPercentage,
+		timestamp,
+		isNew,
+		isViewed,
+		isFavorited = false,
+	} = data;
 	const { onOpen } = useUserMatchesActions();
+	const [isFavorite, setIsFavorite] = React.useState(isFavorited);
+
+	const handleFavoriteToggle = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setIsFavorite(!isFavorite);
+		// TODO: Add API call to save favorite status
+	};
 
 	const motionConfig = React.useMemo(() => {
 		if (isNewlyAdded) {
@@ -121,8 +137,43 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 			}
 			whileTap={isNewlyAdded ? {} : { scale: 0.98 }}
 		>
-			<Card className="p-4 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
-				<div className="relative">
+			<Card className="group relative py-6 px-6 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
+				<div className="">
+					{/* Favorite Button - Shows on hover or when favorited */}
+					<motion.button
+						className={`absolute top-2 right-2 z-20 p-1.5 rounded-full hover:bg-white transition-all duration-300`}
+						onClick={handleFavoriteToggle}
+						whileHover={{ scale: 1.1 }}
+						whileTap={{ scale: 0.9 }}
+						initial={false}
+						animate={{
+							scale: isFavorite ? [1, 1.2, 1] : 1,
+						}}
+						transition={{
+							duration: 0.3,
+							ease: "easeOut",
+						}}
+					>
+						<motion.div
+							animate={{
+								scale: isFavorite ? 1.1 : 1,
+								rotate: isFavorite ? [0, -10, 10, 0] : 0,
+							}}
+							transition={{
+								duration: isFavorite ? 0.6 : 0.2,
+								ease: "easeOut",
+							}}
+						>
+							<Heart
+								className={`w-4 h-4 transition-colors duration-200 ${
+									isFavorite
+										? "text-pink-500 fill-pink-500"
+										: "text-gray-400 hover:text-pink-400"
+								}`}
+							/>
+						</motion.div>
+					</motion.button>
+
 					{/* Main content */}
 					<div className="flex items-center justify-between mb-4">
 						{/* User 1 */}
@@ -134,20 +185,6 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									alt={user1.name}
 									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
-								{/* <motion.div
-									className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-md"
-									animate={{
-										scale: [1, 1.1, 1],
-										rotate: [0, 5, -5, 0],
-									}}
-									transition={{
-										duration: 2,
-										repeat: Infinity,
-										ease: "easeInOut",
-									}}
-								>
-									<Heart className="w-2.5 h-2.5 text-white fill-white" />
-								</motion.div> */}
 							</div>
 							<NameWithTooltip
 								name={user1.name}
@@ -210,6 +247,44 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									MATCH
 								</div>
 							</div>
+							{/* Status badges - positioned below main content */}
+							<div className="flex items-center justify-center gap-2 mt-4">
+								{isNew && (
+									<motion.div
+										animate={{
+											scale: [1, 1.05, 1],
+											y: [0, -2, 0],
+										}}
+										transition={{
+											duration: 1.5,
+											repeat: Infinity,
+											ease: "easeInOut",
+										}}
+									>
+										<Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0 shadow-md text-xs px-2 py-1">
+											<motion.div
+												animate={{ rotate: 360 }}
+												transition={{
+													duration: 2,
+													repeat: Infinity,
+													ease: "linear",
+												}}
+											>
+												<Sparkles className="w-3 h-3 mr-1" />
+											</motion.div>
+											NEW
+										</Badge>
+									</motion.div>
+								)}
+								{isViewed && (
+									<Badge
+										variant="secondary"
+										className="bg-gray-100 text-gray-600 border-0 text-xs px-2 py-1"
+									>
+										VIEWED
+									</Badge>
+								)}
+							</div>
 						</div>
 
 						{/* User 2 */}
@@ -221,63 +296,11 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									alt={user2.name}
 									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
-								{/* <motion.div
-									className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-md"
-									animate={{
-										scale: [1, 1.1, 1],
-										rotate: [0, -5, 5, 0],
-									}}
-									transition={{
-										duration: 2.5,
-										repeat: Infinity,
-										ease: "easeInOut",
-									}}
-								>
-									<Heart className="w-2.5 h-2.5 text-white fill-white" />
-								</motion.div> */}
 							</div>
 							<NameWithTooltip
 								name={user2.name}
 								className="text-xs font-semibold text-gray-800 group-hover:text-purple-600 transition-colors duration-300"
 							/>
-						</div>
-
-						<div className="flex items-center mb-7">
-							{isNew && (
-								<motion.div
-									animate={{
-										scale: [1, 1.05, 1],
-										y: [0, -2, 0],
-									}}
-									transition={{
-										duration: 1.5,
-										repeat: Infinity,
-										ease: "easeInOut",
-									}}
-								>
-									<Badge className="bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0 shadow-md text-xs px-2 py-1">
-										<motion.div
-											animate={{ rotate: 360 }}
-											transition={{
-												duration: 2,
-												repeat: Infinity,
-												ease: "linear",
-											}}
-										>
-											<Sparkles className="w-3 h-3 mr-1" />
-										</motion.div>
-										NEW
-									</Badge>
-								</motion.div>
-							)}
-							{isViewed && (
-								<Badge
-									variant="secondary"
-									className="bg-gray-100 text-gray-600 border-0 text-xs px-2 py-1"
-								>
-									VIEWED
-								</Badge>
-							)}
 						</div>
 					</div>
 

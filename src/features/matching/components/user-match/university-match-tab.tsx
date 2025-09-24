@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: interactive elements with click handlers */
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: interactive elements with click handlers */
 
+import { motion } from "framer-motion";
 import { Heart, Users } from "lucide-react";
 import React from "react";
 import { ImageLoader } from "@/components/image-loader";
@@ -28,13 +29,29 @@ export interface UniversityMatch {
 	timestamp: string;
 	isNew: boolean;
 	isViewed: boolean;
+	isFavorited?: boolean;
 }
 
 export const UniversityMatchTab = () => {
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
+	const [favorites, setFavorites] = React.useState<Set<string>>(new Set());
 	const { matches: userMatches } = useUserLiveMatches();
 	const isMobile = useIsMobile();
+
+	const handleFavoriteToggle = (matchId: string, e: React.MouseEvent) => {
+		e.stopPropagation();
+		setFavorites((prev) => {
+			const newFavorites = new Set(prev);
+			if (newFavorites.has(matchId)) {
+				newFavorites.delete(matchId);
+			} else {
+				newFavorites.add(matchId);
+			}
+			return newFavorites;
+		});
+		// TODO: Add API call to save favorite status
+	};
 
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0 ? userMatches : [];
@@ -69,13 +86,48 @@ export const UniversityMatchTab = () => {
 							return (
 								<div
 									key={match.id}
-									className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg ${
+									className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg relative ${
 										isSelected
 											? "border-pink-300 bg-pink-50 shadow-md"
 											: "border-gray-200 bg-white hover:border-pink-200 hover:bg-pink-25"
 									}`}
 									onClick={() => setSelectedMatch(match)}
 								>
+									{/* Favorite Button */}
+									<motion.button
+										className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all duration-200"
+										onClick={(e) => handleFavoriteToggle(match.id, e)}
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.9 }}
+										initial={false}
+										animate={{
+											scale: favorites.has(match.id) ? [1, 1.2, 1] : 1,
+										}}
+										transition={{
+											duration: 0.3,
+											ease: "easeOut",
+										}}
+									>
+										<motion.div
+											animate={{
+												scale: favorites.has(match.id) ? 1.1 : 1,
+												rotate: favorites.has(match.id) ? [0, -10, 10, 0] : 0,
+											}}
+											transition={{
+												duration: favorites.has(match.id) ? 0.6 : 0.2,
+												ease: "easeOut",
+											}}
+										>
+											<Heart
+												className={`w-4 h-4 transition-colors duration-200 ${
+													favorites.has(match.id)
+														? "text-pink-500 fill-pink-500"
+														: "text-gray-400 hover:text-pink-400"
+												}`}
+											/>
+										</motion.div>
+									</motion.button>
+
 									<div className="flex items-center gap-3 sm:gap-4">
 										<ImageLoader
 											src={match.user2.image}
@@ -105,7 +157,7 @@ export const UniversityMatchTab = () => {
 										<Button
 											variant="ghost"
 											size="sm"
-											className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm h-8 sm:h-10 px-3 sm:px-4 font-semibold rounded-full gap-0"
+											className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm h-6 sm:h-8 px-3 sm:px-4 font-semibold rounded-full gap-0 mt-1"
 										>
 											<span className="hidden sm:inline mr-1">View </span>
 											Baby

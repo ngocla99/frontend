@@ -56,7 +56,7 @@ export function FavoriteHistory() {
 			open={isOpen}
 			onOpenChange={setIsOpen}
 			classes={{
-				content: "h-[80vh]",
+				content: "h-[80vh] grid-rows-[auto_1fr] gap-8",
 			}}
 			title={
 				<div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export function FavoriteHistory() {
 				</Button>
 			}
 		>
-			<Tabs defaultValue="favorites" className="flex-1 px-4">
+			<Tabs defaultValue="favorites" className="h-full">
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="favorites">
 						Favorites ({favorites.length})
@@ -86,9 +86,9 @@ export function FavoriteHistory() {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="favorites" className="mt-4 overflow-y-auto">
+				<TabsContent value="favorites" className="mt-4 overflow-y-auto grid">
 					{favorites.length === 0 ? (
-						<div className="text-center py-8 text-muted-foreground">
+						<div className="flex flex-col items-center justify-center text-muted-foreground pb-20">
 							<Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
 							<p>No favorites yet</p>
 							<p className="text-sm">
