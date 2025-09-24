@@ -2,9 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/use-socket";
 import type { UserMatchApi } from "@/types/api";
-import { useUserMatch } from "../api/get-user-match";
-import type { UniversityMatch } from "../components/user-match/university-match-tab";
-import { transformApiUserMatchToDisplayData } from "../utils/transform-api-data";
+import { getUserMatchQueryOptions, useUserMatch } from "../api/get-user-match";
 
 export const useUserLiveMatches = () => {
 	const queryClient = useQueryClient();
@@ -19,18 +17,10 @@ export const useUserLiveMatches = () => {
 		const handleMatchFound = (data: UserMatchApi) => {
 			// Update user matches cache
 			queryClient.setQueryData(
-				["user-live-matches"],
-				(oldData: UniversityMatch[] = []) => {
-					// const exists = oldData.some(
-					// 	(match) => match.target_face_id === data.target_face_id,
-					// );
-					const transformedData = transformApiUserMatchToDisplayData(data);
-
-					// if (!exists) {
-					// 	return [...oldData, transformedData];
-					// }
-
-					return [...oldData, transformedData];
+				getUserMatchQueryOptions().queryKey,
+				(oldData: UserMatchApi[] | undefined) => {
+					if (!oldData) return [data];
+					return [data, ...oldData];
 				},
 			);
 		};

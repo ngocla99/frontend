@@ -18,7 +18,12 @@ export const getUserMatchApi = (
 	});
 };
 
-export const getUserMatchQueryOptions = (input: UserMatchInput) => {
+export const getUserMatchQueryOptions = (
+	input = {
+		limit: 50,
+		offset: PAGINATION.DEFAULT_OFFSET,
+	},
+) => {
 	return queryOptions({
 		queryKey: ["matching", "user", input],
 		queryFn: () => getUserMatchApi(input),
