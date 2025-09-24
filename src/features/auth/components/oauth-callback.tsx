@@ -2,7 +2,6 @@ import { useRouter, useSearch } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/stores/auth-store";
 import { useMe } from "../api/get-me";
 import { extractOAuthParams } from "../api/google-oauth";
@@ -10,7 +9,6 @@ import { extractOAuthParams } from "../api/google-oauth";
 export function OAuthCallback() {
 	const router = useRouter();
 	const { setAccessToken, setUser } = useAuth();
-	const isMobile = useIsMobile();
 
 	const searchParams = useSearch({ from: "/auth/callback" });
 	const accessToken = searchParams.token;
@@ -24,13 +22,10 @@ export function OAuthCallback() {
 	React.useEffect(() => {
 		if (user) {
 			setUser(user);
-			if (isMobile) {
-				router.navigate({ to: "/your-matches" });
-			} else {
-				router.navigate({ to: "/" });
-			}
+
+			router.navigate({ to: "/" });
 		}
-	}, [user, isMobile]);
+	}, [user]);
 
 	React.useEffect(() => {
 		const { error } = extractOAuthParams();
@@ -46,7 +41,7 @@ export function OAuthCallback() {
 		}
 
 		toast.error("No access token received from authentication");
-		// router.navigate({ to: "/" });
+		router.navigate({ to: "/" });
 	}, [accessToken]);
 
 	return (
