@@ -11,6 +11,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useReactToMatch } from "@/features/matching/api/react-to-match";
+import { useUser } from "@/stores/auth-store";
 import { useUserMatchesActions } from "../../store/user-matches";
 
 export interface MatchCardProps {
@@ -74,6 +75,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 		isViewed,
 		isFavorited = false,
 	} = data;
+	const user = useUser();
 	const { onOpen } = useUserMatchesActions();
 	const [isFavorite, setIsFavorite] = React.useState(isFavorited);
 	const { mutate: reactToMatch } = useReactToMatch();
@@ -150,39 +152,41 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 			<Card className="group relative py-6 px-6 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
 				<div className="">
 					{/* Favorite Button - Shows on hover or when favorited */}
-					<motion.button
-						className={`absolute top-2 right-2 z-20 p-1.5 rounded-full hover:bg-white transition-all duration-300`}
-						onClick={handleFavoriteToggle}
-						whileHover={{ scale: 1.1 }}
-						whileTap={{ scale: 0.9 }}
-						initial={false}
-						animate={{
-							scale: isFavorite ? [1, 1.2, 1] : 1,
-						}}
-						transition={{
-							duration: 0.3,
-							ease: "easeOut",
-						}}
-					>
-						<motion.div
+					{user && (
+						<motion.button
+							className={`absolute top-2 right-2 z-20 p-1.5 rounded-full hover:bg-white transition-all duration-300`}
+							onClick={handleFavoriteToggle}
+							whileHover={{ scale: 1.1 }}
+							whileTap={{ scale: 0.9 }}
+							initial={false}
 							animate={{
-								scale: isFavorite ? 1.1 : 1,
-								rotate: isFavorite ? [0, -10, 10, 0] : 0,
+								scale: isFavorite ? [1, 1.2, 1] : 1,
 							}}
 							transition={{
-								duration: isFavorite ? 0.6 : 0.2,
+								duration: 0.3,
 								ease: "easeOut",
 							}}
 						>
-							<Heart
-								className={`w-4 h-4 transition-colors duration-200 ${
-									isFavorite
-										? "text-pink-500 fill-pink-500"
-										: "text-gray-400 hover:text-pink-400"
-								}`}
-							/>
-						</motion.div>
-					</motion.button>
+							<motion.div
+								animate={{
+									scale: isFavorite ? 1.1 : 1,
+									rotate: isFavorite ? [0, -10, 10, 0] : 0,
+								}}
+								transition={{
+									duration: isFavorite ? 0.6 : 0.2,
+									ease: "easeOut",
+								}}
+							>
+								<Heart
+									className={`w-4 h-4 transition-colors duration-200 ${
+										isFavorite
+											? "text-pink-500 fill-pink-500"
+											: "text-gray-400 hover:text-pink-400"
+									}`}
+								/>
+							</motion.div>
+						</motion.button>
+					)}
 
 					{/* Main content */}
 					<div className="flex items-center justify-between mb-4">
