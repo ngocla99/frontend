@@ -28,7 +28,12 @@ export const useReactToMatch = (
 		mutationFn: reactToMatchApi,
 		onMutate: async ({ matchId, favorite }) => {
 			// Cancel any outgoing refetches to avoid overwriting our optimistic update
-			await queryClient.cancelQueries({ queryKey: ["matching"] });
+			await queryClient.cancelQueries(
+				{
+					queryKey: ["matching", "top", "infinite"],
+				},
+				{ silent: true },
+			);
 
 			// Optimistically update user matches (flat array)
 			queryClient.setQueriesData(
@@ -47,11 +52,14 @@ export const useReactToMatch = (
 				(old: unknown) => {
 					if (!old || typeof old !== "object" || !("pages" in old)) return old;
 					const oldData = old as { pages: Record<string, unknown>[][] };
+
 					return {
 						...oldData,
 						pages: oldData.pages.map((page: Record<string, unknown>[]) =>
 							page.map((m: Record<string, unknown>) =>
-								m?.id === matchId ? { ...m, isFavorited: favorite } : m,
+								m?.id === matchId
+									? { ...m, my_reaction: favorite ? ["favorite"] : [] }
+									: m,
 							),
 						),
 					};
@@ -60,7 +68,10 @@ export const useReactToMatch = (
 		},
 		onSettled: () => {
 			// Always refetch after mutation settles to ensure consistency
-			queryClient.invalidateQueries({ queryKey: ["matching"] });
+			queryClient.invalidateQueries({
+				queryKey: ["matching", "top", "infinite"],
+				exact: false,
+			});
 		},
 		...config,
 	});

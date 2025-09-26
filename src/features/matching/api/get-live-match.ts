@@ -12,13 +12,16 @@ import { transformApiMatchesToDisplayData } from "../utils/transform-api-data";
 export type LiveMatchInput = {
 	limit: number;
 	offset: number;
+	signal?: AbortSignal;
 };
 
 export const getLiveMatchApi = (
 	input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
+	const { signal, ...query } = input;
 	return apiClient.get("/api/v1/matches/top", {
-		params: { ...input, filter: "user" },
+		params: { ...query, filter: "user" },
+		signal,
 	});
 };
 
@@ -60,11 +63,12 @@ export const useLiveMatchInfinite = ({
 	queryConfig,
 }: UseLiveMatchInfiniteOptions = {}) => {
 	return useInfiniteQuery({
-		queryKey: ["matching", "top", "infinite", input],
-		queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET }) =>
+		queryKey: ["matching", "top", "infinite"],
+		queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET, signal }) =>
 			getLiveMatchApi({
 				...input,
 				offset: pageParam,
+				signal,
 			}),
 		getNextPageParam: (lastPage, _, lastPageParam) => {
 			if (lastPage.length === 0) {

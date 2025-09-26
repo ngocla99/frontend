@@ -8,6 +8,7 @@ import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -55,22 +56,16 @@ const MatchCardSkeleton = () => (
 export const UniversityMatchTab = () => {
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
-	const [favorites, setFavorites] = React.useState<Set<string>>(new Set());
 	const { matches: userMatches, isLoading } = useUserLiveMatches();
 	const isMobile = useIsMobile();
+	const { mutate: reactToMatch } = useReactToMatch();
 
-	const handleFavoriteToggle = (matchId: string, e: React.MouseEvent) => {
+	const handleFavoriteToggle = (
+		match: UniversityMatch,
+		e: React.MouseEvent,
+	) => {
 		e.stopPropagation();
-		setFavorites((prev) => {
-			const newFavorites = new Set(prev);
-			if (newFavorites.has(matchId)) {
-				newFavorites.delete(matchId);
-			} else {
-				newFavorites.add(matchId);
-			}
-			return newFavorites;
-		});
-		// TODO: Add API call to save favorite status
+		reactToMatch({ matchId: match.id, favorite: !match.isFavorited });
 	};
 
 	const universityMatch: UniversityMatch[] =
@@ -121,12 +116,12 @@ export const UniversityMatchTab = () => {
 									{/* Favorite Button */}
 									<motion.button
 										className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all duration-200"
-										onClick={(e) => handleFavoriteToggle(match.id, e)}
+										onClick={(e) => handleFavoriteToggle(match, e)}
 										whileHover={{ scale: 1.1 }}
 										whileTap={{ scale: 0.9 }}
 										initial={false}
 										animate={{
-											scale: favorites.has(match.id) ? [1, 1.2, 1] : 1,
+											scale: match.isFavorited ? [1, 1.2, 1] : 1,
 										}}
 										transition={{
 											duration: 0.3,
@@ -135,17 +130,17 @@ export const UniversityMatchTab = () => {
 									>
 										<motion.div
 											animate={{
-												scale: favorites.has(match.id) ? 1.1 : 1,
-												rotate: favorites.has(match.id) ? [0, -10, 10, 0] : 0,
+												scale: match.isFavorited ? 1.1 : 1,
+												rotate: match.isFavorited ? [0, -10, 10, 0] : 0,
 											}}
 											transition={{
-												duration: favorites.has(match.id) ? 0.6 : 0.2,
+												duration: match.isFavorited ? 0.6 : 0.2,
 												ease: "easeOut",
 											}}
 										>
 											<Heart
 												className={`w-4 h-4 transition-colors duration-200 ${
-													favorites.has(match.id)
+													match.isFavorited
 														? "text-pink-500 fill-pink-500"
 														: "text-gray-400 hover:text-pink-400"
 												}`}
