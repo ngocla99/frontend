@@ -7,6 +7,7 @@ export const transformApiMatchToDisplayData = (
 	apiMatch: LiveMatchApi,
 ): MatchCardProps["data"] => {
 	return {
+		id: apiMatch.id,
 		user1: {
 			name: apiMatch.users.a.name,
 			image: apiMatch.users.a.image,
@@ -19,6 +20,9 @@ export const transformApiMatchToDisplayData = (
 		timestamp: getTimeAgo(apiMatch.created_at),
 		isNew: true, // All matches from API are considered new initially
 		isViewed: false, // All matches from API are unviewed initially
+		isFavorited:
+			Array.isArray(apiMatch.my_reaction) &&
+			apiMatch.my_reaction.includes("favorite"),
 	};
 };
 
@@ -53,6 +57,7 @@ export const transformApiUserMatchToDisplayData = (
 		timestamp: getTimeAgo(userMatch.created_at),
 		isNew: true,
 		isViewed: false, // All matches from API are unviewed initially
+		isFavorited: Boolean(userMatch.reactions?.favorite),
 	};
 };
 

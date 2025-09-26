@@ -24,6 +24,7 @@ export type FaceApi = {
 export type LiveMatchApi = {
 	created_at: string;
 	id: string;
+	my_reaction: ["favorite"];
 	reactions: Record<string, unknown>;
 	similarity_score: number;
 	users: {

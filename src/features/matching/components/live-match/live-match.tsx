@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import React from "react";
+import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
@@ -116,10 +116,8 @@ export function LiveMatch() {
 								<p>Failed to load matches. Please try again.</p>
 							</div>
 						) : matches.length > 0 ? (
-							matches.map((match, index) => {
-								const matchId = `${match.user1.name}-${match.user2.name}-${index}`;
-
-								return <MatchCard key={matchId} data={match} />;
+							matches.map((match) => {
+								return <MatchCard key={match.id} data={match} />;
 							})
 						) : (
 							<div className="text-center py-8 text-muted-foreground">

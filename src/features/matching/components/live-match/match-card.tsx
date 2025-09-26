@@ -10,10 +10,12 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserMatchesActions } from "../../store/user-matches";
 
 export interface MatchCardProps {
 	data: {
+		id: string;
 		user1: {
 			name: string;
 			image: string;
@@ -63,6 +65,7 @@ const NameWithTooltip = ({
 
 export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 	const {
+		id,
 		user1,
 		user2,
 		matchPercentage,
@@ -73,11 +76,18 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 	} = data;
 	const { onOpen } = useUserMatchesActions();
 	const [isFavorite, setIsFavorite] = React.useState(isFavorited);
+	const { mutate: reactToMatch } = useReactToMatch();
+
+	// Update local state when server state changes
+	React.useEffect(() => {
+		setIsFavorite(isFavorited);
+	}, [isFavorited]);
 
 	const handleFavoriteToggle = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		setIsFavorite(!isFavorite);
-		// TODO: Add API call to save favorite status
+		const next = !isFavorite;
+		setIsFavorite(next);
+		reactToMatch({ matchId: id, favorite: next });
 	};
 
 	const motionConfig = React.useMemo(() => {
