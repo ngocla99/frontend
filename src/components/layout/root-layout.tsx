@@ -3,8 +3,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Toaster } from "sonner";
+import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { useMe } from "@/features/auth/api/get-me";
-import { MatchingSkeleton } from "@/features/matching/components/matching-skeleton";
 import { Header } from "./header";
 
 export function RootLayout() {
@@ -13,7 +13,15 @@ export function RootLayout() {
 	return (
 		<>
 			<Header />
-			{isLoading ? <MatchingSkeleton /> : <Outlet />}
+			{isLoading ? (
+				<div className="min-h-screen flex items-center justify-center">
+					<AITextLoading
+						texts={["Matching...", "Loading...", "Please wait..."]}
+					/>
+				</div>
+			) : (
+				<Outlet />
+			)}
 			<Toaster duration={3000} />
 			{import.meta.env.MODE === "development" && (
 				<TanStackDevtools
