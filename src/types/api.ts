@@ -4,6 +4,8 @@ export enum Gender {
 	OTHER = "other",
 }
 
+export type Reaction = "favorite";
+
 export type UserApi = {
 	id: string;
 	name: string;
@@ -24,7 +26,7 @@ export type FaceApi = {
 export type LiveMatchApi = {
 	created_at: string;
 	id: string;
-	my_reaction: ["favorite"];
+	my_reaction: Reaction[];
 	reactions: Record<string, unknown>;
 	similarity_score: number;
 	users: {
@@ -60,7 +62,7 @@ export type UserMatchApi = {
 	};
 	similarity_score: number;
 	created_at: string;
-	reactions: Record<string, unknown>;
+	reactions: Record<Reaction, unknown>;
 };
 export type MatchFoundEvent = {
 	id: string;
@@ -81,5 +83,5 @@ export type MatchFoundEvent = {
 	};
 	similarity_score: number;
 	created_at: string;
-	reactions: Record<string, unknown>;
+	reactions: Record<Reaction, unknown>;
 };
