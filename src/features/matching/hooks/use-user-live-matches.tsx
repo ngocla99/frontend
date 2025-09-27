@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
 import type { SupabaseMatch } from "@/lib/supabase";
-import type { UserMatchApi } from "@/types/api";
 import { getUserMatchQueryOptions, useUserMatch } from "../api/get-user-match";
 
 export const useUserLiveMatches = (userId?: string) => {
