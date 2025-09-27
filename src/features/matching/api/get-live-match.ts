@@ -7,6 +7,7 @@ import apiClient from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { LiveMatchApi } from "@/types/api";
+import { useLiveMatchRealtime } from "../hooks/use-live-match-realtime";
 import { transformApiMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type LiveMatchInput = {
@@ -61,7 +62,11 @@ export const useLiveMatchInfinite = ({
 		limit: PAGINATION.DEFAULT_LIMIT,
 	},
 	queryConfig,
-}: UseLiveMatchInfiniteOptions = {}) => {
+	userId,
+}: UseLiveMatchInfiniteOptions & { userId?: string } = {}) => {
+	// Enable Supabase realtime for new matches
+	useLiveMatchRealtime(userId);
+
 	return useInfiniteQuery({
 		queryKey: ["matching", "top", "infinite"],
 		queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET, signal }) =>
@@ -82,6 +87,7 @@ export const useLiveMatchInfinite = ({
 				return transformApiMatchesToDisplayData(page);
 			});
 		},
+		refetchInterval: 30000, // Reduced from default since we have realtime
 		...queryConfig,
 	});
 };

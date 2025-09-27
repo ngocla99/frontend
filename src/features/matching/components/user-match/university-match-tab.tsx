@@ -12,6 +12,7 @@ import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/stores/auth-store";
 
 export interface UniversityMatch {
 	id: string;
@@ -56,7 +57,8 @@ const MatchCardSkeleton = () => (
 export const UniversityMatchTab = () => {
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
-	const { matches: userMatches, isLoading } = useUserLiveMatches();
+	const user = useUser();
+	const { matches: userMatches, isLoading } = useUserLiveMatches(user?.id);
 	const isMobile = useIsMobile();
 	const { mutate: reactToMatch } = useReactToMatch();
 

@@ -1,36 +1,29 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useSocket } from "@/hooks/use-socket";
+import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
+import type { SupabaseMatch } from "@/lib/supabase";
 import type { UserMatchApi } from "@/types/api";
 import { getUserMatchQueryOptions, useUserMatch } from "../api/get-user-match";
 
-export const useUserLiveMatches = () => {
+export const useUserLiveMatches = (userId?: string) => {
 	const queryClient = useQueryClient();
-	const { socket, isConnected } = useSocket();
-
 	const { data: userMatches, isLoading, error } = useUserMatch();
 
-	// Listen for real-time match events for this user
-	useEffect(() => {
-		if (!socket || !isConnected) return;
+	// Listen for real-time match events for this user via Supabase
+	const handleMatchInsert = (payload: { new: SupabaseMatch }) => {
+		console.log("🔥 New user match detected:", payload.new);
 
-		const handleMatchFound = (data: UserMatchApi) => {
-			// Update user matches cache
-			queryClient.setQueryData(
-				getUserMatchQueryOptions().queryKey,
-				(oldData: UserMatchApi[] | undefined) => {
-					if (!oldData) return [data];
-					return [data, ...oldData];
-				},
-			);
-		};
+		// Invalidate user matches to trigger refetch with complete data
+		queryClient.invalidateQueries({
+			queryKey: getUserMatchQueryOptions().queryKey,
+		});
+	};
 
-		socket.on("match_found", handleMatchFound);
-
-		return () => {
-			socket.off("match_found", handleMatchFound);
-		};
-	}, [socket, isConnected, queryClient]);
+	useSupabaseRealtime({
+		table: "matches",
+		event: "INSERT",
+		onData: handleMatchInsert,
+		enabled: !!userId,
+	});
 
 	return {
 		matches: userMatches || [],
