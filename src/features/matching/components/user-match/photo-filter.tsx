@@ -66,7 +66,7 @@ export const PhotoFilter = ({
 									/>
 
 									<div className="flex items-center gap-1">
-										<Camera className="w-4 h-4" />
+										{/* <Camera className="w-4 h-4" /> */}
 										<span className="font-medium">Photo {index + 1}</span>
 									</div>
 
