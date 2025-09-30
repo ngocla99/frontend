@@ -5,7 +5,8 @@ import { z } from "zod";
 import { getMeQueryOptions } from "@/features/auth/api/get-me";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
-import type { UserApi } from "@/types/api";
+import type { PhotoUpload, UserApi } from "@/types/api";
+import { getUserPhotosQueryOptions } from "./get-user-photos";
 
 export const uploadFaceSchema = z.object({
 	file: z.instanceof(File),
@@ -15,7 +16,7 @@ export type UploadFaceInput = z.infer<typeof uploadFaceSchema>;
 
 export const uploadFaceApi = (
 	input: UploadFaceInput,
-): Promise<{ face_id: string; image_url: string }> => {
+): Promise<{ id: string; image_url: string; live_task_id: string }> => {
 	const formData = new FormData();
 	formData.append("file", input.file);
 
@@ -38,13 +39,36 @@ export const useUploadFace = ({
 
 	return useMutation({
 		onSuccess: (data, ...args) => {
+			console.log("🚀 ~ useUploadFace ~ data:", data);
 			onSuccess?.(data, ...args);
 			toast.success("Upload face success");
+
+			// Update user profile image
 			queryClient.setQueryData(
 				getMeQueryOptions().queryKey,
 				(oldData?: UserApi) => {
 					if (!oldData) return oldData;
 					return { ...oldData, image: data.image_url };
+				},
+			);
+
+			// Optimistically update user photos list
+			queryClient.setQueryData(
+				getUserPhotosQueryOptions().queryKey,
+				(oldData?: PhotoUpload[]) => {
+					if (!oldData) return oldData;
+
+					// Create new photo object matching PhotoUpload interface
+					const newPhoto: PhotoUpload = {
+						id: data.id,
+						image_url: data.image_url,
+						created_at: new Date().toISOString(),
+					};
+
+					console.log([newPhoto, ...oldData]);
+
+					// Add new photo to the beginning of the array
+					return [newPhoto, ...oldData];
 				},
 			);
 		},

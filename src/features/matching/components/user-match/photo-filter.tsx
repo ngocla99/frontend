@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { Camera } from "lucide-react";
 import React from "react";
 import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useUserPhotos } from "@/features/matching/api/get-user-photos";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +52,7 @@ export const PhotoFilter = ({
 									className={cn(
 										"flex items-center gap-2 transition-all duration-200 min-w-fit relative",
 										isActive
-											? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md"
+											? "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
 											: "hover:bg-muted text-muted-foreground hover:text-foreground",
 									)}
 								>
@@ -86,6 +85,7 @@ export const PhotoFilter = ({
 						);
 					})}
 				</div>
+				<ScrollBar orientation="horizontal" />
 			</ScrollArea>
 		</div>
 	);

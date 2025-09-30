@@ -307,7 +307,7 @@ export function ImageLoader({
 					) : (
 						<div className="text-center text-muted-foreground">
 							<svg
-								className="mx-auto h-12 w-12 mb-2"
+								className="mx-auto h-12 w-12"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
