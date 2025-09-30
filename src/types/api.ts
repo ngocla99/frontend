@@ -44,25 +44,30 @@ export type LiveMatchApi = {
 };
 
 export type UserMatchApi = {
-	id: string;
-	type: "user-user" | "celebrity";
+	matches: Array<{
+		id: string;
+		created_at: string;
+		my_image: string;
+		other_image: string;
+		reactions: Record<string, number>;
+		similarity_score: number;
+	}>;
 	me: {
+		gender: string;
 		id: string;
-		name: string;
 		image: string;
+		name: string;
 		school: string;
-		gender: Gender | string;
 	};
+	number_of_matches: number;
 	other: {
+		gender: string;
 		id: string;
-		name: string;
 		image: string;
+		name: string;
 		school: string;
-		gender: Gender | string;
 	};
-	similarity_score: number;
-	created_at: string;
-	reactions: Record<Reaction, unknown>;
+	type: string;
 };
 export type MatchFoundEvent = {
 	id: string;

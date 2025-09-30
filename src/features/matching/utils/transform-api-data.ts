@@ -33,32 +33,56 @@ export const transformApiMatchesToDisplayData = (
 	return apiMatches.map(transformApiMatchToDisplayData);
 };
 
-// Transform function for the new user match format
+// Transform function for the new group match format
 export const transformApiUserMatchToDisplayData = (
 	userMatch: UserMatchApi,
 ): UniversityMatch => {
-	// Let user1 is current user
-	const user1 = userMatch.me;
-	const user2 = userMatch.other;
-	return {
-		id: userMatch.id,
-		user1: {
-			name: user1.name,
-			image: user1.image,
-			age: 22,
-			school: user1.school,
-		},
-		user2: {
-			name: user2.name,
-			image: user2.image,
-			age: 22,
-			school: user2.school,
-		},
-		matchPercentage: Math.round(userMatch.similarity_score),
-		timestamp: getTimeAgo(userMatch.created_at),
+	// Sort matches by created_at (most recent first)
+	const sortedMatches = [...userMatch.matches].sort(
+		(a, b) =>
+			new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+	);
+
+	// Get the most recent match (first in sorted array)
+	const recentMatch = sortedMatches[0];
+
+	// Check if any match is favorited
+	const isFavorited = userMatch.matches.some((match) =>
+		Boolean(match.reactions?.favorite),
+	);
+
+	// Transform matches to include other user info
+	const transformedMatches = sortedMatches.map((match) => ({
+		id: match.id,
+		createdAt: match.created_at,
+		name: userMatch.other.name,
+		image: match.other_image,
+		school: userMatch.other.school,
+		reactions: match.reactions,
+		matchPercentage: Math.round(match.similarity_score),
 		isNew: true,
-		isViewed: false, // All matches from API are unviewed initially
-		isFavorited: Boolean(userMatch.reactions?.favorite),
+	}));
+
+	return {
+		id: `${userMatch.me.id}-${userMatch.other.id}`,
+		me: {
+			name: userMatch.me.name,
+			image: userMatch.me.image,
+			age: 22,
+			school: userMatch.me.school,
+		},
+		other: {
+			name: userMatch.other.name,
+			image: userMatch.other.image,
+			age: 22,
+			school: userMatch.other.school,
+		},
+		matchPercentage: Math.round(recentMatch.similarity_score),
+		numberOfMatches: userMatch.number_of_matches,
+		timestamp: getTimeAgo(recentMatch.created_at),
+		isNew: true,
+		isFavorited,
+		matches: transformedMatches,
 	};
 };
 

@@ -1,38 +1,45 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: interactive elements with click handlers */
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: interactive elements with click handlers */
 
-import { motion } from "framer-motion";
-import { Heart, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import React from "react";
-import { ImageLoader } from "@/components/image-loader";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/stores/auth-store";
+import { UniversityMatchCard } from "./university-match-card";
 
 export interface UniversityMatch {
 	id: string;
-	user1: {
+	me: {
 		name: string;
 		image: string;
 		age: number;
 		school: string;
 	};
-	user2: {
+	other: {
 		name: string;
 		image: string;
 		age: number;
 		school: string;
 	};
 	matchPercentage: number;
+	numberOfMatches: number;
 	timestamp: string;
 	isNew: boolean;
-	isViewed: boolean;
 	isFavorited?: boolean;
+	matches: Array<{
+		id: string;
+		createdAt: string;
+		name: string;
+		image: string;
+		school: string;
+		reactions: Record<string, number>;
+		matchPercentage: number;
+		isNew?: boolean;
+	}>;
 }
 
 const MatchCardSkeleton = () => (
@@ -60,15 +67,6 @@ export const UniversityMatchTab = () => {
 	const user = useUser();
 	const { matches: userMatches, isLoading } = useUserLiveMatches(user?.id);
 	const isMobile = useIsMobile();
-	const { mutate: reactToMatch } = useReactToMatch();
-
-	const handleFavoriteToggle = (
-		match: UniversityMatch,
-		e: React.MouseEvent,
-	) => {
-		e.stopPropagation();
-		reactToMatch({ matchId: match.id, favorite: !match.isFavorited });
-	};
 
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0 ? userMatches : [];
@@ -106,86 +104,12 @@ export const UniversityMatchTab = () => {
 							const isSelected = selectedMatch?.id === match.id;
 
 							return (
-								<div
+								<UniversityMatchCard
 									key={match.id}
-									className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg relative ${
-										isSelected
-											? "border-pink-300 bg-pink-50 shadow-md"
-											: "border-gray-200 bg-white hover:border-pink-200 hover:bg-pink-25"
-									}`}
-									onClick={() => setSelectedMatch(match)}
-								>
-									{/* Favorite Button */}
-									<motion.button
-										className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all duration-200"
-										onClick={(e) => handleFavoriteToggle(match, e)}
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-										initial={false}
-										animate={{
-											scale: match.isFavorited ? [1, 1.2, 1] : 1,
-										}}
-										transition={{
-											duration: 0.3,
-											ease: "easeOut",
-										}}
-									>
-										<motion.div
-											animate={{
-												scale: match.isFavorited ? 1.1 : 1,
-												rotate: match.isFavorited ? [0, -10, 10, 0] : 0,
-											}}
-											transition={{
-												duration: match.isFavorited ? 0.6 : 0.2,
-												ease: "easeOut",
-											}}
-										>
-											<Heart
-												className={`w-4 h-4 transition-colors duration-200 ${
-													match.isFavorited
-														? "text-pink-500 fill-pink-500"
-														: "text-gray-400 hover:text-pink-400"
-												}`}
-											/>
-										</motion.div>
-									</motion.button>
-
-									<div className="flex items-center gap-3 sm:gap-4">
-										<ImageLoader
-											src={match.user2.image}
-											alt={match.user2.name}
-											width={72}
-											height={72}
-											className="w-16 h-16 sm:w-18 sm:h-18 rounded-full border-3 border-white shadow-md"
-										/>
-
-										<div className="flex-1 min-w-0">
-											<div className="flex items-center justify-between mb-2">
-												<h3 className="font-bold text-gray-800 text-base sm:text-lg truncate">
-													{match.user2.name}
-												</h3>
-												<div className="flex items-center gap-1 flex-shrink-0 ml-3">
-													<Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
-													<span className="font-bold text-pink-500 text-base sm:text-lg">
-														{match.matchPercentage}%
-													</span>
-												</div>
-											</div>
-											<p className="text-sm sm:text-base text-gray-600 truncate">
-												{match.user2.school}
-											</p>
-										</div>
-
-										<Button
-											variant="ghost"
-											size="sm"
-											className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm h-6 sm:h-8 px-3 sm:px-4 font-semibold rounded-full gap-0 mt-1"
-										>
-											<span className="hidden sm:inline mr-1">View </span>
-											Baby
-										</Button>
-									</div>
-								</div>
+									match={match}
+									isSelected={isSelected}
+									setSelectedMatch={setSelectedMatch}
+								/>
 							);
 						})
 					) : (
