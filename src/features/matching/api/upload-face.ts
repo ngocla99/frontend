@@ -39,7 +39,6 @@ export const useUploadFace = ({
 
 	return useMutation({
 		onSuccess: (data, ...args) => {
-			console.log("🚀 ~ useUploadFace ~ data:", data);
 			onSuccess?.(data, ...args);
 			toast.success("Upload face success");
 
@@ -58,16 +57,12 @@ export const useUploadFace = ({
 				(oldData?: PhotoUpload[]) => {
 					if (!oldData) return oldData;
 
-					// Create new photo object matching PhotoUpload interface
 					const newPhoto: PhotoUpload = {
 						id: data.id,
 						image_url: data.image_url,
 						created_at: new Date().toISOString(),
 					};
 
-					console.log([newPhoto, ...oldData]);
-
-					// Add new photo to the beginning of the array
 					return [newPhoto, ...oldData];
 				},
 			);

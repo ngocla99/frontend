@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useUserPhotos } from "@/features/matching/api/get-user-photos";
 import { cn } from "@/lib/utils";
+import { PhotoFilterSkeleton } from "./photo-filter-skeleton";
 
 interface PhotoFilterProps {
 	activePhotoId: string | null;
@@ -17,7 +18,7 @@ export const PhotoFilter = ({
 	onPhotoSelect,
 	className,
 }: PhotoFilterProps) => {
-	const { data: userPhotos } = useUserPhotos();
+	const { data: userPhotos, isLoading } = useUserPhotos();
 	const uploads = userPhotos ?? [];
 
 	const handleTabClick = (photoId: string | null) => {
@@ -29,6 +30,11 @@ export const PhotoFilter = ({
 			onPhotoSelect(userPhotos[0].id);
 		}
 	}, [userPhotos]);
+
+	// Show skeleton while loading
+	if (isLoading) {
+		return <PhotoFilterSkeleton className={className} />;
+	}
 
 	if (uploads.length <= 1) return null;
 
