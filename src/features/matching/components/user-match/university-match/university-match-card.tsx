@@ -47,7 +47,7 @@ export function UniversityMatchCard({
 			}`}
 		>
 			{/* Favorite Button */}
-			<motion.button
+			{/* <motion.button
 				className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-all duration-200"
 				onClick={(e) => handleFavoriteToggle(match, e)}
 				whileHover={{ scale: 1.1 }}
@@ -79,7 +79,7 @@ export function UniversityMatchCard({
 						}`}
 					/>
 				</motion.div>
-			</motion.button>
+			</motion.button> */}
 
 			{/* Main content with left-center-right layout */}
 			<div className="flex items-center justify-between mb-4">

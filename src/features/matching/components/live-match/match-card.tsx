@@ -152,7 +152,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 			<Card className="group relative py-6 px-6 bg-gradient-card gap-0 shadow-soft border-0 hover:shadow-match transition-all duration-300">
 				<div className="">
 					{/* Favorite Button - Shows on hover or when favorited */}
-					{user && (
+					{/* {user && (
 						<motion.button
 							className={`absolute top-2 right-2 z-20 p-1.5 rounded-full hover:bg-white transition-all duration-300`}
 							onClick={handleFavoriteToggle}
@@ -186,7 +186,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 								/>
 							</motion.div>
 						</motion.button>
-					)}
+					)} */}
 
 					{/* Main content */}
 					<div className="flex items-center justify-between mb-4">

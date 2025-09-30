@@ -44,11 +44,12 @@ export function FavoriteHistory() {
 			trigger={
 				<Button variant="outline" size="sm" className="gap-2">
 					<Heart className="w-4 h-4" />
-					Favorites & History
+					History
 				</Button>
 			}
 		>
-			<Tabs defaultValue="favorites" className="h-full">
+			<BabyTab />
+			{/* <Tabs defaultValue="favorites" className="h-full">
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="favorites">
 						Favorites ({favorites.length})
@@ -65,7 +66,7 @@ export function FavoriteHistory() {
 				<TabsContent value="history" className="mt-4 max-h-96 overflow-y-auto">
 					<BabyTab />
 				</TabsContent>
-			</Tabs>
+			</Tabs> */}
 		</ResponsiveDialog>
 	);
 }
