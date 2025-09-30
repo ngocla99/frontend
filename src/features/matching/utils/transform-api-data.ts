@@ -1,5 +1,5 @@
 import type { MatchCardProps } from "@/features/matching/components/live-match/match-card";
-import type { UniversityMatch } from "@/features/matching/components/user-match/university-match-tab";
+import type { UniversityMatch } from "@/features/matching/components/user-match/university-match/university-match-tab";
 import type { SupabaseMatch } from "@/lib/supabase";
 import { getTimeAgo } from "@/lib/utils/date";
 import type { LiveMatchApi, UserMatchApi } from "@/types/api";

@@ -10,7 +10,7 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import { useReactToMatch } from "../../api/react-to-match";
+import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import type { UniversityMatch } from "./university-match-tab";
 
 interface UniversityMatchCardProps {
@@ -200,7 +200,11 @@ export function UniversityMatchCard({
 				<div className="flex items-center gap-2">
 					{/* Expand/Collapse Button */}
 					{isMultiplePhotos && (
-						<Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+						<Collapsible
+							open={isExpanded}
+							onOpenChange={setIsExpanded}
+							className="size-6"
+						>
 							<CollapsibleTrigger asChild>
 								<Button
 									variant="ghost"

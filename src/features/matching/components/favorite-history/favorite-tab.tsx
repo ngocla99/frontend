@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useReactToMatch } from "@/features/matching/api/react-to-match";
-import type { UniversityMatch } from "@/features/matching/components/user-match/university-match-tab";
+import type { UniversityMatch } from "@/features/matching/components/user-match/university-match/university-match-tab";
 import { useUserMatchesActions } from "@/features/matching/store/user-matches";
 
 interface FavoriteTabProps {

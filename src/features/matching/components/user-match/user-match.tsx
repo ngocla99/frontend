@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CelebrityMatchTab } from "./celebrity-match-tab";
-import { UniversityMatchTab } from "./university-match-tab";
+import { CelebrityMatchTab } from "./celebrity-match/celebrity-match-tab";
+import { UniversityMatchTab } from "./university-match/university-match-tab";
 
 export function UserMatch() {
 	const [activeTab, setActiveTab] = useState("university");
