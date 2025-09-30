@@ -3,9 +3,11 @@ import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
 import type { SupabaseMatch } from "@/lib/supabase";
 import { getUserMatchQueryOptions, useUserMatch } from "../api/get-user-match";
 
-export const useUserLiveMatches = (userId?: string) => {
+export const useUserLiveMatches = (userId?: string, faceId?: string | null) => {
 	const queryClient = useQueryClient();
-	const { data: userMatches, isLoading, error } = useUserMatch();
+	const { data: userMatches, isLoading, error } = useUserMatch({
+		input: faceId ? { face_id: faceId, limit: 50, offset: 0 } : undefined
+	});
 
 	// Listen for real-time match events for this user via Supabase
 	const handleMatchInsert = (payload: { new: SupabaseMatch }) => {

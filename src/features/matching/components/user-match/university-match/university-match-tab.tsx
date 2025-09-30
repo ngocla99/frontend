@@ -39,12 +39,17 @@ export interface UniversityMatch {
 	}>;
 }
 
-export const UniversityMatchTab = () => {
+interface UniversityMatchTabProps {
+	activePhotoId?: string | null;
+}
+
+export const UniversityMatchTab = ({ activePhotoId }: UniversityMatchTabProps) => {
+	const isMobile = useIsMobile();
+	const user = useUser();
+	const { matches: userMatches, isLoading } = useUserLiveMatches(user?.id, activePhotoId);
+
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);
-	const user = useUser();
-	const { matches: userMatches, isLoading } = useUserLiveMatches(user?.id);
-	const isMobile = useIsMobile();
 
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0 ? userMatches : [];

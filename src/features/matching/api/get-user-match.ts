@@ -9,6 +9,7 @@ export type UserMatchInput = {
 	limit: number;
 	offset: number;
 	reaction?: Reaction;
+	face_id?: string;
 	signal?: AbortSignal;
 };
 

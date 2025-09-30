@@ -17,12 +17,6 @@ export type UserApi = {
 	school?: string;
 };
 
-export type FaceApi = {
-	face_id: string;
-	image_url: string;
-	storage_path?: string;
-};
-
 export type LiveMatchApi = {
 	created_at: string;
 	id: string;
@@ -89,4 +83,10 @@ export type MatchFoundEvent = {
 	similarity_score: number;
 	created_at: string;
 	reactions: Record<Reaction, unknown>;
+};
+
+export type PhotoUpload = {
+	id: string;
+	created_at: string;
+	image_url: string;
 };
