@@ -5,14 +5,19 @@ import { getUserMatchQueryOptions, useUserMatch } from "../api/get-user-match";
 
 export const useUserLiveMatches = (userId?: string, faceId?: string | null) => {
 	const queryClient = useQueryClient();
-	const { data: userMatches, isLoading, error } = useUserMatch({
-		input: faceId ? { face_id: faceId, limit: 50, offset: 0 } : undefined
+	const {
+		data: userMatches,
+		isLoading,
+		error,
+	} = useUserMatch({
+		input: faceId ? { face_id: faceId, limit: 50, offset: 0 } : undefined,
+		queryConfig: {
+			enabled: !!faceId,
+		},
 	});
 
 	// Listen for real-time match events for this user via Supabase
 	const handleMatchInsert = (payload: { new: SupabaseMatch }) => {
-		console.log("🔥 New user match detected:", payload.new);
-
 		// Invalidate user matches to trigger refetch with complete data
 		queryClient.invalidateQueries({
 			queryKey: getUserMatchQueryOptions().queryKey,

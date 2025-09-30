@@ -1,27 +1,37 @@
 import { motion } from "framer-motion";
 import { Camera } from "lucide-react";
+import React from "react";
 import { ImageLoader } from "@/components/image-loader";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUserPhotos } from "@/features/matching/api/get-user-photos";
 import { cn } from "@/lib/utils";
-import type { PhotoUpload } from "@/types/api";
 
 interface PhotoFilterProps {
-	uploads: PhotoUpload[];
 	activePhotoId: string | null;
 	onPhotoSelect: (photoId: string | null) => void;
 	className?: string;
 }
 
 export const PhotoFilter = ({
-	uploads,
 	activePhotoId,
 	onPhotoSelect,
 	className,
 }: PhotoFilterProps) => {
+	const { data: userPhotos } = useUserPhotos();
+	const uploads = userPhotos ?? [];
+
 	const handleTabClick = (photoId: string | null) => {
 		onPhotoSelect(photoId);
 	};
+
+	React.useEffect(() => {
+		if (userPhotos) {
+			onPhotoSelect(userPhotos[0].id);
+		}
+	}, [userPhotos]);
+
+	if (uploads.length <= 1) return null;
 
 	return (
 		<div className={cn("w-full", className)}>
