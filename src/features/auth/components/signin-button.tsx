@@ -1,9 +1,11 @@
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { initiateGoogleOAuth } from "../api/google-oauth";
 
 export function SignInButton({ className }: { className?: string }) {
+	const navigate = useNavigate();
+
 	const handleSignIn = () => {
-		initiateGoogleOAuth();
+		navigate({ to: "/auth/sign-in" });
 	};
 
 	return (
