@@ -1,9 +1,9 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
-import type { PhotoUpload } from "@/types/api";
+import type { UserPhotosResponse } from "@/types/api";
 
-export const getUserPhotosApi = (): Promise<PhotoUpload[]> => {
+export const getUserPhotosApi = (): Promise<UserPhotosResponse> => {
 	return apiClient.get("/api/v1/me/faces");
 };
 

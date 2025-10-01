@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import React from "react";
 import { ImageLoader } from "@/components/image-loader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useUserPhotos } from "@/features/matching/api/get-user-photos";
@@ -18,18 +19,18 @@ export const PhotoFilter = ({
 	onPhotoSelect,
 	className,
 }: PhotoFilterProps) => {
-	const { data: userPhotos, isLoading } = useUserPhotos();
-	const uploads = userPhotos ?? [];
+	const { data: userPhotosData, isLoading } = useUserPhotos();
+	const uploads = userPhotosData?.faces ?? [];
 
 	const handleTabClick = (photoId: string | null) => {
 		onPhotoSelect(photoId);
 	};
 
 	React.useEffect(() => {
-		if (userPhotos) {
-			onPhotoSelect(userPhotos[0].id);
+		if (userPhotosData?.faces && userPhotosData.faces.length > 0) {
+			onPhotoSelect(userPhotosData.faces[0].id);
 		}
-	}, [userPhotos]);
+	}, [userPhotosData]);
 
 	// Show skeleton while loading
 	if (isLoading) {
@@ -75,7 +76,7 @@ export const PhotoFilter = ({
 										<span className="font-medium">Photo {index + 1}</span>
 									</div>
 
-									{/* <Badge
+									<Badge
 										variant={isActive ? "secondary" : "outline"}
 										className={cn(
 											"ml-1 min-w-[24px] justify-center",
@@ -84,8 +85,8 @@ export const PhotoFilter = ({
 												: "text-muted-foreground",
 										)}
 									>
-										{matchCount}
-									</Badge> */}
+										{upload.number_of_user_matches}
+									</Badge>
 								</Button>
 							</motion.div>
 						);

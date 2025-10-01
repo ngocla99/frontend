@@ -89,4 +89,10 @@ export type PhotoUpload = {
 	id: string;
 	created_at: string;
 	image_url: string;
+	number_of_user_matches: number;
+};
+
+export type UserPhotosResponse = {
+	faces: PhotoUpload[];
+	number_of_faces: number;
 };

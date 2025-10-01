@@ -58,8 +58,6 @@ export const UniversityMatchSkeleton = () => (
 		<div className="flex items-center justify-between">
 			<div className="flex items-center gap-3">
 				<Skeleton className="h-3 w-20" />
-				<span className="text-gray-300">•</span>
-				<Skeleton className="h-3 w-16" />
 			</div>
 
 			<div className="flex items-center gap-2">

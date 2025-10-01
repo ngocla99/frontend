@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getMeQueryOptions } from "@/features/auth/api/get-me";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
-import type { PhotoUpload, UserApi } from "@/types/api";
+import type { UserApi, UserPhotosResponse } from "@/types/api";
 import { getUserPhotosQueryOptions } from "./get-user-photos";
 
 export const uploadFaceSchema = z.object({
@@ -54,16 +54,20 @@ export const useUploadFace = ({
 			// Optimistically update user photos list
 			queryClient.setQueryData(
 				getUserPhotosQueryOptions().queryKey,
-				(oldData?: PhotoUpload[]) => {
+				(oldData?: UserPhotosResponse) => {
 					if (!oldData) return oldData;
 
-					const newPhoto: PhotoUpload = {
+					const newPhoto = {
 						id: data.id,
 						image_url: data.image_url,
 						created_at: new Date().toISOString(),
+						number_of_user_matches: 0,
 					};
 
-					return [newPhoto, ...oldData];
+					return {
+						faces: [newPhoto, ...oldData.faces],
+						number_of_faces: oldData.number_of_faces + 1,
+					};
 				},
 			);
 		},
