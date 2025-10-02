@@ -1,45 +1,60 @@
-import { useRouter, useSearch } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth-store";
 import { useMe } from "../api/get-me";
 
 export function MagicLinkCallback() {
 	const router = useRouter();
-	const { setAccessToken, setUser } = useAuth();
+	const { setSession, setUser } = useAuth();
 	const [isProcessing, setIsProcessing] = React.useState(true);
-	const [accessToken, setLocalAccessToken] = React.useState<string | null>(
-		null,
-	);
-
-	const searchParams = useSearch({ from: "/auth/callback" });
+	const [sessionReady, setSessionReady] = React.useState(false);
 
 	const { data: user } = useMe({
 		queryConfig: {
-			enabled: !!accessToken,
+			enabled: sessionReady,
 		},
 	});
 
-	// Handle auth callback - extract token from URL
+	// Handle auth callback - exchange code for session
 	React.useEffect(() => {
 		const handleAuthCallback = async () => {
 			try {
-				// Backend redirects with ?token=... or ?error=...
-				const token = searchParams.token;
-				const error = searchParams.error;
+				// Check if we have an error in the URL
+				const hashParams = new URLSearchParams(window.location.hash.substring(1));
+				const error = hashParams.get("error");
+				const errorDescription = hashParams.get("error_description");
 
 				if (error) {
-					throw new Error(error);
+					throw new Error(errorDescription || error);
 				}
 
-				if (!token) {
-					throw new Error("No token received");
+				console.log("🔍 Checking for Supabase session...");
+
+				// Supabase will automatically handle the PKCE code exchange
+				// when detectSessionInUrl is enabled
+				const {
+					data: { session },
+					error: sessionError,
+				} = await supabase.auth.getSession();
+
+				if (sessionError) {
+					console.error("❌ Session error:", sessionError);
+					throw sessionError;
 				}
 
-				console.log("🚀 ~ Received backend token");
-				setAccessToken(token);
-				setLocalAccessToken(token);
+				if (!session) {
+					console.error("❌ No session found");
+					throw new Error("No session found after authentication");
+				}
+
+				console.log("🚀 ~ Supabase session established", session);
+				console.log("✅ Session has access_token:", !!session.access_token);
+
+				setSession(session);
+				setSessionReady(true);
 			} catch (error) {
 				console.error("Auth callback error:", error);
 				toast.error(
@@ -52,11 +67,18 @@ export function MagicLinkCallback() {
 		};
 
 		handleAuthCallback();
-	}, [searchParams, setAccessToken, router]);
+	}, [setSession, router]);
 
 	// Redirect after user data is loaded
 	React.useEffect(() => {
+		console.log("📊 Redirect check:", {
+			hasUser: !!user,
+			isProcessing,
+			sessionReady,
+		});
+
 		if (user && !isProcessing) {
+			console.log("✅ User data loaded, redirecting...", user);
 			setUser(user);
 			toast.success("Successfully signed in!");
 			router.navigate({ to: "/" });

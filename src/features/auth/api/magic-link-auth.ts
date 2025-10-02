@@ -1,10 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
-import apiClient from "@/lib/api-client";
+import { supabase } from "@/lib/supabase";
 import type { MutationConfig } from "@/lib/react-query";
-
-const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 export const magicLinkSchema = z.object({
 	email: z.string().email("Please enter a valid email address"),
@@ -13,16 +11,23 @@ export const magicLinkSchema = z.object({
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
 
 /**
- * Sends a magic link to the user's email via backend
+ * Sends a magic link to the user's email via Supabase
  */
 export const sendMagicLinkApi = async (
 	input: MagicLinkInput,
 ): Promise<{ message: string }> => {
-	// Backend automatically configures the redirect URL to /auth/confirm
-	// and will redirect to frontend /auth/callback with JWT after verification
-	return apiClient.post("/api/auth/magic-link", {
+	const { error } = await supabase.auth.signInWithOtp({
 		email: input.email,
+		options: {
+			emailRedirectTo: `${window.location.origin}/auth/callback`,
+		},
 	});
+
+	if (error) {
+		throw new Error(error.message);
+	}
+
+	return { message: "Magic link sent" };
 };
 
 type UseSendMagicLinkOptions = {

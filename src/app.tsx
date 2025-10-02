@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	QueryCache,
 	QueryClient,
@@ -80,14 +81,19 @@ declare module "@tanstack/react-router" {
 }
 
 function App() {
-	const { accessToken } = useAuth();
+	const { session, initialize } = useAuth();
+
+	// Initialize auth state on app mount
+	React.useEffect(() => {
+		initialize();
+	}, [initialize]);
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
 				<RouterProvider
 					router={router}
-					context={{ auth: { isAuthenticated: !!accessToken } }}
+					context={{ auth: { isAuthenticated: !!session } }}
 				/>
 			</ThemeProvider>
 		</QueryClientProvider>

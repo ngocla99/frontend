@@ -4,12 +4,6 @@ import type { QueryConfig } from "@/lib/react-query";
 import { useAuth } from "@/stores/auth-store";
 import type { UserApi } from "@/types/api";
 
-const isValidAccessToken = (token: string): boolean => {
-	return (
-		!!token && token.trim() !== "" && token !== "undefined" && token !== "null"
-	);
-};
-
 export const getMeApi = (): Promise<UserApi> => {
 	return apiClient.get("/api/auth/me");
 };
@@ -27,16 +21,17 @@ type UseMeOptions = {
 };
 
 export const useMe = ({ queryConfig }: UseMeOptions = {}) => {
-	const { accessToken } = useAuth();
-	const hasValidToken = isValidAccessToken(accessToken);
+	const { session, accessToken } = useAuth();
+	// Check for either Supabase session OR legacy OAuth token
+	const hasValidAuth = !!(session?.access_token || accessToken);
 
 	return useQuery({
 		...getMeQueryOptions(),
-		enabled: hasValidToken, // Built-in access token verification
+		enabled: hasValidAuth, // Built-in auth verification (supports both flows)
 		...queryConfig,
 		// Merge enabled condition - both our check AND user's config must be true
 		...(queryConfig?.enabled !== undefined && {
-			enabled: hasValidToken && queryConfig.enabled,
+			enabled: hasValidAuth && queryConfig.enabled,
 		}),
 	});
 };

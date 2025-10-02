@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { supabase } from "./supabase";
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -11,15 +12,28 @@ const apiClient = axios.create({
 	},
 });
 
-// Add token (if existed) to request when reload
+// Add token to all requests (supports both Supabase and legacy OAuth)
 apiClient.interceptors.request.use(
-	(config) => {
-		const token = Cookies.get("access_token")
-			? JSON.parse(Cookies.get("access_token") as string)
-			: null;
-		if (token && !config.headers.Authorization) {
-			config.headers.Authorization = `Bearer ${token}`;
+	async (config) => {
+		// Priority 1: Try Supabase session (magic link flow)
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+
+		if (session?.access_token && !config.headers.Authorization) {
+			config.headers.Authorization = `Bearer ${session.access_token}`;
+			return config;
 		}
+
+		// Priority 2: Fall back to legacy OAuth token from cookies
+		const cookieToken = Cookies.get("access_token");
+		if (cookieToken && !config.headers.Authorization) {
+			const token = JSON.parse(cookieToken);
+			if (token) {
+				config.headers.Authorization = `Bearer ${token}`;
+			}
+		}
+
 		return config;
 	},
 	(error) => Promise.reject(error),
@@ -31,14 +45,25 @@ apiClient.interceptors.response.use(
 		return response.data;
 	},
 	async (error) => {
-		// If the error status is 401 and the error message is not 'INVALID_CREDENTIALS',
-		// it means the token has expired and we need to refresh it
-		if (
-			error.response.status === 401 &&
-			error.response.data.message !== "INVALID_CREDENTIALS"
-		) {
-			Cookies.set("token", "");
-			// window.location.replace("/sign-in");
+		// If the error status is 401, the token may have expired
+		if (error.response?.status === 401) {
+			// Try to refresh the session
+			const {
+				data: { session },
+				error: refreshError,
+			} = await supabase.auth.refreshSession();
+
+			if (refreshError || !session) {
+				// If refresh fails, sign out and redirect to sign in
+				await supabase.auth.signOut();
+				window.location.replace("/auth/sign-in");
+				return Promise.reject(error);
+			}
+
+			// Retry the original request with new token
+			const originalRequest = error.config;
+			originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
+			return axios(originalRequest);
 		}
 
 		return Promise.reject(error);
