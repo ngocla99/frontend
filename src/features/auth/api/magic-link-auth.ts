@@ -18,13 +18,10 @@ export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
 export const sendMagicLinkApi = async (
 	input: MagicLinkInput,
 ): Promise<{ message: string }> => {
-	// Backend will handle the Supabase magic link
-	// and redirect to /auth/confirm for verification
-	const redirectUrl = `${BASE_API_URL}/auth/confirm`;
-
+	// Backend automatically configures the redirect URL to /auth/confirm
+	// and will redirect to frontend /auth/callback with JWT after verification
 	return apiClient.post("/api/auth/magic-link", {
 		email: input.email,
-		redirect_to: redirectUrl,
 	});
 };
 
