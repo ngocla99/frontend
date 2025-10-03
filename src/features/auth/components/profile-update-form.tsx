@@ -32,7 +32,7 @@ import { useUpdateMe } from "../api/update-me";
 
 const profileUpdateSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
-	school: z.string().min(1, { message: "School is required" }),
+	// school: z.string().min(1, { message: "School is required" }),
 	// age: z
 	// 	.number({
 	// 		error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
@@ -61,14 +61,14 @@ export function ProfileUpdateForm() {
 		resolver: zodResolver(profileUpdateSchema),
 		defaultValues: {
 			name: user?.name || "",
-			school: user?.school || "",
+			// school: user?.school || "",
 			// age: user?.age,
 			gender: user?.gender || "",
 		},
 		values: user
 			? {
 					name: user.name || "",
-					school: user.school || "",
+					// school: user.school || "",
 					// age: user.age,
 					gender: user.gender || "",
 				}
@@ -78,7 +78,7 @@ export function ProfileUpdateForm() {
 	const handleSubmit = (values: ProfileUpdateFormData) => {
 		const updateData: UpdateMeInput = {
 			name: values.name,
-			school: values.school,
+			// school: values.school,
 			// age: values.age,
 			gender: values.gender,
 		};
@@ -143,7 +143,7 @@ export function ProfileUpdateForm() {
 							)}
 						/>
 
-						<FormField
+						{/* <FormField
 							control={form.control}
 							name="school"
 							render={({ field }) => (
@@ -158,7 +158,7 @@ export function ProfileUpdateForm() {
 									<FormMessage />
 								</FormItem>
 							)}
-						/>
+						/> */}
 
 						<div className="grid sm:grid-cols-1 gap-4 align-start">
 							{/* <FormField

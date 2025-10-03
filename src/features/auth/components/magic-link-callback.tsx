@@ -18,6 +18,18 @@ export function MagicLinkCallback() {
 		},
 	});
 
+	// Timeout redirect after 30 seconds
+	React.useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			if (isProcessing) {
+				toast.error("Authentication timeout. Please try again.");
+				router.navigate({ to: "/" });
+			}
+		}, 15000);
+
+		return () => clearTimeout(timeoutId);
+	}, [isProcessing, router]);
+
 	// Handle auth callback - exchange code for session
 	React.useEffect(() => {
 		const handleAuthCallback = async () => {
