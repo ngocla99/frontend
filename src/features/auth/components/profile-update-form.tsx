@@ -1,167 +1,167 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { UpdateMeInput } from "@/features/auth/api/update-me";
-import { useUser } from "@/stores/auth-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import type { UpdateMeInput } from "@/features/auth/api/update-me";
+import { useUser } from "@/stores/auth-store";
 import { useUpdateMe } from "../api/update-me";
 
 const profileUpdateSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  school: z.string().min(1, { message: "School is required" }),
-  // age: z
-  // 	.number({
-  // 		error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
-  // 	})
-  // 	.min(16, { message: "Age must be at least 16" })
-  // 	.max(100, { message: "Age must be less than 100" })
-  // 	.optional(),
-  gender: z.string().min(1, { message: "Gender is required" }),
+	name: z.string().min(1, { message: "Name is required" }),
+	school: z.string().min(1, { message: "School is required" }),
+	// age: z
+	// 	.number({
+	// 		error: (issue) => (!issue.input ? "Age is required" : "Not a number"),
+	// 	})
+	// 	.min(16, { message: "Age must be at least 16" })
+	// 	.max(100, { message: "Age must be less than 100" })
+	// 	.optional(),
+	gender: z.string().min(1, { message: "Gender is required" }),
 });
 
 type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
 
 export function ProfileUpdateForm() {
-  const navigate = useNavigate();
-  const user = useUser();
+	const navigate = useNavigate();
+	const user = useUser();
 
-  const updateMeMutation = useUpdateMe({
-    mutationConfig: {
-      onSuccess: () => {
-        navigate({ to: "/" });
-      },
-    },
-  });
+	const updateMeMutation = useUpdateMe({
+		mutationConfig: {
+			onSuccess: () => {
+				navigate({ to: "/" });
+			},
+		},
+	});
 
-  const form = useForm<ProfileUpdateFormData>({
-    resolver: zodResolver(profileUpdateSchema),
-    defaultValues: {
-      name: user?.name || "",
-      school: user?.school || "",
-      // age: user?.age,
-      gender: user?.gender || "",
-    },
-    values: user
-      ? {
-          name: user.name || "",
-          school: user.school || "",
-          // age: user.age,
-          gender: user.gender || "",
-        }
-      : undefined,
-  });
+	const form = useForm<ProfileUpdateFormData>({
+		resolver: zodResolver(profileUpdateSchema),
+		defaultValues: {
+			name: user?.name || "",
+			school: user?.school || "",
+			// age: user?.age,
+			gender: user?.gender || "",
+		},
+		values: user
+			? {
+					name: user.name || "",
+					school: user.school || "",
+					// age: user.age,
+					gender: user.gender || "",
+				}
+			: undefined,
+	});
 
-  const handleSubmit = (values: ProfileUpdateFormData) => {
-    const updateData: UpdateMeInput = {
-      name: values.name,
-      school: values.school,
-      // age: values.age,
-      gender: values.gender,
-    };
-    updateMeMutation.mutate(updateData);
-  };
+	const handleSubmit = (values: ProfileUpdateFormData) => {
+		const updateData: UpdateMeInput = {
+			name: values.name,
+			school: values.school,
+			// age: values.age,
+			gender: values.gender,
+		};
+		updateMeMutation.mutate(updateData);
+	};
 
-  //   if (isLoading) {
-  //     return (
-  //       <Card className="w-full">
-  //         <CardHeader>
-  //           <Skeleton className="h-8 w-48" />
-  //           <Skeleton className="h-4 w-64" />
-  //         </CardHeader>
-  //         <CardContent className="space-y-6">
-  //           <div className="space-y-2">
-  //             <Skeleton className="h-4 w-16" />
-  //             <Skeleton className="h-10 w-full" />
-  //           </div>
-  //           <div className="space-y-2">
-  //             <Skeleton className="h-4 w-16" />
-  //             <Skeleton className="h-10 w-full" />
-  //           </div>
-  //           <div className="space-y-2">
-  //             <Skeleton className="h-4 w-16" />
-  //             <Skeleton className="h-10 w-full" />
-  //           </div>
-  //           <div className="space-y-2">
-  //             <Skeleton className="h-4 w-16" />
-  //             <Skeleton className="h-10 w-full" />
-  //           </div>
-  //           <Skeleton className="h-10 w-full" />
-  //         </CardContent>
-  //       </Card>
-  //     );
-  //   }
+	//   if (isLoading) {
+	//     return (
+	//       <Card className="w-full">
+	//         <CardHeader>
+	//           <Skeleton className="h-8 w-48" />
+	//           <Skeleton className="h-4 w-64" />
+	//         </CardHeader>
+	//         <CardContent className="space-y-6">
+	//           <div className="space-y-2">
+	//             <Skeleton className="h-4 w-16" />
+	//             <Skeleton className="h-10 w-full" />
+	//           </div>
+	//           <div className="space-y-2">
+	//             <Skeleton className="h-4 w-16" />
+	//             <Skeleton className="h-10 w-full" />
+	//           </div>
+	//           <div className="space-y-2">
+	//             <Skeleton className="h-4 w-16" />
+	//             <Skeleton className="h-10 w-full" />
+	//           </div>
+	//           <div className="space-y-2">
+	//             <Skeleton className="h-4 w-16" />
+	//             <Skeleton className="h-10 w-full" />
+	//           </div>
+	//           <Skeleton className="h-10 w-full" />
+	//         </CardContent>
+	//       </Card>
+	//     );
+	//   }
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Update Profile</CardTitle>
-        <CardDescription>
-          Update your personal information below
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your first name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+	return (
+		<Card className="w-full">
+			<CardHeader>
+				<CardTitle>Update Profile</CardTitle>
+				<CardDescription>
+					Update your personal information below
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<Form {...form}>
+					<form
+						onSubmit={form.handleSubmit(handleSubmit)}
+						className="space-y-6"
+					>
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>First Name</FormLabel>
+									<FormControl>
+										<Input placeholder="Enter your first name" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-            <FormField
-              control={form.control}
-              name="school"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School/University</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your school or university"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+						<FormField
+							control={form.control}
+							name="school"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>School/University</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Enter your school or university"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 
-            <div className="grid sm:grid-cols-1 gap-4 align-start">
-              {/* <FormField
+						<div className="grid sm:grid-cols-1 gap-4 align-start">
+							{/* <FormField
 								control={form.control}
 								name="age"
 								render={({ field }) => (
@@ -185,39 +185,39 @@ export function ProfileUpdateForm() {
 								)}
 							/> */}
 
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select your gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+							<FormField
+								control={form.control}
+								name="gender"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Gender</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<FormControl>
+												<SelectTrigger className="w-full">
+													<SelectValue placeholder="Select your gender" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="male">Male</SelectItem>
+												<SelectItem value="female">Female</SelectItem>
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
-            <Button
-              type="submit"
-              disabled={updateMeMutation.isPending}
-              className="w-full"
-            >
-              {updateMeMutation.isPending ? "Updating..." : "Update Profile"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  );
+						<Button
+							type="submit"
+							disabled={updateMeMutation.isPending}
+							className="w-full"
+						>
+							{updateMeMutation.isPending ? "Updating..." : "Update Profile"}
+						</Button>
+					</form>
+				</Form>
+			</CardContent>
+		</Card>
+	);
 }

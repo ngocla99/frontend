@@ -28,7 +28,7 @@ export const PhotoFilter = ({
 
 	React.useEffect(() => {
 		if (userPhotosData?.faces && userPhotosData.faces.length > 0) {
-			onPhotoSelect(userPhotosData.faces[0].id);
+			onPhotoSelect(uploads[0].id);
 		}
 	}, [userPhotosData]);
 
