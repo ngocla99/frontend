@@ -1,12 +1,14 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 interface PhotoFilterSkeletonProps {
 	className?: string;
 }
 
-export const PhotoFilterSkeleton = ({ className }: PhotoFilterSkeletonProps) => {
+export const PhotoFilterSkeleton = ({
+	className,
+}: PhotoFilterSkeletonProps) => {
 	return (
 		<div className={cn("w-full", className)}>
 			<ScrollArea className="w-full">

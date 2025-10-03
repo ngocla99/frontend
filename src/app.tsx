@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	QueryCache,
 	QueryClient,
@@ -6,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { AxiosError } from "axios";
+import React from "react";
 import { toast } from "sonner";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { handleServerError } from "@/lib/utils/handle-server-error";

@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
 import type { MutationConfig } from "@/lib/react-query";
+import { supabase } from "@/lib/supabase";
 
 export const magicLinkSchema = z.object({
 	email: z.string().email("Please enter a valid email address"),

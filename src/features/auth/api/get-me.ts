@@ -12,7 +12,6 @@ export const getMeQueryOptions = () => {
 	return queryOptions({
 		queryKey: ["auth", "me"],
 		queryFn: () => getMeApi(),
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
 };
 

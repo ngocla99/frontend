@@ -43,10 +43,15 @@ interface UniversityMatchTabProps {
 	activePhotoId?: string | null;
 }
 
-export const UniversityMatchTab = ({ activePhotoId }: UniversityMatchTabProps) => {
+export const UniversityMatchTab = ({
+	activePhotoId,
+}: UniversityMatchTabProps) => {
 	const isMobile = useIsMobile();
 	const user = useUser();
-	const { matches: userMatches, isLoading } = useUserLiveMatches(user?.id, activePhotoId);
+	const { matches: userMatches, isLoading } = useUserLiveMatches(
+		user?.id,
+		activePhotoId,
+	);
 
 	const [selectedMatch, setSelectedMatch] =
 		React.useState<UniversityMatch | null>(null);

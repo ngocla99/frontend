@@ -1,8 +1,8 @@
+import type { Session } from "@supabase/supabase-js";
 import Cookies from "js-cookie";
 import { create } from "zustand";
-import type { Session } from "@supabase/supabase-js";
-import type { UserApi } from "@/types/api";
 import { supabase } from "@/lib/supabase";
+import type { UserApi } from "@/types/api";
 
 const ACCESS_TOKEN = "access_token";
 

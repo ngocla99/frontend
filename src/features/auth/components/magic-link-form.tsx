@@ -124,14 +124,20 @@ export function MagicLinkForm({ mode }: MagicLinkFormProps) {
 				{mode === "signin" ? (
 					<>
 						Don't have an account?{" "}
-						<a href="/auth/sign-up" className="font-medium text-primary hover:underline">
+						<a
+							href="/auth/sign-up"
+							className="font-medium text-primary hover:underline"
+						>
 							Sign up
 						</a>
 					</>
 				) : (
 					<>
 						Already have an account?{" "}
-						<a href="/auth/sign-in" className="font-medium text-primary hover:underline">
+						<a
+							href="/auth/sign-in"
+							className="font-medium text-primary hover:underline"
+						>
 							Sign in
 						</a>
 					</>

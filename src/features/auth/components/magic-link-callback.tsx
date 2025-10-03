@@ -23,15 +23,15 @@ export function MagicLinkCallback() {
 		const handleAuthCallback = async () => {
 			try {
 				// Check if we have an error in the URL
-				const hashParams = new URLSearchParams(window.location.hash.substring(1));
+				const hashParams = new URLSearchParams(
+					window.location.hash.substring(1),
+				);
 				const error = hashParams.get("error");
 				const errorDescription = hashParams.get("error_description");
 
 				if (error) {
 					throw new Error(errorDescription || error);
 				}
-
-				console.log("🔍 Checking for Supabase session...");
 
 				// Supabase will automatically handle the PKCE code exchange
 				// when detectSessionInUrl is enabled
@@ -50,9 +50,6 @@ export function MagicLinkCallback() {
 					throw new Error("No session found after authentication");
 				}
 
-				console.log("🚀 ~ Supabase session established", session);
-				console.log("✅ Session has access_token:", !!session.access_token);
-
 				setSession(session);
 				setSessionReady(true);
 			} catch (error) {
@@ -70,20 +67,13 @@ export function MagicLinkCallback() {
 	}, [setSession, router]);
 
 	// Redirect after user data is loaded
-	React.useEffect(() => {
-		console.log("📊 Redirect check:", {
-			hasUser: !!user,
-			isProcessing,
-			sessionReady,
-		});
-
-		if (user && !isProcessing) {
-			console.log("✅ User data loaded, redirecting...", user);
-			setUser(user);
-			toast.success("Successfully signed in!");
-			router.navigate({ to: "/" });
-		}
-	}, [user, isProcessing, setUser, router]);
+	//   React.useEffect(() => {
+	//     if (user && !isProcessing) {
+	//       setUser(user);
+	//       toast.success("Successfully signed in!");
+	//       router.navigate({ to: "/" });
+	//     }
+	//   }, [user, isProcessing, setUser, router]);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center">

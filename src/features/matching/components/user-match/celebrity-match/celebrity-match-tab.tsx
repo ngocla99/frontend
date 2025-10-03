@@ -77,7 +77,9 @@ interface CelebrityMatchTabProps {
 	activePhotoId?: string | null;
 }
 
-export const CelebrityMatchTab = ({ activePhotoId }: CelebrityMatchTabProps) => {
+export const CelebrityMatchTab = ({
+	activePhotoId,
+}: CelebrityMatchTabProps) => {
 	const isMobile = useIsMobile();
 	const [selectedCelebrity, setSelectedCelebrity] =
 		React.useState<CelebrityMatch | null>(null);

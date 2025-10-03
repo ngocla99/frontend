@@ -1,16 +1,11 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Toaster } from "sonner";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { useMe } from "@/features/auth/api/get-me";
 import { getUserPhotosQueryOptions } from "@/features/matching/api/get-user-photos";
 import { Header } from "./header";
 
-export function RootLayout() {
+export function RootLayout({ children }: { children: React.ReactNode }) {
 	const { data: user, isLoading } = useMe();
 	const queryClient = useQueryClient();
 	const [isPhotosPrefetching, setIsPhotosPrefetching] = useState(true);
@@ -33,7 +28,7 @@ export function RootLayout() {
 
 	return (
 		<>
-			<Header />
+			<Header loading={isAppLoading} />
 			{isAppLoading ? (
 				<div className="min-h-screen flex items-center justify-center">
 					<AITextLoading
@@ -41,25 +36,7 @@ export function RootLayout() {
 					/>
 				</div>
 			) : (
-				<Outlet />
-			)}
-			<Toaster duration={3000} />
-			{import.meta.env.MODE === "development" && (
-				<TanStackDevtools
-					config={{
-						position: "bottom-left",
-					}}
-					plugins={[
-						{
-							name: "Tanstack Router",
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-						{
-							name: "Tanstack Query",
-							render: <ReactQueryDevtools />,
-						},
-					]}
-				/>
+				children
 			)}
 		</>
 	);
