@@ -87,9 +87,9 @@ export function OnboardingForm() {
       case 1:
         return ["name"];
       case 2:
-        return ["school"];
-      case 3:
         return ["gender"];
+      // case 3:
+      // return ["school"];
       default:
         return [];
     }

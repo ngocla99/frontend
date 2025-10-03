@@ -25,7 +25,7 @@ export const magicLinkSchema = z.object({
       return whitelistDomains.some(
         (whitelistDomain: string) => domain === whitelistDomain
       );
-    }, "Please use a valid .edu email address or whitelisted domain"),
+    }, "Please use a valid school email"),
 });
 
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
