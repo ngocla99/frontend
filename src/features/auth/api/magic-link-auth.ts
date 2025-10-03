@@ -5,7 +5,7 @@ import type { MutationConfig } from "@/lib/react-query";
 import { supabase } from "@/lib/supabase";
 
 export const magicLinkSchema = z.object({
-	email: z.string().email("Please enter a valid email address"),
+  email: z.string().email("Please enter a valid email address"),
 });
 
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
@@ -14,42 +14,43 @@ export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
  * Sends a magic link to the user's email via Supabase
  */
 export const sendMagicLinkApi = async (
-	input: MagicLinkInput,
+  input: MagicLinkInput
 ): Promise<{ message: string }> => {
-	const { error } = await supabase.auth.signInWithOtp({
-		email: input.email,
-		options: {
-			emailRedirectTo: `${window.location.origin}/auth/callback`,
-		},
-	});
+  const { error } = await supabase.auth.signInWithOtp({
+    email: input.email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
+      shouldCreateUser: true,
+    },
+  });
 
-	if (error) {
-		throw new Error(error.message);
-	}
+  if (error) {
+    throw new Error(error.message);
+  }
 
-	return { message: "Magic link sent" };
+  return { message: "Magic link sent" };
 };
 
 type UseSendMagicLinkOptions = {
-	mutationConfig?: MutationConfig<typeof sendMagicLinkApi>;
+  mutationConfig?: MutationConfig<typeof sendMagicLinkApi>;
 };
 
 export const useSendMagicLink = ({
-	mutationConfig,
+  mutationConfig,
 }: UseSendMagicLinkOptions = {}) => {
-	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
+  const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 
-	return useMutation({
-		onSuccess: (data, ...args) => {
-			onSuccess?.(data, ...args);
-			toast.success("Magic link sent! Check your email to sign in.");
-		},
-		onError: (error: Error, ...args) => {
-			const errorMessage = error.message || "Failed to send magic link";
-			toast.error(errorMessage);
-			onError?.(error, ...args);
-		},
-		...restConfig,
-		mutationFn: sendMagicLinkApi,
-	});
+  return useMutation({
+    onSuccess: (data, ...args) => {
+      onSuccess?.(data, ...args);
+      toast.success("Magic link sent! Check your email to sign in.");
+    },
+    onError: (error: Error, ...args) => {
+      const errorMessage = error.message || "Failed to send magic link";
+      toast.error(errorMessage);
+      onError?.(error, ...args);
+    },
+    ...restConfig,
+    mutationFn: sendMagicLinkApi,
+  });
 };
