@@ -5,7 +5,27 @@ import type { MutationConfig } from "@/lib/react-query";
 import { supabase } from "@/lib/supabase";
 
 export const magicLinkSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .refine((email) => {
+      const domain = email.toLowerCase().split("@")[1];
+      if (!domain) return false;
+
+      // Check if domain contains .edu
+      if (domain.includes(".edu")) return true;
+
+      // Check whitelist domains from env
+      const whitelist = import.meta.env.VITE_WHITELIST_EMAIL_DOMAINS || "";
+      const whitelistDomains = whitelist
+        .split(",")
+        .map((d: string) => d.trim().toLowerCase())
+        .filter(Boolean);
+
+      return whitelistDomains.some(
+        (whitelistDomain: string) => domain === whitelistDomain
+      );
+    }, "Please use a valid .edu email address or whitelisted domain"),
 });
 
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;

@@ -97,7 +97,7 @@ export function MagicLinkForm({ mode }: MagicLinkFormProps) {
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="student@school.edu"
                     {...field}
                     disabled={sendMagicLink.isPending}
                   />
