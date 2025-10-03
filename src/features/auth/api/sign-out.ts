@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth-store";
 
 export const signOutApi = async (): Promise<void> => {
@@ -21,11 +22,12 @@ export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 
 	return useMutation({
-		onSuccess: (...args) => {
+		onSuccess: async (...args) => {
+			await supabase.auth.signOut();
+			toast.success("Logged out successfully");
 			onSuccess?.(...args);
 			reset();
 			queryClient.clear();
-			toast.success("Logged out successfully");
 			router.navigate({ to: "/auth/sign-in" });
 		},
 		onError: (error: Error, ...args) => {

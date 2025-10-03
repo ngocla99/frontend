@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>()((set) => {
 			reset: () =>
 				set((state) => {
 					Cookies.remove(ACCESS_TOKEN);
-					supabase.auth.signOut(); // Also sign out from Supabase
+
 					return {
 						...state,
 						auth: { ...state.auth, user: null, session: null, accessToken: "" },
