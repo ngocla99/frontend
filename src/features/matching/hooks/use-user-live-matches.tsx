@@ -17,7 +17,7 @@ export const useUserLiveMatches = (userId?: string, faceId?: string | null) => {
 	});
 
 	// Listen for real-time match events for this user via Supabase
-	const handleMatchInsert = (payload: { new: SupabaseMatch }) => {
+	const handleMatchInsert = (_payload: { new: SupabaseMatch }) => {
 		// Invalidate user matches to trigger refetch with complete data
 		queryClient.invalidateQueries({
 			queryKey: getUserMatchQueryOptions().queryKey,

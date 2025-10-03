@@ -180,7 +180,7 @@ export const BabyGenerator = ({
 				toast.success("Link copied to clipboard! Share away! 📋");
 				storage.trackEvent("baby_shared", { method: "clipboard", matchName });
 			}
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Unable to share. Try saving the image instead.");
 		}
 	};
@@ -197,7 +197,7 @@ export const BabyGenerator = ({
 
 			toast.success("Baby image saved! 💾");
 			storage.trackEvent("baby_saved", { matchName });
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Unable to save image");
 		}
 	};

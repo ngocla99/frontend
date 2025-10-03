@@ -11,7 +11,6 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useReactToMatch } from "@/features/matching/api/react-to-match";
-import { useUser } from "@/stores/auth-store";
 import { useUserMatchesActions } from "../../store/user-matches";
 
 export interface MatchCardProps {
@@ -75,7 +74,6 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 		isViewed,
 		isFavorited = false,
 	} = data;
-	const user = useUser();
 	const { onOpen } = useUserMatchesActions();
 	const [isFavorite, setIsFavorite] = React.useState(isFavorited);
 	const { mutate: reactToMatch } = useReactToMatch();
@@ -85,7 +83,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 		setIsFavorite(isFavorited);
 	}, [isFavorited]);
 
-	const handleFavoriteToggle = (e: React.MouseEvent) => {
+	const _handleFavoriteToggle = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		const next = !isFavorite;
 		setIsFavorite(next);

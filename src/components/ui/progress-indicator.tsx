@@ -24,7 +24,7 @@ export const ProgressIndicator = ({
 	variant = "horizontal",
 	showLabels = true,
 }: ProgressIndicatorProps) => {
-	const getCurrentStepIndex = () =>
+	const _getCurrentStepIndex = () =>
 		steps.findIndex((step) => step.id === currentStep);
 	const isStepCompleted = (stepId: string) => completedSteps.includes(stepId);
 	const isStepCurrent = (stepId: string) => stepId === currentStep;

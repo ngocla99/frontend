@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { getTimeAgo } from "@/lib/utils/date";
 
 export function BabyTab() {
-	const [babyHistory, setBabyHistory] = React.useState<any[]>([]);
+	const [babyHistory, _setBabyHistory] = React.useState<any[]>([]);
 
-	const deleteBaby = (id: string) => {};
+	const deleteBaby = (_id: string) => {};
 	return (
 		<div>
 			{babyHistory.length === 0 ? (

@@ -45,11 +45,11 @@ function HomePage() {
 	const isMobile = useIsMobile();
 	const user = useUser();
 
-	const [selectedMatch, setSelectedMatch] =
+	const [selectedMatch, _setSelectedMatch] =
 		React.useState<PotentialMatch | null>(null);
-	const [selectedCelebrity, setSelectedCelebrity] =
+	const [selectedCelebrity, _setSelectedCelebrity] =
 		React.useState<Celebrity | null>(null);
-	const [selectedCustomMatch, setSelectedCustomMatch] =
+	const [selectedCustomMatch, _setSelectedCustomMatch] =
 		React.useState<CustomMatch | null>(null);
 	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
 

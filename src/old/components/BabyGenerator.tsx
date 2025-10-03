@@ -79,7 +79,7 @@ export const BabyGenerator = ({
 			try {
 				await navigator.clipboard.writeText(window.location.href);
 				toast.success("Link copied to clipboard! 📋");
-			} catch (clipboardError) {
+			} catch (_clipboardError) {
 				toast.error("Unable to share. Try saving the image instead.");
 			}
 		}

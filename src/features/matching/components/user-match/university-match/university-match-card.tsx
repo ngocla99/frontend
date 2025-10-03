@@ -29,7 +29,7 @@ export function UniversityMatchCard({
 
 	const isMultiplePhotos = match?.numberOfMatches > 1;
 
-	const handleFavoriteToggle = (
+	const _handleFavoriteToggle = (
 		match: UniversityMatch,
 		e: React.MouseEvent,
 	) => {
