@@ -3,12 +3,12 @@ import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 import { useMe } from "../api/get-me";
 
 export function MagicLinkCallback() {
 	const router = useRouter();
-	const { setSession, setUser } = useAuth();
+	const { setSession, setUser } = useAuthActions();
 	const [isProcessing, setIsProcessing] = React.useState(true);
 	const [sessionReady, setSessionReady] = React.useState(false);
 

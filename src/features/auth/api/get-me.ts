@@ -1,7 +1,7 @@
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
-import { useAuth } from "@/stores/auth-store";
+import { useAccessToken, useSession } from "@/stores/auth-store";
 import type { UserApi } from "@/types/api";
 
 export const getMeApi = (): Promise<UserApi> => {
@@ -20,7 +20,8 @@ type UseMeOptions = {
 };
 
 export const useMe = ({ queryConfig }: UseMeOptions = {}) => {
-	const { session, accessToken } = useAuth();
+	const session = useSession();
+	const accessToken = useAccessToken();
 	// Check for either Supabase session OR legacy OAuth token
 	const hasValidAuth = !!(session?.access_token || accessToken);
 

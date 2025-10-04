@@ -40,7 +40,7 @@ const profileUpdateSchema = z.object({
 	// 	.min(16, { message: "Age must be at least 16" })
 	// 	.max(100, { message: "Age must be less than 100" })
 	// 	.optional(),
-	gender: z.string().min(1, { message: "Gender is required" }),
+	// gender: z.string().min(1, { message: "Gender is required" }),
 });
 
 type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
@@ -63,14 +63,14 @@ export function ProfileUpdateForm() {
 			name: user?.name || "",
 			// school: user?.school || "",
 			// age: user?.age,
-			gender: user?.gender || "",
+			// gender: user?.gender || "",
 		},
 		values: user
 			? {
 					name: user.name || "",
 					// school: user.school || "",
 					// age: user.age,
-					gender: user.gender || "",
+					// gender: user.gender || "",
 				}
 			: undefined,
 	});
@@ -80,7 +80,7 @@ export function ProfileUpdateForm() {
 			name: values.name,
 			// school: values.school,
 			// age: values.age,
-			gender: values.gender,
+			// gender: values.gender,
 		};
 		updateMeMutation.mutate(updateData);
 	};
@@ -185,7 +185,7 @@ export function ProfileUpdateForm() {
 								)}
 							/> */}
 
-							<FormField
+							{/* <FormField
 								control={form.control}
 								name="gender"
 								render={({ field }) => (
@@ -205,7 +205,7 @@ export function ProfileUpdateForm() {
 										<FormMessage />
 									</FormItem>
 								)}
-							/>
+							/> */}
 						</div>
 
 						<Button

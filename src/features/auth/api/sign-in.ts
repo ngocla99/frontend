@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 
 export const signInSchema = z.object({
 	email: z
@@ -29,7 +29,7 @@ type UseSignInOptions = {
 };
 
 export const useSignIn = ({ mutationConfig }: UseSignInOptions = {}) => {
-	const { setAccessToken } = useAuth();
+	const { setAccessToken } = useAuthActions();
 	const router = useRouter();
 
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};

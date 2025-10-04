@@ -3,7 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import type { MutationConfig } from "@/lib/react-query";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -41,7 +41,7 @@ type UseOAuthCallbackOptions = {
 export const useOAuthCallback = ({
 	mutationConfig,
 }: UseOAuthCallbackOptions = {}) => {
-	const { setAccessToken } = useAuth();
+	const { setAccessToken } = useAuthActions();
 	const router = useRouter();
 
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};

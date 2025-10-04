@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { useMe } from "@/features/auth/api/get-me";
 import { getUserPhotosQueryOptions } from "@/features/matching/api/get-user-photos";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 import { Header } from "./header";
 
 export function RootLayout({ children }: { children: React.ReactNode }) {
 	const { data: user, isLoading } = useMe();
-	const { setUser } = useAuth();
+	const { setUser } = useAuthActions();
 	const queryClient = useQueryClient();
 	const [isPhotosPrefetching, setIsPhotosPrefetching] = useState(true);
 

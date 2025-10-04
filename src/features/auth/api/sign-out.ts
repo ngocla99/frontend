@@ -3,7 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { MutationConfig } from "@/lib/react-query";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 
 export const signOutApi = async () => {
 	return await supabase.auth.signOut();
@@ -14,7 +14,7 @@ type UseSignOutOptions = {
 };
 
 export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
-	const { reset } = useAuth();
+	const { reset } = useAuthActions();
 	const router = useRouter();
 	const queryClient = useQueryClient();
 

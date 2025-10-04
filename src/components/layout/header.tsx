@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SignInButton } from "@/features/auth/components/signin-button";
 import { SignOutButton } from "@/features/auth/components/signout-button";
 import { SignUpButton } from "@/features/auth/components/signup-button";
-import { useAuth } from "@/stores/auth-store";
+import { useUser } from "@/stores/auth-store";
 import { ProfileDropdown } from "../profile-dropdown";
 import { Separator } from "../ui/separator";
 
@@ -23,7 +23,7 @@ const navItemsMobile: NavItem[] = [
 ];
 
 export function Header({ loading = false }: { loading?: boolean }) {
-	const { user } = useAuth();
+	const user = useUser();
 
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

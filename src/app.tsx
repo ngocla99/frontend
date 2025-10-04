@@ -9,7 +9,7 @@ import React from "react";
 import { toast } from "sonner";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { handleServerError } from "@/lib/utils/handle-server-error";
-import { useAuth, useAuthStore } from "@/stores/auth-store";
+import { useAuthActions, useAuthStore, useSession } from "@/stores/auth-store";
 // Generated Routes
 import { routeTree } from "./routeTree.gen";
 
@@ -48,7 +48,7 @@ const queryClient = new QueryClient({
 		onError: (error) => {
 			if (error instanceof AxiosError) {
 				if (error.response?.status === 401) {
-					useAuthStore.getState().auth.reset();
+					useAuthStore.getState().actions.reset();
 					// const redirect = `${router.history.location.href}`;
 					// router.navigate({ to: "/sign-in", search: { redirect } });
 				}
@@ -81,7 +81,8 @@ declare module "@tanstack/react-router" {
 }
 
 function App() {
-	const { session, initialize } = useAuth();
+	const session = useSession();
+	const { initialize } = useAuthActions();
 	const [isInitialized, setIsInitialized] = React.useState(false);
 
 	// Initialize auth state on app mount

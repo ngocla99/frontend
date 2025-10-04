@@ -2,13 +2,13 @@ import { useRouter, useSearch } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 import { useMe } from "../api/get-me";
 import { extractOAuthParams } from "../api/google-oauth";
 
 export function OAuthCallback() {
 	const router = useRouter();
-	const { setAccessToken, setUser } = useAuth();
+	const { setAccessToken, setUser } = useAuthActions();
 
 	const searchParams = useSearch({ from: "/auth/callback" });
 	const accessToken = searchParams.token;

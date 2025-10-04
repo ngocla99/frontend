@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSignOut } from "@/features/auth/api/sign-out";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/stores/auth-store";
+import { useUser } from "@/stores/auth-store";
 
 export function ProfileDropdown({ className }: { className?: string }) {
-	const { user } = useAuth();
+	const user = useUser();
 
 	const signOutMutation = useSignOut({
 		mutationConfig: {
