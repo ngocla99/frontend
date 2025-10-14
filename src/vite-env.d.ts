@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
 	readonly VITE_BASE_API_URL: string;
 	readonly VITE_SUPABASE_URL: string;
-	readonly VITE_SUPABASE_ANON_KEY: string;
+	readonly VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY: string;
 }
 
 interface ImportMeta {

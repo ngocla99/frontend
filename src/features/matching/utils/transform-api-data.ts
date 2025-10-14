@@ -2,7 +2,7 @@ import type { MatchCardProps } from "@/features/matching/components/live-match/m
 import type { UniversityMatch } from "@/features/matching/components/user-match/university-match/university-match-tab";
 import type { SupabaseMatch } from "@/lib/supabase";
 import { getTimeAgo } from "@/lib/utils/date";
-import type { LiveMatchApi, UserMatchApi } from "@/types/api";
+import type { CelebMatchApi, LiveMatchApi, UserMatchApi } from "@/types/api";
 
 export const transformApiMatchToDisplayData = (
 	apiMatch: LiveMatchApi,
@@ -147,4 +147,59 @@ export const transformSupabaseMatchToDisplayData = (
 		isViewed: false,
 		isFavorited: false,
 	};
+};
+
+// Transform celebrity match data to display format
+export interface CelebMatch {
+	id: string;
+	me: {
+		name: string;
+		image: string;
+		school: string;
+	};
+	celeb: {
+		id: string;
+		name: string;
+		image: string;
+		school: string | null;
+	};
+	matchPercentage: number;
+	timestamp: string;
+	isNew: boolean;
+	isFavorited: boolean;
+}
+
+export const transformApiCelebMatchToDisplayData = (
+	celebMatch: CelebMatchApi,
+): CelebMatch => {
+	const isFavorited =
+		Array.isArray(celebMatch.my_reaction) &&
+		celebMatch.my_reaction.includes("favorite");
+
+	return {
+		id: celebMatch.id,
+		me: {
+			name: celebMatch.me.name,
+			image: celebMatch.me.image,
+			school: celebMatch.me.school,
+		},
+		celeb: {
+			id: celebMatch.celeb.id,
+			name: celebMatch.celeb.name,
+			image: celebMatch.celeb.image_url,
+			school: celebMatch.celeb.school,
+		},
+		matchPercentage: Math.round(celebMatch.similarity_score),
+		timestamp: getTimeAgo(celebMatch.created_at),
+		isNew: true,
+		isFavorited,
+	};
+};
+
+export const transformApiCelebMatchesToDisplayData = (
+	celebMatches: CelebMatchApi[],
+): CelebMatch[] => {
+	return celebMatches.map((celebMatch) =>
+		transformApiCelebMatchToDisplayData(celebMatch),
+	);
 };

@@ -75,9 +75,11 @@ export const UniversityMatchTab = ({
 					<h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
 						Your Potential Matches
 					</h2>
-					<p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-						Click on someone to see your baby together!
-					</p>
+					{universityMatch.length > 0 && (
+						<p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+							Click on someone to see your baby together!
+						</p>
+					)}
 				</div>
 
 				{/* Matches List */}

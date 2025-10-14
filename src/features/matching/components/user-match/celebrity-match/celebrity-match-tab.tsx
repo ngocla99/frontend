@@ -1,77 +1,14 @@
-/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
-/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
-
-import { Heart, Search, Star } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import React, { useState } from "react";
-import { ImageLoader } from "@/components/image-loader";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useCelebLiveMatches } from "@/features/matching/hooks/use-celeb-live-matches";
+import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-
-interface CelebrityMatch {
-	id: string;
-	name: string;
-	image: string;
-	age: number;
-	profession: string;
-	category: string;
-	popularity: number;
-}
-// Placeholder celebrity database
-const celebrities: CelebrityMatch[] = [
-	{
-		id: "1",
-		name: "Emma Stone",
-		image:
-			"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
-		age: 35,
-		profession: "Actress",
-		category: "Hollywood",
-		popularity: 95,
-	},
-	{
-		id: "2",
-		name: "Ryan Gosling",
-		image:
-			"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-		age: 43,
-		profession: "Actor",
-		category: "Hollywood",
-		popularity: 92,
-	},
-	{
-		id: "4",
-		name: "Michael B. Jordan",
-		image:
-			"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-		age: 37,
-		profession: "Actor",
-		category: "Hollywood",
-		popularity: 89,
-	},
-	{
-		id: "5",
-		name: "Margot Robbie",
-		image:
-			"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-		age: 33,
-		profession: "Actress",
-		category: "Hollywood",
-		popularity: 94,
-	},
-	{
-		id: "6",
-		name: "Chris Hemsworth",
-		image:
-			"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
-		age: 40,
-		profession: "Actor",
-		category: "Marvel",
-		popularity: 91,
-	},
-];
+import { useUser } from "@/stores/auth-store";
+import { CelebrityMatchCard } from "./celebrity-match-card";
+import { CelebrityMatchCardSkeleton } from "./celebrity-match-card-skeleton";
 
 interface CelebrityMatchTabProps {
 	activePhotoId?: string | null;
@@ -81,24 +18,22 @@ export const CelebrityMatchTab = ({
 	activePhotoId,
 }: CelebrityMatchTabProps) => {
 	const isMobile = useIsMobile();
+	const user = useUser();
+	const { matches: celebMatches, isLoading } = useCelebLiveMatches(
+		user?.id,
+		activePhotoId,
+	);
 	const [selectedCelebrity, setSelectedCelebrity] =
-		React.useState<CelebrityMatch | null>(null);
+		React.useState<CelebMatch | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const filteredCelebrities = celebrities.filter(
-		(celebrity) =>
-			celebrity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			celebrity.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			celebrity.category.toLowerCase().includes(searchTerm.toLowerCase()),
+	const filteredCelebrities = celebMatches.filter(
+		(celebMatch) =>
+			celebMatch.celeb.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			celebMatch?.celeb?.school
+				?.toLowerCase()
+				.includes(searchTerm.toLowerCase()),
 	);
-
-	const calculateMatchPercentage = (celebrity: CelebrityMatch): number => {
-		// Simple algorithm based on popularity and random factor
-		const baseMatch = 70;
-		const popularityBonus = Math.floor(celebrity.popularity / 10);
-		const randomFactor = Math.floor(Math.random() * 15);
-		return Math.min(99, baseMatch + popularityBonus + randomFactor);
-	};
 
 	return (
 		<Card
@@ -115,7 +50,7 @@ export const CelebrityMatchTab = ({
 					Celebrity Matches
 				</h2>
 				<p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-					Find your celebrity look-alike and see your baby!
+					Discover which celebrities you look like most!
 				</p>
 			</div>
 
@@ -133,70 +68,33 @@ export const CelebrityMatchTab = ({
 
 			<div className="mb-8">
 				<div className="space-y-3 sm:space-y-4">
-					{filteredCelebrities.map((celebrity) => {
-						const matchPercentage = calculateMatchPercentage(celebrity);
-						const isSelected = selectedCelebrity?.id === celebrity.id;
-
-						return (
-							<div
-								key={celebrity.id}
-								className={`w-full p-4 sm:p-5 rounded-xl border-2 transition-all duration-200 ease-out cursor-pointer hover:shadow-lg ${
-									isSelected
-										? "border-pink-300 bg-pink-50 shadow-md"
-										: "border-gray-200 bg-white hover:border-pink-200 hover:bg-pink-25"
-								}`}
-								onClick={() => setSelectedCelebrity(celebrity)}
-							>
-								<div className="flex items-center gap-3 sm:gap-4">
-									<ImageLoader
-										src={celebrity.image}
-										alt={celebrity.name}
-										width={72}
-										height={72}
-										className="w-16 h-16 sm:w-18 sm:h-18 rounded-full border-3 border-white shadow-md"
-									/>
-
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between mb-1 sm:mb-2">
-											<h3 className="font-bold text-foreground text-sm sm:text-base truncate">
-												{celebrity.name}
-											</h3>
-											<div className="flex items-center gap-1 flex-shrink-0 ml-2">
-												<Heart className="w-3 h-3 sm:w-4 sm:h-4 text-love" />
-												<span className="font-bold text-love text-sm sm:text-base">
-													{matchPercentage}%
-												</span>
-											</div>
-										</div>
-
-										<p className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2 truncate">
-											{celebrity.profession} • Age {celebrity.age}
-										</p>
-									</div>
-
-									<div className="text-center flex-shrink-0">
-										<Button
-											variant="ghost"
-											size="sm"
-											className="text-orange-500 hover:text-orange-600 hover:bg-orange-50 text-sm h-8 sm:h-10 px-3 sm:px-4 font-semibold rounded-full gap-0"
-										>
-											<span className="hidden sm:inline mr-1">See </span>Baby
-										</Button>
-									</div>
-								</div>
-							</div>
-						);
-					})}
+					{isLoading ? (
+						Array.from({ length: 3 }).map((_, index) => (
+							<CelebrityMatchCardSkeleton key={index} />
+						))
+					) : filteredCelebrities.length > 0 ? (
+						filteredCelebrities.map((celebMatch) => (
+							<CelebrityMatchCard
+								key={celebMatch.id}
+								celebMatch={celebMatch}
+								isSelected={selectedCelebrity?.id === celebMatch.id}
+								onSelect={setSelectedCelebrity}
+							/>
+						))
+					) : (
+						<div className="text-center py-12">
+							<Star className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+							<h3 className="text-xl font-semibold text-gray-600 mb-2">
+								No Celebrity Matches Found
+							</h3>
+							<p className="text-gray-500">
+								{searchTerm
+									? "No celebrities found. Try a different search term!"
+									: "We're still processing celebrity matches for you. Check back soon!"}
+							</p>
+						</div>
+					)}
 				</div>
-
-				{filteredCelebrities.length === 0 && (
-					<div className="text-center py-8">
-						<Star className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-						<p className="text-muted-foreground">
-							No celebrities found. Try a different search term!
-						</p>
-					</div>
-				)}
 			</div>
 		</Card>
 	);
