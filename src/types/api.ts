@@ -63,6 +63,29 @@ export type UserMatchApi = {
 	};
 	type: string;
 };
+
+export type CelebMatchApi = {
+	id: string;
+	created_at: string;
+	celeb: {
+		id: string;
+		name: string;
+		image_url: string;
+		gender: string | null;
+		school: string | null;
+	};
+	me: {
+		id: string;
+		name: string;
+		image: string;
+		gender: string;
+		school: string;
+	};
+	my_reaction: Reaction[];
+	reactions: Record<string, unknown>;
+	similarity_score: number;
+	type: "user-celebrity";
+};
 export type MatchFoundEvent = {
 	id: string;
 	type: "user-user" | "celebrity";
