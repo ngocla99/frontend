@@ -11,7 +11,7 @@
 **Tech Stack:**
 - **Frontend:** React 19, TypeScript, Vite, TanStack Router, TanStack Query
 - **Backend:** Python Flask, Supabase (PostgreSQL), Qdrant (Vector DB), InsightFace (AI)
-- **Authentication:** Supabase Auth (Magic Link), Legacy Google OAuth
+- **Authentication:** Supabase Auth (Magic Link + PKCE)
 - **Infrastructure:** Docker, Celery, Redis
 
 ---
@@ -163,7 +163,7 @@ export const useAuthActions = () => useAuthStore((state) => state.actions);
 
 **HTTP Client (Axios):**
 - Base URL configuration from environment
-- Request interceptor for auth token injection (Supabase + Legacy OAuth)
+- Request interceptor for Supabase JWT token injection
 - Response interceptor for token refresh & error handling
 - Automatic JSON transformation
 
@@ -189,13 +189,14 @@ export const useLiveMatch = ({input, queryConfig}: Options) => useQuery({...})
 
 #### 5. Authentication Flow
 
-**Dual Authentication Support:**
-1. **Primary:** Supabase Auth (Magic Link / PKCE flow)
-2. **Legacy:** Google OAuth (cookie-based)
+**Supabase Auth (Magic Link + PKCE):**
+- Primary authentication method using Supabase's passwordless email flow
+- PKCE (Proof Key for Code Exchange) for enhanced security
+- No custom JWT generation - all tokens issued by Supabase
 
 **Flow:**
 ```
-User → Magic Link Email → Callback Handler → Session Storage → API Client
+User → Magic Link Email → PKCE Verification → Supabase Session → API Client
                                               ↓
                                          Auth Store (Zustand)
                                               ↓
@@ -207,8 +208,14 @@ User → Magic Link Email → Callback Handler → Session Storage → API Clien
 **Session Management:**
 - Stored in localStorage via Zustand persist
 - Auto-refresh via Supabase client
-- Token injection via Axios interceptor
+- Supabase JWT token injection via Axios interceptor
 - 401 errors trigger token refresh or sign-out redirect
+
+**Backend Token Verification:**
+- All endpoints exclusively accept Supabase JWT tokens
+- Token validation via `verify_supabase_token()` helper
+- Profile lookup by email from token claims
+- Automatic profile creation for first-time users
 
 #### 6. Real-Time Updates (Supabase Realtime)
 
@@ -289,7 +296,7 @@ export type LiveMatchApi = {
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   API Client (Axios)                         │
-│  - Injects auth token (Supabase or OAuth)                   │
+│  - Injects Supabase JWT token                               │
 │  - Handles 401 with token refresh                           │
 │  - Transforms response                                       │
 └───────────────────────────┬─────────────────────────────────┘
@@ -342,7 +349,7 @@ export type LiveMatchApi = {
 
 1. **Authentication:**
    - PKCE flow for Supabase Auth
-   - HTTPOnly cookies for legacy OAuth
+   - Supabase JWT tokens (no custom JWT generation)
    - Token refresh on 401 errors
    - Automatic sign-out on refresh failure
 
@@ -523,10 +530,11 @@ insert_baby(match_id, baby_image_url, generated_by=current_user)
 #### 5. API Endpoints
 
 **Authentication:**
-- `POST /api/v1/auth/magic-link` - Send magic link email
-- `GET /api/v1/auth/callback` - Handle OAuth callback
-- `GET /api/v1/auth/me` - Get current user
-- `POST /api/v1/auth/logout` - Sign out
+- `GET /api/auth/me` - Get current user (Supabase JWT only)
+- `PATCH /api/auth/me` - Update current user profile
+- `POST /api/auth/logout` - Sign out
+
+**Note:** Magic link authentication is handled entirely by Supabase on the frontend. Legacy OAuth endpoints have been removed.
 
 **Face Management:**
 - `POST /api/v1/me/faces` - Upload face photo
@@ -544,9 +552,9 @@ insert_baby(match_id, baby_image_url, generated_by=current_user)
 - `DELETE /api/v1/matches/:matchId/react` - Remove reaction
 
 **Baby Generation:**
-- `POST /api/v1/baby?match_id=<uuid>` - Generate baby from match
-- `GET /api/v1/baby?match_id=<uuid>` - Get latest baby for match
-- `GET /api/v1/me/babies` - List all user's generated babies (supports filtering by user_id)
+- `POST /api/v1/baby` - Generate baby from match (match_id in request body)
+- `GET /api/v1/baby` - Get latest baby for match (match_id in request body)
+- `GET /api/v1/me/babies` - List all user's generated babies (supports filtering by user_id query param)
 
 ---
 
@@ -661,14 +669,15 @@ VITE_WHITELIST_EMAIL_DOMAINS=gmail.com
 
 **Backend (`.env`):**
 ```env
-# Authentication
-GOOGLE_CLIENT_ID=<oauth-client-id>
-GOOGLE_CLIENT_SECRET=<oauth-secret>
+# Authentication (Legacy OAuth - Deprecated)
+GOOGLE_CLIENT_ID=<oauth-client-id>  # No longer used
+GOOGLE_CLIENT_SECRET=<oauth-secret>  # No longer used
 
 # Supabase (Database, Storage, Auth)
 SUPABASE_URL=<supabase-url>
 SUPABASE_KEY=<supabase-service-key>
-SUPABASE_SIGNED_URL_TTL=3600  # Signed URL expiration (optional, default 3600s)
+SUPABASE_JWT_SECRET=<supabase-jwt-secret>  # Required for token verification
+SUPABASE_SIGNED_URL_TTL=3600  # Signed URL expiration (optional, default 60s)
 
 # Qdrant (Vector Database)
 QDRANT_URL=<qdrant-url>

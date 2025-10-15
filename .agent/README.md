@@ -413,42 +413,71 @@ const { setUser } = useAuthActions();  // Actions
 
 ## Recent Updates
 
-### October 2025 - Baby Generation Feature 👶
+### October 2025 - Authentication Migration & Baby API Updates 🔐
 
-**New Feature:** AI-powered baby image generation from matched faces
+**Major Backend Changes:**
 
-**Backend Changes:**
-- Added `babies` table to PostgreSQL schema
-- Integrated FAL.AI image generation service
-- New API endpoints:
-  - `POST /api/v1/baby` - Generate baby from match
-  - `GET /api/v1/baby` - Get baby for specific match
-  - `GET /api/v1/me/babies` - List all user's generated babies
-- New service: `app/services/baby_service.py`
-- New routes: `app/routes/baby_routes.py`
+#### 1. Authentication System Overhaul
+- **Removed:** Legacy Google OAuth flow (deprecated endpoints commented out)
+- **New:** Exclusive Supabase JWT authentication with PKCE
+- **Changes:**
+  - All API endpoints now require Supabase JWT tokens only
+  - No more custom JWT generation - all tokens issued by Supabase
+  - Profile creation/lookup by email from Supabase token claims
+  - Automatic profile creation for first-time Supabase Auth users
+  - School email validation on first login
 
-**Database Schema:**
-- `babies` table with columns: `id`, `match_id`, `generated_by_profile_id`, `image_url`, `created_at`
-- Indexes on `match_id` and `created_at`
-- Foreign key relationships with cascade/set null behaviors
+**Updated Endpoints:**
+- `GET /api/auth/me` - Get current user (Supabase JWT only)
+- `PATCH /api/auth/me` - Update user profile
+- `POST /api/auth/logout` - Sign out
+- **Removed:** `/login`, `/callback`, `/api/auth/magic-link`, `/auth/confirm`
+
+**Middleware Changes:**
+- `app/middlewares/auth.py` - Now exclusively validates Supabase JWT tokens
+- `auth_required` decorator uses `verify_supabase_token()` helper
 
 **Environment Variables Added:**
-- `FAL_AI_API_KEY` - Required for baby generation
-- `FAL_BABY_MODEL_ID` - Optional model override
-- `SUPABASE_SIGNED_URL_TTL` - Signed URL expiration time
+- `SUPABASE_JWT_SECRET` - Required for Supabase token verification
 
-**Technical Details:**
-- Uses `fal-ai/nano-banana/edit` model for image generation
-- Synchronous API calls (blocking)
-- Supports multiple baby generations per match
-- Images hosted on FAL.AI CDN (external URLs)
-- Generation time: ~3-5 seconds
+---
 
-**Frontend Integration Required:**
-- Add TypeScript types for baby API responses
-- Create API client functions & React Query hooks
-- Build UI components for baby generation & gallery
-- Add routes for baby-related pages
+#### 2. Baby Generation API Updates
+- **Change:** `match_id` parameter moved from query string to request body
+- **New API Behavior:**
+  - `POST /api/v1/baby` - Body: `{"match_id": "<uuid>"}`
+  - `GET /api/v1/baby` - Body: `{"match_id": "<uuid>"}`
+  - `GET /api/v1/me/babies` - Query params: `user_id`, `skip`, `limit`
+
+**Baby Generation Feature** (previously documented):
+- AI-powered baby image generation from matched faces
+- `babies` table in PostgreSQL
+- FAL.AI integration (`fal-ai/nano-banana/edit` model)
+- Service: `app/services/baby_service.py`
+- Routes: `app/routes/baby_routes.py`
+- External image hosting (FAL.AI CDN)
+- Supports multiple generations per match
+
+---
+
+#### 3. Updated Documentation
+- **Backend Docs:** `docs/API-specs.MD` - Complete API reference updated
+- **New Tools:** `tools/rebuild.sh` - Database rebuild script
+
+---
+
+#### 4. Migration Notes
+**Breaking Changes:**
+- OAuth endpoints no longer functional
+- All existing JWT tokens from legacy OAuth must be regenerated via Supabase Auth
+- Frontend must use Supabase client for authentication
+- Baby generation endpoints now expect JSON body instead of query params
+
+**Action Required (Frontend):**
+- Update authentication flow to use Supabase exclusively
+- Remove OAuth callback handlers
+- Update baby generation API calls (query → body params)
+- Ensure Supabase JWT tokens are properly injected in Axios client
 
 ---
 

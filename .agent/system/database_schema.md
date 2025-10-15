@@ -445,7 +445,8 @@ Background Tasks:
 ```
 1. User clicks "Generate Baby" on match detail page
    ↓
-2. POST /api/v1/baby?match_id=<uuid>
+2. POST /api/v1/baby
+   Body: { "match_id": "<uuid>" }
    ↓
 3. Backend:
    - Fetch match record:
