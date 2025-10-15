@@ -21,10 +21,8 @@ export function MagicLinkCallback() {
 	// Timeout redirect after 30 seconds
 	React.useEffect(() => {
 		const timeoutId = setTimeout(() => {
-			if (isProcessing) {
-				toast.error("Authentication timeout. Please try again.");
-				router.navigate({ to: "/" });
-			}
+			toast.error("Authentication timeout. Please try again.");
+			router.navigate({ to: "/" });
 		}, 15000);
 
 		return () => clearTimeout(timeoutId);
