@@ -1,8 +1,6 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import React from "react";
 import { RootLayout } from "@/components/layout/root-layout";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
-import { BabyGenerator } from "@/features/matching/components/match-dialog/baby-generator";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
 import { MatchNavMobile } from "@/features/matching/components/match-nav-mobile";
 import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
@@ -15,43 +13,9 @@ export const Route = createFileRoute("/")({
 	component: HomePage,
 });
 
-interface PotentialMatch {
-	id: string;
-	name: string;
-	image: string;
-	age: number;
-	university: string;
-	major?: string;
-	interests?: string[];
-}
-
-interface Celebrity {
-	id: string;
-	name: string;
-	image: string;
-	age: number;
-	profession: string;
-	category: string;
-	popularity: number;
-}
-
-interface CustomMatch {
-	id: string;
-	name: string;
-	image: string;
-}
-
 function HomePage() {
 	const isMobile = useIsMobile();
 	const user = useUser();
-
-	const [selectedMatch, _setSelectedMatch] =
-		React.useState<PotentialMatch | null>(null);
-	const [selectedCelebrity, _setSelectedCelebrity] =
-		React.useState<Celebrity | null>(null);
-	const [selectedCustomMatch, _setSelectedCustomMatch] =
-		React.useState<CustomMatch | null>(null);
-	const [showBabyGenerator, setShowBabyGenerator] = React.useState(false);
 
 	// TODO: Add a check for age
 	const isOnboarding = user && (!user?.name || !user?.gender);
@@ -70,27 +34,7 @@ function HomePage() {
 						{!isMobile && (
 							<div className="space-y-8 mx-0 sm:mx-4">
 								<UploadPhoto className={cn(isMobile && !user && "hidden")} />
-
 								{user?.image && <UserMatch />}
-
-								{showBabyGenerator && (
-									<div className="animate-fade-in">
-										<BabyGenerator
-											userPhoto={user?.image}
-											matchPhoto={
-												selectedMatch?.image ||
-												selectedCelebrity?.image ||
-												selectedCustomMatch?.image
-											}
-											matchName={
-												selectedMatch?.name ||
-												selectedCelebrity?.name ||
-												selectedCustomMatch?.name
-											}
-											onBack={() => setShowBabyGenerator(false)}
-										/>
-									</div>
-								)}
 							</div>
 						)}
 

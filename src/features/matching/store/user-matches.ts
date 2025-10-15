@@ -26,8 +26,6 @@ const useUserMatchesStore = create<UserMatchesStore>()((set) => ({
 	matchId: null,
 	actions: {
 		onOpen: (userMatches: UserMatchesType, matchId: string) => {
-			console.log("🚀 ~ matchId:", matchId)
-			console.log("🚀 ~ userMatches:", userMatches)
 			set({ open: true, userMatches, matchId });
 		},
 		onClose: () => {
@@ -35,6 +33,9 @@ const useUserMatchesStore = create<UserMatchesStore>()((set) => ({
 		},
 		onOpenChange: (open: boolean) => {
 			set({ open });
+			if (!open) {
+				set({ open: false, userMatches: null, matchId: null });
+			}
 		},
 	},
 }));

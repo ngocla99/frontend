@@ -73,16 +73,22 @@ export const CelebrityMatchCard = ({
 
 				{/* Match Percentage - Right Side */}
 				<div className="flex flex-col items-center gap-1 flex-shrink-0">
-					<Heart className={cn(
-						"w-5 h-5 transition-colors duration-300",
-						isSelected ? "text-pink-500 fill-pink-500" : "text-pink-400 fill-pink-400"
-					)} />
-					<span className={cn(
-						"text-lg font-bold transition-colors duration-300",
-						isSelected
-							? "bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent"
-							: "text-pink-600"
-					)}>
+					<Heart
+						className={cn(
+							"w-5 h-5 transition-colors duration-300",
+							isSelected
+								? "text-pink-500 fill-pink-500"
+								: "text-pink-400 fill-pink-400",
+						)}
+					/>
+					<span
+						className={cn(
+							"text-lg font-bold transition-colors duration-300",
+							isSelected
+								? "bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent"
+								: "text-pink-600",
+						)}
+					>
 						{celebMatch.matchPercentage}%
 					</span>
 				</div>
