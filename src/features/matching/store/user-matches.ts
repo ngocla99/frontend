@@ -26,6 +26,8 @@ const useUserMatchesStore = create<UserMatchesStore>()((set) => ({
 	matchId: null,
 	actions: {
 		onOpen: (userMatches: UserMatchesType, matchId: string) => {
+			console.log("🚀 ~ matchId:", matchId)
+			console.log("🚀 ~ userMatches:", userMatches)
 			set({ open: true, userMatches, matchId });
 		},
 		onClose: () => {

@@ -8,9 +8,7 @@ import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { BabyApi } from "@/types/api";
 
-// API Functions
 export const generateBabyApi = (matchId: string): Promise<BabyApi> => {
-  // return apiClient.post(`/api/v1/baby?match_id=${matchId}`);
   return apiClient.post(`/api/v1/baby`, { match_id: matchId });
 };
 
@@ -21,10 +19,10 @@ export const getBabyForMatchApi = (
   // Backend expects GET with JSON body (unconventional but that's the API design)
   // Using Axios request method to properly send body with GET
   return apiClient.request({
-    method: 'GET',
-    url: '/api/v1/baby',
+    method: "GET",
+    url: "/api/v1/baby",
     data: { match_id: matchId },
-    signal
+    signal,
   });
 };
 
@@ -60,9 +58,7 @@ export const useGenerateBaby = () => {
   return useMutation({
     mutationFn: generateBabyApi,
     onSuccess: (data, matchId) => {
-      // Update the cache with the new baby
       queryClient.setQueryData(["baby", "match", matchId], data);
-      // Invalidate baby list queries if they exist
       queryClient.invalidateQueries({ queryKey: ["baby", "list"] });
     },
   });
@@ -101,12 +97,14 @@ export const getBabyListApi = (
   signal?: AbortSignal
 ): Promise<BabyListItem[]> => {
   const params = new URLSearchParams();
-  if (input.userId) params.append('user_id', input.userId);
-  if (input.skip !== undefined) params.append('skip', String(input.skip));
-  if (input.limit !== undefined) params.append('limit', String(input.limit));
+  if (input.userId) params.append("user_id", input.userId);
+  if (input.skip !== undefined) params.append("skip", String(input.skip));
+  if (input.limit !== undefined) params.append("limit", String(input.limit));
 
   const queryString = params.toString();
-  const url = queryString ? `/api/v1/me/babies?${queryString}` : '/api/v1/me/babies';
+  const url = queryString
+    ? `/api/v1/me/babies?${queryString}`
+    : "/api/v1/me/babies";
 
   return apiClient.get(url, { signal });
 };

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Baby, Download, Heart, Share2, Sparkles, Zap } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useGenerateBaby } from "../../api/generate-baby";
+import { useGenerateBaby, useBabyForMatch } from "../../api/generate-baby";
 
 interface BabyGeneratorProps {
   matchId?: string;
@@ -24,6 +24,22 @@ export const BabyGenerator = ({
 
   const { mutate: generateBaby, isPending: isGenerating } = useGenerateBaby();
 
+  // Fetch existing baby for this match
+  const { data: existingBaby, isLoading: loadingExisting } = useBabyForMatch({
+    matchId,
+    queryConfig: {
+      enabled: !!matchId,
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    },
+  });
+
+  // Load existing baby image when available
+  useEffect(() => {
+    if (existingBaby?.image_url) {
+      setBabyImage(existingBaby.image_url);
+    }
+  }, [existingBaby]);
+
   const handleGenerate = async () => {
     if (!matchId) {
       toast.error("Match ID is required to generate baby! 📸");
@@ -34,6 +50,10 @@ export const BabyGenerator = ({
 
     generateBaby(matchId, {
       onSuccess: (data) => {
+        if (!data?.image_url) {
+          toast.error("Failed to generate baby image. Please try again! 😔");
+          return;
+        }
         setBabyImage(data.image_url);
         toast.success("Your baby is ready! 🎉");
       },
@@ -167,7 +187,7 @@ export const BabyGenerator = ({
                     </p>
                   </div>
                 </motion.div>
-              ) : isGenerating ? (
+              ) : isGenerating || loadingExisting ? (
                 <motion.div className="relative w-24 h-24 md:w-28 md:h-28">
                   {/* Simple gradient glow */}
                   <motion.div
@@ -374,7 +394,7 @@ export const BabyGenerator = ({
         )}
 
         {/* Helper Text */}
-        {!canGenerate && !isGenerating && (
+        {!canGenerate && !isGenerating && !loadingExisting && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
