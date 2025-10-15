@@ -23,12 +23,13 @@ interface ResponsiveDialogProps {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	trigger?: React.ReactNode;
-	title: string | React.ReactNode;
+	title?: string | React.ReactNode;
 	description?: string;
 	children: React.ReactNode;
 	footer?: React.ReactNode;
 	classes?: {
 		root?: string;
+		container?: string;
 		content?: string;
 		drawer?: string;
 		trigger?: string;
@@ -64,14 +65,16 @@ export function ResponsiveDialog({
 						{trigger}
 					</DialogTrigger>
 				)}
-				<DialogContent className={cn("sm:max-w-6xl", classes?.content)}>
-					<DialogHeader>
-						<DialogTitle>{title}</DialogTitle>
-						{description && (
-							<DialogDescription>{description}</DialogDescription>
-						)}
-					</DialogHeader>
-					<ResponsiveDialogContent className="px-0">
+				<DialogContent className={cn("sm:max-w-6xl", classes?.container)}>
+					{title && (
+						<DialogHeader>
+							<DialogTitle>{title}</DialogTitle>
+							{description && (
+								<DialogDescription>{description}</DialogDescription>
+							)}
+						</DialogHeader>
+					)}
+					<ResponsiveDialogContent className={cn("px-0", classes?.content)}>
 						{children}
 					</ResponsiveDialogContent>
 				</DialogContent>
@@ -86,7 +89,7 @@ export function ResponsiveDialog({
 					{trigger}
 				</DrawerTrigger>
 			)}
-			<DrawerContent className={classes?.drawer}>
+			<DrawerContent className={classes?.container}>
 				<DrawerHeader className="text-left">
 					<DrawerTitle>{title}</DrawerTitle>
 					{description && <DrawerDescription>{description}</DrawerDescription>}

@@ -10,7 +10,10 @@
       "mcp__supabase__list_extensions",
       "mcp__supabase__list_migrations",
       "mcp__supabase__list_branches",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Read(//d/Code/Practice/Freelancer/ai-matching/backend/**)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\ndocs(agent): update backend architecture and API documentation\n\nDocumented major backend changes from recent GitHub pull:\n\nAuthentication System Migration:\n- Removed legacy Google OAuth flow (endpoints deprecated)\n- Now exclusively uses Supabase JWT authentication with PKCE\n- All API endpoints require Supabase-issued tokens only\n- Added SUPABASE_JWT_SECRET requirement\n- Profile creation/lookup now via email from token claims\n\nBaby Generation API Updates:\n- Changed match_id parameter from query string to request body\n- Updated POST/GET /api/v1/baby to accept JSON body\n- Maintained query params for /api/v1/me/babies endpoint\n\nDocumentation Updates:\n- Updated project_architecture.md with authentication flow changes\n- Updated environment variables section with new requirements\n- Updated API endpoints list with correct signatures\n- Updated database_schema.md with body parameter examples\n- Updated README.md Recent Updates section with breaking changes\n\nBreaking Changes Documented:\n- OAuth endpoints no longer functional\n- Existing OAuth JWT tokens must be regenerated via Supabase\n- Baby API calls need parameter location change (query → body)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

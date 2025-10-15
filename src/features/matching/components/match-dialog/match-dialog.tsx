@@ -16,8 +16,10 @@ export function MatchDialog() {
 	return (
 		<ResponsiveDialog
 			open={open}
-			title={`${userMatches?.user1.name} & ${userMatches?.user2.name}'s Baby`}
 			onOpenChange={onOpenChange}
+			classes={{
+				container: "p-0 shadow-match bg-gradient-primary border-none",
+			}}
 		>
 			<BabyGenerator
 				matchId={matchId || undefined}
