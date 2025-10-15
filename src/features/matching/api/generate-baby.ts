@@ -18,7 +18,14 @@ export const getBabyForMatchApi = (
   matchId: string,
   signal?: AbortSignal
 ): Promise<BabyApi> => {
-  return apiClient.get(`/api/v1/baby?match_id=${matchId}`, { signal });
+  // Backend expects GET with JSON body (unconventional but that's the API design)
+  // Using Axios request method to properly send body with GET
+  return apiClient.request({
+    method: 'GET',
+    url: '/api/v1/baby',
+    data: { match_id: matchId },
+    signal
+  });
 };
 
 // Query Options
@@ -58,5 +65,70 @@ export const useGenerateBaby = () => {
       // Invalidate baby list queries if they exist
       queryClient.invalidateQueries({ queryKey: ["baby", "list"] });
     },
+  });
+};
+
+// Baby List API
+export type BabyListItem = {
+  id: string; // match_id
+  me: {
+    id: string;
+    name: string;
+    image: string;
+    school: string;
+  };
+  other: {
+    id: string;
+    name: string;
+    image: string;
+    school: string;
+  };
+  created_at: string;
+  images: Array<{
+    id: string;
+    image_url: string;
+  }>;
+};
+
+export type GetBabyListInput = {
+  userId?: string;
+  skip?: number;
+  limit?: number;
+};
+
+export const getBabyListApi = (
+  input: GetBabyListInput = {},
+  signal?: AbortSignal
+): Promise<BabyListItem[]> => {
+  const params = new URLSearchParams();
+  if (input.userId) params.append('user_id', input.userId);
+  if (input.skip !== undefined) params.append('skip', String(input.skip));
+  if (input.limit !== undefined) params.append('limit', String(input.limit));
+
+  const queryString = params.toString();
+  const url = queryString ? `/api/v1/me/babies?${queryString}` : '/api/v1/me/babies';
+
+  return apiClient.get(url, { signal });
+};
+
+export const getBabyListQueryOptions = (input: GetBabyListInput = {}) => {
+  return queryOptions({
+    queryKey: ["baby", "list", input],
+    queryFn: ({ signal }) => getBabyListApi(input, signal),
+  });
+};
+
+type UseBabyListOptions = {
+  input?: GetBabyListInput;
+  queryConfig?: QueryConfig<typeof getBabyListQueryOptions>;
+};
+
+export const useBabyList = ({
+  input = {},
+  queryConfig,
+}: UseBabyListOptions = {}) => {
+  return useQuery({
+    ...getBabyListQueryOptions(input),
+    ...queryConfig,
   });
 };

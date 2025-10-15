@@ -122,18 +122,18 @@ export type UserPhotosResponse = {
 
 export type BabyApi = {
 	id: string;
-	image_url: string;
+	image_url: string | null; // null when no baby generated yet
 	me: {
 		id: string;
 		name: string;
-		image: string;
-		school: string;
+		image: string | null;
+		school: string | null;
 	};
 	other: {
 		id: string;
 		name: string;
-		image: string;
-		school: string;
+		image: string | null;
+		school: string | null;
 	};
-	created_at: string;
+	created_at: string | null; // null when no baby generated yet
 };
