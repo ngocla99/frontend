@@ -119,3 +119,21 @@ export type UserPhotosResponse = {
 	faces: PhotoUpload[];
 	number_of_faces: number;
 };
+
+export type BabyApi = {
+	id: string;
+	image_url: string;
+	me: {
+		id: string;
+		name: string;
+		image: string;
+		school: string;
+	};
+	other: {
+		id: string;
+		name: string;
+		image: string;
+		school: string;
+	};
+	created_at: string;
+};

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { useReactToMatch } from "@/features/matching/api/react-to-match";
+import { useUserMatchesActions } from "@/features/matching/store/user-matches";
 import type { UniversityMatch } from "./university-match-tab";
 
 interface UniversityMatchCardProps {
@@ -25,6 +26,7 @@ export function UniversityMatchCard({
 	setSelectedMatch,
 }: UniversityMatchCardProps) {
 	const { mutate: reactToMatch } = useReactToMatch();
+	const { onOpen } = useUserMatchesActions();
 	const [isExpanded, setIsExpanded] = React.useState<boolean>(false);
 
 	const isMultiplePhotos = match?.numberOfMatches > 1;
@@ -227,7 +229,15 @@ export function UniversityMatchCard({
 							variant="ghost"
 							size="sm"
 							className="group/btn flex items-center gap-1.5 hover:bg-gradient-to-r hover:from-pink-600 hover:to-rose-600 rounded-full px-4 py-1.5 transition-all duration-300 text-xs hover:text-white"
-							onClick={() => setSelectedMatch(match)}
+							onClick={() => {
+								onOpen(
+									{
+										user1: { name: match.me.name, photo: match.me.image },
+										user2: { name: match.other.name, photo: match.other.image },
+									},
+									match.id,
+								);
+							}}
 						>
 							<span className="font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent group-hover/btn:text-white">
 								View Baby

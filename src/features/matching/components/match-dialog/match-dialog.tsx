@@ -1,5 +1,6 @@
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import {
+	useMatchId,
 	useUserMatches,
 	useUserMatchesActions,
 	useUserMatchesOpen,
@@ -9,6 +10,7 @@ import { BabyGenerator } from "./baby-generator";
 export function MatchDialog() {
 	const open = useUserMatchesOpen();
 	const userMatches = useUserMatches();
+	const matchId = useMatchId();
 	const { onOpenChange } = useUserMatchesActions();
 
 	return (
@@ -18,6 +20,7 @@ export function MatchDialog() {
 			onOpenChange={onOpenChange}
 		>
 			<BabyGenerator
+				matchId={matchId || undefined}
 				userPhoto={userMatches?.user1.photo}
 				matchPhoto={userMatches?.user2.photo}
 				matchName={userMatches?.user2.name}

@@ -1,15 +1,14 @@
-/** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
 import { AnimatePresence, motion } from "framer-motion";
-import { Baby, Download, Share2, Sparkles, Trophy, Zap } from "lucide-react";
+import { Baby, Download, Share2, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";
-import { storage } from "@/old/lib/storage";
+import { useGenerateBaby } from "../../api/generate-baby";
 
 interface BabyGeneratorProps {
+	matchId?: string;
 	userPhoto?: string;
 	matchPhoto?: string;
 	matchName?: string;
@@ -17,21 +16,17 @@ interface BabyGeneratorProps {
 }
 
 export const BabyGenerator = ({
+	matchId,
 	userPhoto,
 	matchPhoto,
 	matchName,
 	onBack,
 }: BabyGeneratorProps) => {
 	const [babyImage, setBabyImage] = useState<string>("");
-	const [isGenerating, setIsGenerating] = useState(false);
 	const [currentStep, setCurrentStep] = useState("");
 	const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-	const [compatibilityScore, setCompatibilityScore] = useState<number>(0);
-	const [predictions, setPredictions] = useState<{
-		eyes: string;
-		hair: string;
-		personality: string[];
-	} | null>(null);
+
+	const { mutate: generateBaby, isPending: isGenerating } = useGenerateBaby();
 
 	const generationSteps = [
 		{
@@ -44,115 +39,47 @@ export const BabyGenerator = ({
 		{ id: "complete", label: "Complete", description: "Your baby is ready!" },
 	];
 
-	const generateBaby = async () => {
-		if (!userPhoto || !matchPhoto) {
-			toast.error("Please upload both photos first! 📸");
+	const handleGenerate = async () => {
+		if (!matchId) {
+			toast.error("Match ID is required to generate baby! 📸");
 			return;
 		}
 
-		setIsGenerating(true);
 		setBabyImage("");
 		setCurrentStep("analyze");
 		setCompletedSteps([]);
 
-		try {
-			// Enhanced generation process with realistic steps
-			for (let i = 0; i < generationSteps.length; i++) {
-				const step = generationSteps[i];
-				setCurrentStep(step.id);
-
-				// Simulate realistic processing time
-				const processingTime = step.id === "blend" ? 2000 : 1000;
-				await new Promise((resolve) => setTimeout(resolve, processingTime));
-
-				setCompletedSteps((prev) => [...prev, step.id]);
-
-				if (i < generationSteps.length - 1) {
+		// Simulate progress steps
+		const progressInterval = setInterval(() => {
+			setCompletedSteps((prev) => {
+				const nextIndex = prev.length;
+				if (nextIndex < generationSteps.length - 1) {
+					setCurrentStep(generationSteps[nextIndex + 1].id);
+					return [...prev, generationSteps[nextIndex].id];
 				}
-			}
-
-			// Generate compatibility score
-			const score = Math.floor(Math.random() * 30) + 70; // 70-99%
-			setCompatibilityScore(score);
-
-			// Generate predictions
-			const eyeColors = ["Brown", "Blue", "Green", "Hazel"];
-			const hairColors = ["Brown", "Blonde", "Black", "Auburn"];
-			const personalities = [
-				["Creative", "Artistic", "Imaginative"],
-				["Intelligent", "Curious", "Analytical"],
-				["Outgoing", "Social", "Charismatic"],
-				["Gentle", "Caring", "Empathetic"],
-				["Adventurous", "Bold", "Energetic"],
-			];
-
-			setPredictions({
-				eyes: eyeColors[Math.floor(Math.random() * eyeColors.length)],
-				hair: hairColors[Math.floor(Math.random() * hairColors.length)],
-				personality:
-					personalities[Math.floor(Math.random() * personalities.length)],
+				return prev;
 			});
+		}, 1000);
 
-			// Create a placeholder baby image (in production, this would be AI-generated)
-			const canvas = document.createElement("canvas");
-			const ctx = canvas.getContext("2d");
-			canvas.width = 200;
-			canvas.height = 200;
-
-			if (ctx) {
-				// Create a simple baby face placeholder
-				const gradient = ctx.createRadialGradient(100, 100, 0, 100, 100, 100);
-				gradient.addColorStop(0, "#fef3c7");
-				gradient.addColorStop(1, "#f59e0b");
-
-				ctx.fillStyle = gradient;
-				ctx.beginPath();
-				ctx.arc(100, 100, 80, 0, Math.PI * 2);
-				ctx.fill();
-
-				// Add simple features
-				ctx.fillStyle = "#374151";
-				ctx.beginPath();
-				ctx.arc(85, 85, 8, 0, Math.PI * 2);
-				ctx.arc(115, 85, 8, 0, Math.PI * 2);
-				ctx.fill();
-
-				// Smile
-				ctx.strokeStyle = "#374151";
-				ctx.lineWidth = 3;
-				ctx.beginPath();
-				ctx.arc(100, 105, 15, 0, Math.PI);
-				ctx.stroke();
-
-				setBabyImage(canvas.toDataURL());
-			}
-
-			// Save to history
-			if (userPhoto && matchPhoto && matchName) {
-				storage.addGeneratedBaby({
-					userPhoto,
-					matchPhoto,
-					matchName,
-					babyImage: canvas.toDataURL(),
-					matchType: "university", // This should be passed as a prop
-				});
-			}
-
-			// Track generation
-			storage.trackEvent("baby_generated", {
-				matchName,
-				compatibilityScore: score,
-				hasUserPhoto: !!userPhoto,
-				hasMatchPhoto: !!matchPhoto,
-			});
-
-			toast.success(`Your baby is ready! ${score}% compatibility! 🎉`);
-		} catch (error) {
-			console.error("Generation failed:", error);
-			toast.error("Something went wrong. Please try again! 😔");
-		} finally {
-			setIsGenerating(false);
-		}
+		generateBaby(matchId, {
+			onSuccess: (data) => {
+				clearInterval(progressInterval);
+				setCompletedSteps(generationSteps.map((s) => s.id));
+				setCurrentStep("complete");
+				setBabyImage(data.image_url);
+				toast.success("Your baby is ready! 🎉");
+			},
+			onError: (error: any) => {
+				clearInterval(progressInterval);
+				setCurrentStep("");
+				setCompletedSteps([]);
+				console.error("Generation failed:", error);
+				const errorMessage =
+					error?.response?.data?.error ||
+					"Failed to generate baby. Please try again! 😔";
+				toast.error(errorMessage);
+			},
+		});
 	};
 
 	const shareBaby = async () => {
@@ -160,7 +87,7 @@ export const BabyGenerator = ({
 
 		const shareData = {
 			title: `Our Future Baby! 👶`,
-			text: `${matchName || "My match"} and I would make beautiful babies! ${compatibilityScore}% compatibility! 💕 #Fuzed`,
+			text: `${matchName || "My match"} and I would make beautiful babies! 💕 #Fuzed`,
 			url: window.location.href,
 		};
 
@@ -172,13 +99,11 @@ export const BabyGenerator = ({
 			) {
 				await navigator.share(shareData);
 				toast.success("Baby shared successfully! 🎉");
-				storage.trackEvent("baby_shared", { method: "native", matchName });
 			} else {
 				await navigator.clipboard.writeText(
-					`Check out what ${matchName || "my match"} and I would look like as parents! ${compatibilityScore}% compatibility! ${window.location.href}`,
+					`Check out what ${matchName || "my match"} and I would look like as parents! ${window.location.href}`,
 				);
 				toast.success("Link copied to clipboard! Share away! 📋");
-				storage.trackEvent("baby_shared", { method: "clipboard", matchName });
 			}
 		} catch (_error) {
 			toast.error("Unable to share. Try saving the image instead.");
@@ -189,14 +114,20 @@ export const BabyGenerator = ({
 		if (!babyImage) return;
 
 		try {
+			// Fetch the image as blob
+			const response = await fetch(babyImage);
+			const blob = await response.blob();
+
 			// Create download link
 			const link = document.createElement("a");
-			link.download = `fuzed-baby-${matchName || "match"}.png`;
-			link.href = babyImage;
+			link.download = `fuzed-baby-${matchName || "match"}.jpg`;
+			link.href = URL.createObjectURL(blob);
 			link.click();
 
+			// Clean up
+			URL.revokeObjectURL(link.href);
+
 			toast.success("Baby image saved! 💾");
-			storage.trackEvent("baby_saved", { matchName });
 		} catch (_error) {
 			toast.error("Unable to save image");
 		}
@@ -204,12 +135,10 @@ export const BabyGenerator = ({
 
 	const retryGeneration = () => {
 		setBabyImage("");
-		setPredictions(null);
-		setCompatibilityScore(0);
-		generateBaby();
+		handleGenerate();
 	};
 
-	const canGenerate = userPhoto && matchPhoto;
+	const canGenerate = userPhoto && matchPhoto && matchId;
 
 	return (
 		<Card className="p-6 bg-gradient-primary text-white border-0 shadow-match">
@@ -262,12 +191,6 @@ export const BabyGenerator = ({
 										alt="Your baby"
 										className="w-20 h-20 rounded-full object-cover border-3 border-white shadow-lg"
 									/>
-									{compatibilityScore > 0 && (
-										<Badge className="absolute -top-2 -right-2 bg-white text-primary px-2 py-1">
-											<Trophy className="w-3 h-3 mr-1" />
-											{compatibilityScore}%
-										</Badge>
-									)}
 								</motion.div>
 							) : isGenerating ? (
 								<motion.div
@@ -332,48 +255,11 @@ export const BabyGenerator = ({
 					)}
 				</AnimatePresence>
 
-				{/* Predictions */}
-				<AnimatePresence>
-					{predictions && babyImage && !isGenerating && (
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							className="bg-white/10 rounded-lg p-4 space-y-3"
-						>
-							<h4 className="font-semibold text-center">Baby Predictions</h4>
-							<div className="grid grid-cols-2 gap-4 text-sm">
-								<div className="text-center">
-									<p className="text-white/80">Eyes</p>
-									<p className="font-medium">{predictions.eyes}</p>
-								</div>
-								<div className="text-center">
-									<p className="text-white/80">Hair</p>
-									<p className="font-medium">{predictions.hair}</p>
-								</div>
-							</div>
-							<div className="text-center">
-								<p className="text-white/80 text-sm">Personality Traits</p>
-								<div className="flex gap-1 justify-center mt-1">
-									{predictions.personality.map((trait, index) => (
-										<Badge
-											key={index}
-											variant="secondary"
-											className="text-xs bg-white/20 text-white"
-										>
-											{trait}
-										</Badge>
-									))}
-								</div>
-							</div>
-						</motion.div>
-					)}
-				</AnimatePresence>
-
 				{/* Action Buttons */}
 				<div className="space-y-4">
 					{!babyImage && !isGenerating && (
 						<Button
-							onClick={generateBaby}
+							onClick={handleGenerate}
 							disabled={!canGenerate || isGenerating}
 							className="w-full bg-white text-primary hover:bg-white/90 font-semibold py-3 gap-2"
 						>
@@ -432,7 +318,9 @@ export const BabyGenerator = ({
 
 				{!canGenerate && !isGenerating && (
 					<div className="text-center text-white/70 text-sm">
-						💡 Upload both photos to generate your baby
+						{!matchId
+							? "💡 Match information required to generate baby"
+							: "💡 Upload both photos to generate your baby"}
 					</div>
 				)}
 			</motion.div>
