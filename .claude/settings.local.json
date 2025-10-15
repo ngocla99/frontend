@@ -3,7 +3,14 @@
     "allow": [
       "Bash(mkdir:*)",
       "WebSearch",
-      "Read(//d/Nemo/Others/side-projects/ai-matching/**)"
+      "Read(//d/Nemo/Others/side-projects/ai-matching/**)",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__get_anon_key",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_extensions",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__list_branches",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

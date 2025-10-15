@@ -104,10 +104,12 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 **Framework:** Python Flask + Celery
 
-**AI/ML:** InsightFace for face recognition (512D embeddings)
+**AI/ML:**
+- **InsightFace:** Face recognition (512D embeddings)
+- **FAL.AI:** AI image generation for baby feature
 
 **Databases:**
-- **PostgreSQL (Supabase):** User data, matches, reactions
+- **PostgreSQL (Supabase):** User data, matches, reactions, babies
 - **Qdrant (Vector DB):** Face embeddings for similarity search
 
 **Authentication:** Supabase Auth (Magic Link) + Legacy OAuth
@@ -133,7 +135,13 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
    - Compare faces to celebrity database
    - Find top lookalikes
 
-5. **Profile Management**
+5. **AI Baby Generation** 👶 ✨
+   - Generate baby images from two matched faces
+   - Powered by FAL.AI image generation
+   - Baby gallery with filtering
+   - Multiple generations per match supported
+
+6. **Profile Management**
    - Edit user info (name, gender, school)
    - Manage uploaded photos
    - View match history
@@ -163,13 +171,14 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 |----------|-----------|
 | Framework | Flask |
 | Language | Python 3.x |
-| AI Model | InsightFace (face recognition) |
+| AI Models | InsightFace (face recognition), FAL.AI (image generation) |
 | Vector DB | Qdrant |
 | Database | PostgreSQL (Supabase) |
 | Auth | Supabase Auth |
 | Storage | Supabase Storage |
 | Task Queue | Celery + Redis |
 | Container | Docker |
+| Dependencies | fal-client (FAL.AI SDK) |
 
 ---
 
@@ -203,10 +212,14 @@ VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<key>
 ```env
 SUPABASE_URL=<url>
 SUPABASE_KEY=<service-key>
+SUPABASE_SIGNED_URL_TTL=3600
 QDRANT_URL=<url>
 QDRANT_API_KEY=<key>
 GOOGLE_CLIENT_ID=<oauth-id>
 GOOGLE_CLIENT_SECRET=<oauth-secret>
+FAL_AI_API_KEY=<fal-api-key>
+FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit
+FRONTEND_URL=http://localhost:3000
 ```
 
 ### Code Quality
@@ -253,8 +266,13 @@ app/
 │   ├── auth_routes.py
 │   ├── faces_routes.py
 │   ├── matches_routes.py
-│   └── reactions_routes.py
+│   ├── reactions_routes.py
+│   ├── celebrities_routes.py
+│   └── baby_routes.py      # Baby generation endpoints
 ├── services/         # Business logic
+│   ├── baby_service.py     # FAL.AI integration
+│   ├── user_service.py
+│   └── storage_helper.py
 ├── tasks/            # Celery tasks
 └── schemas/          # Data validation
 ```
@@ -388,6 +406,49 @@ const { setUser } = useAuthActions();  // Actions
 - **Workflows:** Check `sop/` folder for more procedures
 
 **Still stuck?** Reach out to the team or create an issue in the project repository.
+
+---
+
+---
+
+## Recent Updates
+
+### October 2025 - Baby Generation Feature 👶
+
+**New Feature:** AI-powered baby image generation from matched faces
+
+**Backend Changes:**
+- Added `babies` table to PostgreSQL schema
+- Integrated FAL.AI image generation service
+- New API endpoints:
+  - `POST /api/v1/baby` - Generate baby from match
+  - `GET /api/v1/baby` - Get baby for specific match
+  - `GET /api/v1/me/babies` - List all user's generated babies
+- New service: `app/services/baby_service.py`
+- New routes: `app/routes/baby_routes.py`
+
+**Database Schema:**
+- `babies` table with columns: `id`, `match_id`, `generated_by_profile_id`, `image_url`, `created_at`
+- Indexes on `match_id` and `created_at`
+- Foreign key relationships with cascade/set null behaviors
+
+**Environment Variables Added:**
+- `FAL_AI_API_KEY` - Required for baby generation
+- `FAL_BABY_MODEL_ID` - Optional model override
+- `SUPABASE_SIGNED_URL_TTL` - Signed URL expiration time
+
+**Technical Details:**
+- Uses `fal-ai/nano-banana/edit` model for image generation
+- Synchronous API calls (blocking)
+- Supports multiple baby generations per match
+- Images hosted on FAL.AI CDN (external URLs)
+- Generation time: ~3-5 seconds
+
+**Frontend Integration Required:**
+- Add TypeScript types for baby API responses
+- Create API client functions & React Query hooks
+- Build UI components for baby generation & gallery
+- Add routes for baby-related pages
 
 ---
 

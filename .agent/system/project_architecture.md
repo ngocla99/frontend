@@ -371,6 +371,7 @@ export type LiveMatchApi = {
 |-----------|---------|
 | Flask | Web framework |
 | InsightFace | Face recognition AI model |
+| FAL.AI | AI image generation for baby feature |
 | Qdrant | Vector database for embeddings |
 | Supabase | PostgreSQL database & storage |
 | Celery | Background task queue |
@@ -392,21 +393,31 @@ backend/
 │   │   ├── matches_routes.py # Match queries
 │   │   ├── reactions_routes.py # Reactions to matches
 │   │   ├── celebrities_routes.py # Celebrity matches
+│   │   ├── baby_routes.py   # Baby generation endpoints
 │   │   └── legacy_routes.py # Legacy OAuth routes
 │   ├── services/            # Business logic
+│   │   ├── baby_service.py  # Baby generation service
+│   │   ├── user_service.py  # User profile management
+│   │   └── storage_helper.py # Supabase Storage helpers
 │   ├── tasks/               # Celery background tasks
 │   ├── schemas/             # Data validation schemas
 │   ├── models/              # Data models
 │   ├── middlewares/         # Request/response middleware
 │   └── tests/               # Unit & integration tests
 ├── tools/                   # Utility scripts
+│   ├── fal_ai_generate.py   # FAL.AI test script
+│   ├── init-db.sql          # Database initialization
+│   └── bulk_add_celebrities.py # Celebrity data loader
 ├── celeb-data/             # Celebrity face embeddings
 ├── docs/                   # Backend documentation
+│   ├── API-specs.MD         # Complete API reference
+│   ├── api-list.mdc         # API endpoint list
+│   └── app-flow.mdc         # Application flow diagrams
 ├── Dockerfile              # Main Docker image
 ├── Dockerfile.api          # API service image
 ├── Dockerfile.worker       # Celery worker image
 ├── docker-compose.yml      # Multi-container setup
-├── requirements.txt        # Python dependencies
+├── requirements.txt        # Python dependencies (includes fal-client)
 └── run.py                 # Application entry point
 ```
 
@@ -466,7 +477,50 @@ results = qdrant_client.search(
 - **Result Backend:** Redis
 - **Concurrency:** Multi-worker setup
 
-#### 4. API Endpoints
+#### 4. Baby Generation Pipeline (FAL.AI)
+
+**Purpose:** Generate AI baby images from two matched faces
+
+**Integration Flow:**
+```python
+# 1. Fetch source face images from match
+match = get_match(match_id)
+face_urls = get_signed_urls([match.face_a_id, match.face_b_id])
+
+# 2. Call FAL.AI asynchronously (runs synchronously in blocking mode)
+response = fal_client.run_async(
+    "fal-ai/nano-banana/edit",
+    arguments={
+        "prompt": "make a photo of a baby.",
+        "image_urls": face_urls,
+        "num_images": 1,
+        "output_format": "jpeg",
+        "aspect_ratio": "1:1"
+    }
+)
+
+# 3. Extract generated image URL
+baby_image_url = response['images'][0]['url']
+
+# 4. Store in database
+insert_baby(match_id, baby_image_url, generated_by=current_user)
+```
+
+**Configuration:**
+- **API Key:** `FAL_AI_API_KEY` environment variable
+- **Model:** `fal-ai/nano-banana/edit` (configurable via `FAL_BABY_MODEL_ID`)
+- **Execution:** Synchronous blocking call (future: async with Celery)
+- **Image Storage:** External (FAL.AI CDN URLs)
+- **TTL:** Signed URLs expire based on `SUPABASE_SIGNED_URL_TTL`
+
+**Service Layer (`app/services/baby_service.py`):**
+- `create_baby_from_match_service()` - Generate & store baby
+- `get_baby_for_match_service()` - Get latest baby for match
+- `list_my_generated_babies_service()` - List user's generated babies
+- `_get_match_participants_signed()` - Resolve match participants
+- `_fal_generate_baby_async()` - FAL.AI API wrapper
+
+#### 5. API Endpoints
 
 **Authentication:**
 - `POST /api/v1/auth/magic-link` - Send magic link email
@@ -475,17 +529,24 @@ results = qdrant_client.search(
 - `POST /api/v1/auth/logout` - Sign out
 
 **Face Management:**
-- `POST /api/v1/faces` - Upload face photo
-- `GET /api/v1/faces` - Get user's uploaded faces
+- `POST /api/v1/me/faces` - Upload face photo
+- `GET /api/v1/me/faces` - Get user's uploaded faces
 - `DELETE /api/v1/faces/:id` - Delete face
 
 **Matching:**
 - `GET /api/v1/matches/top` - Get top matches (live feed)
-- `GET /api/v1/matches/user/:userId` - Get matches with specific user
-- `GET /api/v1/matches/celeb` - Get celebrity matches
+- `GET /api/v1/me/matches` - Get user's matches (filter: user/celeb)
+- `GET /api/v1/feed` - Get live match feed
+- `POST /api/v1/match` - Calculate similarity between two faces
 
 **Reactions:**
-- `POST /api/v1/reactions` - React to match (favorite, etc.)
+- `POST /api/v1/matches/:matchId/react` - React to match (favorite, etc.)
+- `DELETE /api/v1/matches/:matchId/react` - Remove reaction
+
+**Baby Generation:**
+- `POST /api/v1/baby?match_id=<uuid>` - Generate baby from match
+- `GET /api/v1/baby?match_id=<uuid>` - Get latest baby for match
+- `GET /api/v1/me/babies` - List all user's generated babies (supports filtering by user_id)
 
 ---
 
@@ -532,9 +593,13 @@ Frontend Component
 
 ### 4. External Services
 
+- **FAL.AI:** AI image generation service for baby feature
+  - Model: `fal-ai/nano-banana/edit`
+  - Use case: Generate baby images from two face inputs
+  - Integration: Python `fal-client` SDK
 - **Cloudflare:** CDN & DDoS protection (optional)
-- **Supabase Storage:** Image hosting with CDN
-- **SendGrid/Email Service:** Magic link emails (via Supabase)
+- **Supabase Storage:** Image hosting with CDN for user-uploaded faces
+- **SendGrid/Email Service:** Magic link emails (via Supabase Auth)
 
 ---
 
@@ -596,12 +661,24 @@ VITE_WHITELIST_EMAIL_DOMAINS=gmail.com
 
 **Backend (`.env`):**
 ```env
+# Authentication
 GOOGLE_CLIENT_ID=<oauth-client-id>
 GOOGLE_CLIENT_SECRET=<oauth-secret>
+
+# Supabase (Database, Storage, Auth)
 SUPABASE_URL=<supabase-url>
 SUPABASE_KEY=<supabase-service-key>
+SUPABASE_SIGNED_URL_TTL=3600  # Signed URL expiration (optional, default 3600s)
+
+# Qdrant (Vector Database)
 QDRANT_URL=<qdrant-url>
 QDRANT_API_KEY=<qdrant-key>
+
+# FAL.AI (Baby Generation)
+FAL_AI_API_KEY=<fal-api-key>
+FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit  # Optional, default model
+
+# Frontend
 FRONTEND_URL=http://localhost:3000
 ```
 
@@ -622,36 +699,58 @@ FRONTEND_URL=http://localhost:3000
 
 ### 1. Face Upload & Processing
 - User uploads photo
-- AI extracts face embedding
-- Stored in vector DB for matching
-- Image saved to Supabase Storage
+- AI extracts face embedding (InsightFace)
+- Stored in Qdrant vector DB for matching
+- Image saved to Supabase Storage with CDN delivery
+- Multiple faces per user supported
 
 ### 2. Live Match Feed
-- Real-time display of new matches
-- Sorted by similarity score
+- Real-time display of new matches as they're discovered
+- Sorted by similarity score (highest first)
 - Pagination with infinite scroll
 - Supabase Realtime for instant updates
+- Reaction aggregation (favorites, likes)
 
 ### 3. User-to-User Matching
 - View detailed matches with other users
-- See all face comparisons
-- Aggregate similarity scores
+- See all face-to-face comparisons
+- Aggregate similarity scores across multiple photos
 - Reaction system (favorite, etc.)
+- Filter by school, gender
+- Match history tracking
 
 ### 4. Celebrity Matching
-- Compare face to celebrity database
+- Compare user faces to pre-computed celebrity database
 - Find top lookalike celebrities
-- Pre-computed celebrity embeddings
+- Pre-seeded celebrity embeddings in Qdrant
+- Celebrity metadata (name, images)
 
-### 5. Baby Generator (Feature)
-- Generate synthetic baby image from two faces
-- Uses AI image generation
-- Shareable results
+### 5. AI Baby Generation
+- **Generate synthetic baby images from two matched faces**
+- **Powered by FAL.AI image generation model**
+- **Flow:**
+  1. User selects a match
+  2. Backend fetches face images from Supabase Storage
+  3. Calls FAL.AI API with both face images
+  4. Stores generated baby image URL in `babies` table
+  5. Returns baby with participant details (me/other)
+- **Features:**
+  - Multiple generations per match supported
+  - Baby gallery showing all user's generated babies
+  - Filter babies by specific match partner
+  - Latest baby per match displayed by default
+  - Fast generation (~3-5 seconds)
+- **Technical Details:**
+  - Model: `fal-ai/nano-banana/edit`
+  - Synchronous execution (blocking API call)
+  - External image hosting (FAL.AI CDN)
+  - Signed URLs for source images (TTL-based)
 
 ### 6. Profile Management
 - Edit user profile (name, gender, school)
 - Manage uploaded photos
 - View match history
+- Set default face for matching
 
 ---
 

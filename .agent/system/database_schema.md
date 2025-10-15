@@ -120,6 +120,41 @@ Stores user reactions to matches (favorites, likes, etc.).
 
 ---
 
+### Table: `babies`
+
+Stores AI-generated baby images created from user matches.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | `uuid` | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique baby image ID |
+| `match_id` | `uuid` | NOT NULL, FK → matches(id) ON DELETE CASCADE | Match this baby was generated from |
+| `generated_by_profile_id` | `uuid` | FK → profiles(id) ON DELETE SET NULL | User who generated this baby |
+| `image_url` | `text` | NOT NULL | FAL.AI generated baby image URL |
+| `created_at` | `timestamptz` | DEFAULT now() | Generation timestamp |
+
+**Indexes:**
+- `idx_babies_match_id` on `match_id`
+- `idx_babies_created_at` on `created_at DESC`
+
+**Usage:**
+- Stores AI-generated baby images from two matched faces
+- Links to the match that generated the baby
+- Tracks who generated each baby image
+- Supports multiple generations per match
+- Used for baby gallery and history features
+
+**Relationships:**
+- `match_id` → `matches.id` (CASCADE DELETE: deleting match removes babies)
+- `generated_by_profile_id` → `profiles.id` (SET NULL: user deletion preserves babies)
+
+**Business Logic:**
+- A match can have multiple baby images (regeneration supported)
+- Baby generation is performed by FAL.AI service (async)
+- Images are hosted on FAL.AI CDN (external URLs)
+- Latest baby per match is shown in UI by default
+
+---
+
 ### Table: `live_tasks`
 
 Background task tracking for batch operations.
@@ -273,7 +308,18 @@ results = qdrant_client.search(
 │     similarity  │
 └────────┬────────┘
          │
-         │ 1:N
+         ├─────────┐ 1:N
+         │         │
+         │ 1:N     ▼
+         │    ┌─────────────────────┐
+         │    │      babies          │
+         │    │ PK: id               │
+         │    │ FK: match_id         │
+         │    │ FK: generated_by_    │
+         │    │     profile_id       │
+         │    │     image_url        │
+         │    └─────────────────────┘
+         │
          ▼
 ┌─────────────────┐
 │   reactions     │
@@ -392,6 +438,55 @@ Background Tasks:
 5. INSERT INTO matches for each celebrity match
    ↓
 6. Return celebrity match results
+```
+
+### 5. Baby Generation from Match
+
+```
+1. User clicks "Generate Baby" on match detail page
+   ↓
+2. POST /api/v1/baby?match_id=<uuid>
+   ↓
+3. Backend:
+   - Fetch match record:
+     SELECT * FROM matches WHERE id = :match_id
+   - Get face images for face_a_id and face_b_id:
+     SELECT image_path FROM faces WHERE id IN (face_a_id, face_b_id)
+   - Generate signed URLs from Supabase Storage
+   ↓
+4. Call FAL.AI API (synchronous):
+   - POST to fal-ai/nano-banana/edit model
+   - Payload: {
+       prompt: "make a photo of a baby.",
+       image_urls: [signed_url_a, signed_url_b],
+       num_images: 1,
+       output_format: "jpeg",
+       aspect_ratio: "1:1"
+     }
+   - Receive generated baby image URL
+   ↓
+5. Store baby record:
+   INSERT INTO babies (match_id, generated_by_profile_id, image_url)
+   VALUES (:match_id, :current_user_profile_id, :fal_image_url)
+   ↓
+6. Fetch participant details:
+   - Query profiles for face_a and face_b owners
+   - Generate signed URLs for participant images
+   - Determine "me" vs "other" based on current user
+   ↓
+7. Return response:
+   {
+     id: match_id,
+     image_url: baby_image_url,
+     me: { id, name, image, school },
+     other: { id, name, image, school },
+     created_at: timestamp
+   }
+   ↓
+8. Frontend:
+   - Display generated baby image
+   - Store in baby gallery
+   - Invalidate baby queries to refresh list
 ```
 
 ---
