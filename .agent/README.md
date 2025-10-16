@@ -80,9 +80,18 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
   - Spring animations with Framer Motion
   - Common animation patterns & examples
 
+- **[API File Organization](./sop/api-organization.md)**
+  - One concern per file principle
+  - File naming conventions (`[action]-[resource].ts`)
+  - Standard file structure template
+  - API function guidelines (AbortSignal, HTTP methods)
+  - Query key structure (hierarchical & unique)
+  - React Query configuration best practices
+  - Type safety guidelines
+  - Real-world examples & migration guide
+
 **Additional SOPs to document:**
 - How to add a new page/route
-- How to create a new API endpoint
 - How to add database migrations
 - How to deploy to production
 - How to handle authentication flows

@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	type BabyListItem,
 	useBabyList,
-} from "@/features/matching/api/generate-baby";
+} from "@/features/matching/api/get-baby-list";
 import { useUserMatchesActions } from "@/features/matching/store/user-matches";
 import { getTimeAgo } from "@/lib/utils/date";
 
