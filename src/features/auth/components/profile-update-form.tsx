@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -40,11 +41,19 @@ type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
 
 export function ProfileUpdateForm() {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const user = useUser();
 
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
 			onSuccess: () => {
+				// Invalidate all queries to refresh user data everywhere
+				queryClient.invalidateQueries();
+				// Force invalidate the live match query even if not currently active
+				queryClient.invalidateQueries({
+					queryKey: ["matching", "top", "infinite"],
+					refetchType: "all", // This ensures the query refetches even when inactive
+				});
 				navigate({ to: "/" });
 			},
 		},

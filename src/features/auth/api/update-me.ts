@@ -25,15 +25,10 @@ type UseUpdateMeOptions = {
 };
 
 export const useUpdateMe = ({ mutationConfig }: UseUpdateMeOptions = {}) => {
-	const queryClient = useQueryClient();
-
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 
 	return useMutation({
 		onSuccess: (...args) => {
-			queryClient.invalidateQueries({
-				queryKey: getMeQueryOptions().queryKey,
-			});
 			toast.success("Profile updated successfully!");
 			onSuccess?.(...args);
 		},

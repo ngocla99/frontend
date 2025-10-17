@@ -1,6 +1,6 @@
 import { FloatingNav } from "@/components/layout/floating-navbar";
-import { useReadMeQuery } from "@/features/auth/api/get-me";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUser } from "@/stores/auth-store";
 
 const navItems = [
 	{ name: "Your Matches", link: "/your-matches" },
@@ -8,7 +8,7 @@ const navItems = [
 ];
 
 export const MatchNavMobile = () => {
-	const user = useReadMeQuery();
+	const user = useUser();
 	const isMobile = useIsMobile();
 
 	if (!user || !isMobile) return null;
