@@ -67,7 +67,7 @@ export const transformApiUserMatchToDisplayData = (
 		id: transformedMatches[0].id, // Use the most recent match ID as the group match ID
 		me: {
 			name: userMatch.me.name,
-			image: userMatch.me.image,
+			image: recentMatch.my_image,
 			age: 22,
 			school: userMatch.me.school,
 		},
