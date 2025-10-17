@@ -12,7 +12,7 @@ import { transformApiMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type LiveMatchInput = {
 	limit: number;
-	offset: number;
+	skip: number;
 	signal?: AbortSignal;
 };
 
@@ -40,7 +40,7 @@ type UseLiveMatchOptions = {
 
 export const useLiveMatch = ({
 	input = {
-		offset: PAGINATION.DEFAULT_OFFSET,
+		skip: PAGINATION.DEFAULT_OFFSET,
 		limit: PAGINATION.DEFAULT_LIMIT,
 	},
 	queryConfig,
@@ -58,7 +58,7 @@ type UseLiveMatchInfiniteOptions = {
 
 export const useLiveMatchInfinite = ({
 	input = {
-		offset: PAGINATION.DEFAULT_OFFSET,
+		skip: PAGINATION.DEFAULT_OFFSET,
 		limit: PAGINATION.DEFAULT_LIMIT,
 	},
 	queryConfig,
@@ -72,7 +72,7 @@ export const useLiveMatchInfinite = ({
 		queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET, signal }) =>
 			getLiveMatchApi({
 				...input,
-				offset: pageParam,
+				skip: pageParam,
 				signal,
 			}),
 		getNextPageParam: (lastPage, _, lastPageParam) => {

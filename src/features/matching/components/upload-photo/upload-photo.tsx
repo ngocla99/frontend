@@ -5,15 +5,15 @@ import {
 	type FileUploadRef,
 } from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
-import { useReadMeQuery } from "@/features/auth/api/get-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/stores/auth-store";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = ({ className }: { className?: string }) => {
 	const isMobile = useIsMobile();
-	const user = useReadMeQuery();
+	const user = useUser();
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 

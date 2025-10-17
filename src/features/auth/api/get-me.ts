@@ -1,4 +1,4 @@
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import { useAccessToken, useSession } from "@/stores/auth-store";
@@ -34,9 +34,4 @@ export const useMe = ({ queryConfig }: UseMeOptions = {}) => {
 			enabled: hasValidAuth && queryConfig.enabled,
 		}),
 	});
-};
-
-export const useReadMeQuery = () => {
-	const queryClient = useQueryClient();
-	return queryClient.getQueryData<UserApi>(getMeQueryOptions().queryKey);
 };
