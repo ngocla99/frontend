@@ -1,3 +1,4 @@
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import * as React from "react";
 import {
 	Dialog,
@@ -71,13 +72,20 @@ export function ResponsiveDialog({
 					className={cn("sm:max-w-6xl", classes?.container)}
 					showCloseButton={showCloseButton}
 				>
-					{title && (
+					{title ? (
 						<DialogHeader>
 							<DialogTitle>{title}</DialogTitle>
 							{description && (
 								<DialogDescription>{description}</DialogDescription>
 							)}
 						</DialogHeader>
+					) : (
+						<VisuallyHidden>
+							<DialogHeader>
+								<DialogTitle>Dialog</DialogTitle>
+								<DialogDescription>Dialog</DialogDescription>
+							</DialogHeader>
+						</VisuallyHidden>
 					)}
 					<ResponsiveDialogContent className={cn("px-0", classes?.content)}>
 						{children}
@@ -95,10 +103,21 @@ export function ResponsiveDialog({
 				</DrawerTrigger>
 			)}
 			<DrawerContent className={classes?.container}>
-				<DrawerHeader className="text-left">
-					<DrawerTitle>{title}</DrawerTitle>
-					{description && <DrawerDescription>{description}</DrawerDescription>}
-				</DrawerHeader>
+				{title ? (
+					<DrawerHeader className="text-left">
+						<DrawerTitle>{title}</DrawerTitle>
+						{description && (
+							<DrawerDescription>{description}</DrawerDescription>
+						)}
+					</DrawerHeader>
+				) : (
+					<VisuallyHidden>
+						<DrawerHeader>
+							<DrawerTitle>Drawer</DrawerTitle>
+							<DrawerDescription>Drawer</DrawerDescription>
+						</DrawerHeader>
+					</VisuallyHidden>
+				)}
 				<ResponsiveDialogContent className={classes?.content}>
 					{children}
 				</ResponsiveDialogContent>

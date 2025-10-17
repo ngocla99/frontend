@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { useMe } from "@/features/auth/api/get-me";
 import { getUserPhotosQueryOptions } from "@/features/matching/api/get-user-photos";
@@ -12,24 +12,24 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
 	});
 	const { setUser } = useAuthActions();
 	const queryClient = useQueryClient();
-	const photosPrefetchingRef = useRef(false);
+	const [isPhotosPrefetching, setIsPhotosPrefetching] = useState(true);
 
 	// Prefetch user photos when user is authenticated
 	useEffect(() => {
 		if (user && !isLoading) {
 			setUser(user);
-			photosPrefetchingRef.current = true;
+			setIsPhotosPrefetching(true);
 			queryClient.prefetchQuery(getUserPhotosQueryOptions()).finally(() => {
-				photosPrefetchingRef.current = false;
+				setIsPhotosPrefetching(false);
 			});
 		} else if (!isLoading && !user) {
 			// No user authenticated, no need to prefetch photos
-			photosPrefetchingRef.current = false;
+			setIsPhotosPrefetching(false);
 		}
 	}, [user, isLoading, queryClient]);
 
 	// Show loading when either auth is loading or photos are being prefetched
-	const isAppLoading = isLoading || photosPrefetchingRef.current;
+	const isAppLoading = isLoading || isPhotosPrefetching;
 
 	return (
 		<>

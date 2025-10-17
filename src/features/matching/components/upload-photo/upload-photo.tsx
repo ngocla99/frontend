@@ -14,7 +14,6 @@ import { UserPhoto } from "./user-photo";
 export const UploadPhoto = ({ className }: { className?: string }) => {
 	const isMobile = useIsMobile();
 	const user = useReadMeQuery();
-	console.log("🚀 ~ UploadPhoto ~ user:", user);
 	const [showSettings, setShowSettings] = React.useState<boolean>(false);
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 
