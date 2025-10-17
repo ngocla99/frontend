@@ -3,31 +3,20 @@ import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { BabyApi } from "@/types/api";
 
-export const getBabyForMatchApi = (
-	matchId: string,
-	signal?: AbortSignal,
-): Promise<BabyApi> => {
-	// Backend expects GET with JSON body (unconventional but that's the API design)
-	// Using Axios request method to properly send body with GET
-	return apiClient.request({
-		method: "GET",
-		url: "/api/v1/baby",
-		data: { match_id: matchId },
-		signal,
+export const getBabyForMatchApi = (matchId: string): Promise<BabyApi> => {
+	return apiClient.get("/api/v1/baby", {
+		params: { match_id: matchId },
 	});
 };
 
-// Query Options
 export const getBabyForMatchQueryOptions = (matchId: string) => {
 	return queryOptions({
 		queryKey: ["baby", "match", matchId],
-		queryFn: ({ signal }) => getBabyForMatchApi(matchId, signal),
+		queryFn: () => getBabyForMatchApi(matchId),
 		enabled: !!matchId,
-		retry: false, // Don't retry if baby doesn't exist yet
 	});
 };
 
-// Hooks
 type UseBabyForMatchOptions = {
 	matchId?: string;
 	queryConfig?: QueryConfig<typeof getBabyForMatchQueryOptions>;

@@ -330,14 +330,18 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
                   size="sm"
                   className="group/btn flex items-center gap-1.5 hover:bg-gradient-to-r hover:from-pink-600 hover:to-rose-600 rounded-full px-4 py-1.5 transition-all duration-300 text-xs hover:text-white"
                   onClick={() =>
-                    onOpen({
-                      user1: { name: user1.name, photo: user1.image },
-                      user2: { name: user2.name, photo: user2.image },
-                    })
+                    onOpen(
+                      {
+                        user1: { name: user1.name, photo: user1.image },
+                        user2: { name: user2.name, photo: user2.image },
+                      },
+                      id,
+                      "live-match",
+                    )
                   }
                 >
                   <span className="font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent group-hover/btn:text-white">
-                    View Match
+                    View Baby
                   </span>
                 </Button>
               </AuthGuard>

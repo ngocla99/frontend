@@ -82,17 +82,14 @@ import type { ResourceApi } from "@/types/api";
 // 2. Types (if needed for this file only)
 export type GetResourceInput = {
   id: string;
-  signal?: AbortSignal;
 };
 
 // 3. API Function (raw fetch logic)
 export const getResourceApi = (
   input: GetResourceInput,
 ): Promise<ResourceApi> => {
-  const { signal, ...params } = input;
   return apiClient.get("/api/v1/resource", {
-    params,
-    signal,
+    params: input,
   });
 };
 
@@ -100,7 +97,7 @@ export const getResourceApi = (
 export const getResourceQueryOptions = (input: GetResourceInput) => {
   return queryOptions({
     queryKey: ["resource", input.id],
-    queryFn: ({ signal }) => getResourceApi({ ...input, signal }),
+    queryFn: () => getResourceApi(input),
     enabled: !!input.id,
   });
 };
@@ -147,58 +144,7 @@ export const useMutateResource    // React mutation hook
 
 ## API Function Guidelines
 
-### 1. Always Accept AbortSignal
-
-```typescript
-// ✅ Good - Supports request cancellation
-export const getResourceApi = (
-  id: string,
-  signal?: AbortSignal,
-): Promise<ResourceApi> => {
-  return apiClient.get(`/api/v1/resource/${id}`, { signal });
-};
-
-// ❌ Bad - No abort signal support
-export const getResourceApi = (id: string): Promise<ResourceApi> => {
-  return apiClient.get(`/api/v1/resource/${id}`);
-};
-```
-
-**Why?**
-- Allows React Query to cancel in-flight requests
-- Prevents memory leaks and race conditions
-- Essential for route changes and component unmounts
-
----
-
-### 2. Destructure Signal from Input
-
-```typescript
-// ✅ Good - Clean parameter spreading
-export const getResourceApi = (
-  input: GetResourceInput,
-  signal?: AbortSignal,
-): Promise<ResourceApi> => {
-  const { signal: inputSignal, ...params } = input;
-  return apiClient.get("/api/v1/resource", {
-    params,
-    signal: signal || inputSignal,
-  });
-};
-
-// ❌ Bad - Signal pollutes request params
-export const getResourceApi = (
-  input: GetResourceInput,
-): Promise<ResourceApi> => {
-  return apiClient.get("/api/v1/resource", {
-    params: input, // signal would be included here
-  });
-};
-```
-
----
-
-### 3. Use Proper HTTP Methods
+### 1. Use Proper HTTP Methods
 
 ```typescript
 // GET - Fetch data
@@ -268,7 +214,7 @@ queryKey: ["matching", "top", "infinite"]
 export const getResourceQueryOptions = (input: GetResourceInput) => {
   return queryOptions({
     queryKey: ["resource", input.id],
-    queryFn: ({ signal }) => getResourceApi(input, signal),
+    queryFn: () => getResourceApi(input),
     enabled: !!input.id,        // Only fetch if ID exists
     staleTime: 1000 * 60 * 5,   // Optional: Cache for 5 minutes
     retry: 2,                    // Optional: Retry failed requests
@@ -355,7 +301,6 @@ export type GetResourceInput = {
 
 export const getResourceApi = (
   input: GetResourceInput,
-  signal?: AbortSignal,
 ): Promise<ResourceApi> => {
   // ...
 };
@@ -363,7 +308,6 @@ export const getResourceApi = (
 // ❌ Bad - Inline object types
 export const getResourceApi = (
   input: { id: string; filters?: any },
-  signal?: AbortSignal,
 ): Promise<ResourceApi> => {
   // ...
 };
@@ -439,17 +383,14 @@ import apiClient from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { UserApi } from "@/types/api";
 
-export const getUserApi = (
-  userId: string,
-  signal?: AbortSignal,
-): Promise<UserApi> => {
-  return apiClient.get(`/api/v1/users/${userId}`, { signal });
+export const getUserApi = (userId: string): Promise<UserApi> => {
+  return apiClient.get(`/api/v1/users/${userId}`);
 };
 
 export const getUserQueryOptions = (userId: string) => {
   return queryOptions({
     queryKey: ["user", userId],
-    queryFn: ({ signal }) => getUserApi(userId, signal),
+    queryFn: () => getUserApi(userId),
     enabled: !!userId,
   });
 };
@@ -492,7 +433,6 @@ export type BabyListItem = {
 
 export const getBabyListApi = (
   input: GetBabyListInput = {},
-  signal?: AbortSignal,
 ): Promise<BabyListItem[]> => {
   const params = new URLSearchParams();
   if (input.userId) params.append("user_id", input.userId);
@@ -504,13 +444,13 @@ export const getBabyListApi = (
     ? `/api/v1/me/babies?${queryString}`
     : "/api/v1/me/babies";
 
-  return apiClient.get(url, { signal });
+  return apiClient.get(url);
 };
 
 export const getBabyListQueryOptions = (input: GetBabyListInput = {}) => {
   return queryOptions({
     queryKey: ["baby", "list", input],
-    queryFn: ({ signal }) => getBabyListApi(input, signal),
+    queryFn: () => getBabyListApi(input),
   });
 };
 
@@ -581,16 +521,13 @@ import type { LiveMatchApi } from "@/types/api";
 export type LiveMatchInput = {
   limit: number;
   offset: number;
-  signal?: AbortSignal;
 };
 
 export const getLiveMatchApi = (
   input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
-  const { signal, ...query } = input;
   return apiClient.get("/api/v1/matches/top", {
-    params: { ...query, filter: "user" },
-    signal,
+    params: { ...input, filter: "user" },
   });
 };
 
@@ -615,11 +552,10 @@ export const useLiveMatchInfinite = ({
 }: UseLiveMatchInfiniteOptions = {}) => {
   return useInfiniteQuery({
     queryKey: ["matching", "top", "infinite"],
-    queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET, signal }) =>
+    queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET }) =>
       getLiveMatchApi({
         ...input,
         offset: pageParam,
-        signal,
       }),
     getNextPageParam: (lastPage, _, lastPageParam) => {
       if (lastPage.length === 0) {
@@ -833,7 +769,6 @@ Improves maintainability and follows API organization SOP
 ### File Template Checklist
 
 - [ ] Named as `[action]-[resource].ts`
-- [ ] API function accepts `signal?: AbortSignal`
 - [ ] Query options exported for queries
 - [ ] Custom hook exported
 - [ ] Types exported if used by consumers
@@ -844,9 +779,6 @@ Improves maintainability and follows API organization SOP
 
 ❌ **Don't:** Mix multiple operations in one file
 ✅ **Do:** One operation per file
-
-❌ **Don't:** Forget to accept abort signal
-✅ **Do:** Always accept `signal?: AbortSignal`
 
 ❌ **Don't:** Use flat query keys like `["data"]`
 ✅ **Do:** Use hierarchical keys like `["resource", "list", params]`
@@ -867,4 +799,4 @@ Improves maintainability and follows API organization SOP
 
 ---
 
-**Last Updated:** 2025-10-16
+**Last Updated:** 2025-10-17
