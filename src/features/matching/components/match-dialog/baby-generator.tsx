@@ -3,9 +3,9 @@ import { Baby, Download, Heart, Share2, Sparkles, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import type { MatchMode } from "../../store/user-matches";
 import { useGenerateBaby } from "../../api/generate-baby";
 import { useBabyForMatch } from "../../api/get-baby";
+import type { MatchMode } from "../../store/user-matches";
 
 interface BabyGeneratorProps {
 	matchId?: string;
