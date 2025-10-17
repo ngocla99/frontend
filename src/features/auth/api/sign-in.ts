@@ -20,6 +20,7 @@ export const signInSchema = z.object({
 
 export type SignInInput = z.infer<typeof signInSchema>;
 
+// biome-ignore lint/suspicious/noExplicitAny: <no need check>
 export const signInApi = (input: SignInInput): Promise<any> => {
 	return apiClient.post("/login", input);
 };

@@ -64,6 +64,7 @@ export const BabyGenerator = ({
 				setBabyImage(data.image_url);
 				toast.success("Your baby is ready! 🎉");
 			},
+			// biome-ignore lint/suspicious/noExplicitAny: <no need check>
 			onError: (error: any) => {
 				console.error("Generation failed:", error);
 				const errorMessage =

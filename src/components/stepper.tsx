@@ -347,7 +347,7 @@ interface CheckIconProps extends React.SVGProps<SVGSVGElement> {}
 
 function CheckIcon(props: CheckIconProps) {
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
+		// biome-ignore lint/a11y/noSvgWithoutTitle: <no need check>
 		<svg
 			{...props}
 			fill="none"

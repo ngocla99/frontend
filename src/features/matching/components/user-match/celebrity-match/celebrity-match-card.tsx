@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
-/** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: <no need check> */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <no need check> */
 
 import { Heart, Sparkles } from "lucide-react";
 import { ImageLoader } from "@/components/image-loader";

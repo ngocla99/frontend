@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <no need check> */
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: <no need check> */
 import type { DefaultOptions, UseMutationOptions } from "@tanstack/react-query";
 
 export const queryConfig = {

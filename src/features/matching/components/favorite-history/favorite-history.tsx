@@ -2,29 +2,29 @@ import { Heart, History } from "lucide-react";
 import React from "react";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";
-import {
-	type UserMatchInput,
-	useUserMatch,
-} from "@/features/matching/api/get-user-match";
-import { PAGINATION } from "@/lib/constants/constant";
+// import {
+// 	type UserMatchInput,
+// 	useUserMatch,
+// } from "@/features/matching/api/get-user-match";
+// import { PAGINATION } from "@/lib/constants/constant";
 import { BabyTab } from "./baby-tab";
 
-const initQueryFavoriteOptions: UserMatchInput = {
-	limit: PAGINATION.DEFAULT_LIMIT,
-	offset: PAGINATION.DEFAULT_OFFSET,
-	reaction: "favorite",
-};
+// const initQueryFavoriteOptions: UserMatchInput = {
+// 	limit: PAGINATION.DEFAULT_LIMIT,
+// 	offset: PAGINATION.DEFAULT_OFFSET,
+// 	reaction: "favorite",
+// };
 
 export function FavoriteHistory() {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const [_babyHistory] = React.useState<unknown[]>([]);
 
 	// Get all user matches and filter for favorites
-	const { data: favorites = [] } = useUserMatch({
-		input: {
-			...initQueryFavoriteOptions,
-		},
-	});
+	// const { data: favorites = [] } = useUserMatch({
+	// 	input: {
+	// 		...initQueryFavoriteOptions,
+	// 	},
+	// });
 
 	return (
 		<ResponsiveDialog

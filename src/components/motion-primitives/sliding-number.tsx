@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: <explanation> */
+/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: <no need check> */
 import {
 	type MotionValue,
 	motion,
