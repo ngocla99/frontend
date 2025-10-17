@@ -19,13 +19,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
 import { useUser } from "@/stores/auth-store";
 import { useUpdateMe } from "../api/update-me";

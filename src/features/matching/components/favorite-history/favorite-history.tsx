@@ -1,4 +1,4 @@
-import { Heart, History, Star } from "lucide-react";
+import { Heart, History } from "lucide-react";
 import React from "react";
 import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Button } from "@/components/ui/button";

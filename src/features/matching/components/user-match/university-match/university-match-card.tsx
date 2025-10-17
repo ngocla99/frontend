@@ -10,7 +10,6 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserMatchesActions } from "@/features/matching/store/user-matches";
 import type { UniversityMatch } from "./university-match-tab";
 
