@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLiveMatchRealtime } from "./use-live-match-realtime";
 
 export const useLiveMatches = (taskId?: string, userId?: string) => {
-	// Enable Supabase realtime for new matches
-	useLiveMatchRealtime(userId);
+	// Note: Realtime subscription is now handled at component level, not here
 
 	// Query for existing matches
 	const matchesQuery = useQuery({
@@ -16,7 +14,7 @@ export const useLiveMatches = (taskId?: string, userId?: string) => {
 			return response.json();
 		},
 		enabled: !!taskId,
-		refetchInterval: 30000, // Reduced polling since we have Supabase realtime
+		// refetchInterval: 30000, // Reduced polling since we have Supabase realtime
 	});
 
 	return {
