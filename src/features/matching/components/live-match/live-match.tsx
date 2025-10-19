@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
-import { useUser } from "@/stores/auth-store";
 
 const MatchCardSkeleton = () => (
 	<Card className="py-6 px-6 bg-gradient-card gap-0 shadow-soft border-0">
@@ -52,15 +51,22 @@ export function LiveMatch() {
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
 	>("all");
-	const user = useUser();
+
+	// Debug: Log component mount/unmount
+	React.useEffect(() => {
+		console.log("🎯 LiveMatch component mounted");
+		return () => {
+			console.log("🎯 LiveMatch component unmounted");
+		};
+	}, []);
+
+	// Note: Realtime subscription is now at RootLayout level to persist across page interactions
 
 	const {
 		data: liveMatchData,
 		isLoading,
 		error,
-	} = useLiveMatchInfinite({
-		userId: user?.id,
-	});
+	} = useLiveMatchInfinite();
 	const allMatches = liveMatchData || [];
 
 	const matches = React.useMemo(() => {

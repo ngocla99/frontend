@@ -1,35 +1,40 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
 import type { SupabaseMatch } from "@/lib/supabase";
 
 /**
  * Hook for handling live match realtime updates
- * This approach simply invalidates queries when new matches are detected,
- * letting the existing API fetch the complete data with user information
+ * Subscribes to ALL new matches in the system (public feed behavior)
+ * When a new match is detected, invalidates queries to trigger refetch
  */
-export const useLiveMatchRealtime = (userId?: string) => {
+export const useLiveMatchRealtime = () => {
 	const queryClient = useQueryClient();
 
-	const handleMatchInsert = (payload: { new: SupabaseMatch }) => {
-		console.log("🔥 New match detected via Supabase realtime:", payload.new);
+	const handleMatchInsert = useCallback(
+		(payload: { new: SupabaseMatch }) => {
+			console.log("🔥 New match detected via Supabase realtime:", payload.new);
+			// Invalidate to trigger refetch with complete data (including user info)
+			queryClient.invalidateQueries({
+				queryKey: ["matching", "top", "infinite"],
+			});
 
-		// Option 1: Simply invalidate to trigger refetch with complete data
-		queryClient.invalidateQueries({
-			queryKey: ["matching", "top", "infinite"],
-		});
+			console.log("✅ Live match query invalidated - UI will update");
 
-		// Option 2: Show a notification (if you have a notification system)
-		// showNotification({
-		//   title: "New Match Found!",
-		//   message: `${Math.round(payload.new.similarity_score)}% similarity`,
-		//   type: "success"
-		// });
-	};
+			// Optional: Show a notification (if you have a notification system)
+			// showNotification({
+			//   title: "New Match Found!",
+			//   message: `${Math.round(payload.new.similarity_score)}% similarity`,
+			//   type: "success"
+			// });
+		},
+		[queryClient],
+	);
 
 	return useSupabaseRealtime({
 		table: "matches",
 		event: "INSERT",
 		onData: handleMatchInsert,
-		enabled: !!userId,
+		enabled: true, // Always enabled for live match feed
 	});
 };
