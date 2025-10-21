@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { useMe } from "@/features/auth/api/get-me";
 import { getUserPhotosQueryOptions } from "@/features/matching/api/get-user-photos";
+import { useLiveMatchRealtime } from "@/features/matching/hooks/use-live-match-realtime";
 import { useAuthActions } from "@/stores/auth-store";
 import { Header } from "./header";
 
@@ -13,6 +14,10 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
 	const { setUser } = useAuthActions();
 	const queryClient = useQueryClient();
 	const [isPhotosPrefetching, setIsPhotosPrefetching] = useState(true);
+
+	// Enable Supabase realtime for ALL new matches at app level
+	// This keeps the connection alive even when user uploads photos
+	useLiveMatchRealtime();
 
 	// Prefetch user photos when user is authenticated
 	useEffect(() => {
