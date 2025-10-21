@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -21,6 +22,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
+import { getMeQueryOptions } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
 
 const onboardingSchema = z.object({
@@ -37,12 +39,16 @@ const onboardingSchema = z.object({
 
 export function OnboardingForm() {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [currentStep, setCurrentStep] = React.useState(1);
 
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
 			onSuccess: () => {
 				navigate({ to: "/" });
+				queryClient.invalidateQueries({
+					queryKey: getMeQueryOptions().queryKey,
+				});
 			},
 			onError: (error) => {
 				console.error("Onboarding failed:", error);
