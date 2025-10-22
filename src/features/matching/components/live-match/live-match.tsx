@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import React from "react";
+import { useInView } from "react-intersection-observer";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,20 +52,15 @@ export function LiveMatch() {
 	const [activeFilter, setActiveFilter] = React.useState<
 		"all" | "new" | "viewed"
 	>("all");
-
-	// Debug: Log component mount/unmount
-	React.useEffect(() => {
-		console.log("🎯 LiveMatch component mounted");
-		return () => {
-			console.log("🎯 LiveMatch component unmounted");
-		};
-	}, []);
+	const { ref, inView } = useInView();
 
 	// Note: Realtime subscription is now at RootLayout level to persist across page interactions
 
 	const {
 		data: liveMatchData,
 		isLoading,
+		isFetchingNextPage: isFetchingNextPageInfinite,
+		fetchNextPage,
 		error,
 	} = useLiveMatchInfinite();
 	const allMatches = liveMatchData || [];
@@ -93,6 +89,12 @@ export function LiveMatch() {
 			viewedMatches: viewedCount,
 		};
 	}, [allMatches]);
+
+	React.useEffect(() => {
+		if (inView) {
+			fetchNextPage();
+		}
+	}, [fetchNextPage, inView]);
 
 	return (
 		<div className="space-y-6">
@@ -130,14 +132,21 @@ export function LiveMatch() {
 								<p>Failed to load matches. Please try again.</p>
 							</div>
 						) : matches.length > 0 ? (
-							matches.map((match) => {
-								return <MatchCard key={match.id} data={match} />;
-							})
+							<>
+								{matches.map((match) => {
+									return <MatchCard key={match.id} data={match} />;
+								})}
+								<div ref={ref} />
+							</>
 						) : (
 							<div className="text-center py-8 text-muted-foreground">
 								<p>No matches found for the selected filter.</p>
 							</div>
 						)}
+						{isFetchingNextPageInfinite &&
+							Array.from({ length: 2 }).map((_, index) => (
+								<MatchCardSkeleton key={index} />
+							))}
 					</div>
 				</ScrollArea>
 			</motion.div>
