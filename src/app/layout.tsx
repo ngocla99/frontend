@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 import "@/styles/old-styles.css";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "Fuzed - University Match & Baby Generator",
@@ -22,6 +23,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body>
 				<Providers>{children}</Providers>
+				<Toaster duration={3000} />
 			</body>
 		</html>
 	);

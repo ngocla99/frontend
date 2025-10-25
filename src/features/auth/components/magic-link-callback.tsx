@@ -1,9 +1,12 @@
+"use client";
+
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuthActions } from "@/stores/auth-store";
+import type { UserApi } from "@/types/api";
 import { useMe } from "../api/get-me";
 
 export function MagicLinkCallback() {
@@ -15,6 +18,7 @@ export function MagicLinkCallback() {
 	const { data: user } = useMe({
 		queryConfig: {
 			enabled: sessionReady,
+			select: (data: any) => (data.data as UserApi) || data,
 		},
 	});
 
