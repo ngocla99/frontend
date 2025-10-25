@@ -32,8 +32,8 @@ export function FavoriteTab({ favorites }: FavoriteTabProps) {
 
 	const handleSelectFavorite = (favorite: UniversityMatch) => {
 		onOpen({
-			user1: { name: favorite.user1.name, photo: favorite.user1.image },
-			user2: { name: favorite.user2.name, photo: favorite.user2.image },
+			user1: { name: favorite.me.name, photo: favorite.me.image },
+			user2: { name: favorite.other.name, photo: favorite.other.image },
 		});
 	};
 
@@ -62,8 +62,8 @@ export function FavoriteTab({ favorites }: FavoriteTabProps) {
 									<div className="flex items-center gap-4">
 										<div className="relative">
 											<img
-												src={favorite.user2.image}
-												alt={favorite.user2.name}
+												src={favorite.other.image}
+												alt={favorite.other.name}
 												className="w-16 h-16 rounded-full object-cover"
 											/>
 											<div className="absolute -top-1 -right-1 text-lg">
@@ -72,7 +72,7 @@ export function FavoriteTab({ favorites }: FavoriteTabProps) {
 										</div>
 
 										<div className="flex-1">
-											<h3 className="font-semibold">{favorite.user2.name}</h3>
+											<h3 className="font-semibold">{favorite.other.name}</h3>
 											<div className="flex items-center gap-2 mt-1">
 												<Badge variant="outline" className="text-xs">
 													university

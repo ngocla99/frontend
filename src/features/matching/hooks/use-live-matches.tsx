@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-export const useLiveMatches = (taskId?: string, userId?: string) => {
+export const useLiveMatches = (taskId?: string, _userId?: string) => {
 	// Note: Realtime subscription is now handled at component level, not here
 
 	// Query for existing matches

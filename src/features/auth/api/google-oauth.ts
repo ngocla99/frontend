@@ -1,11 +1,13 @@
+"use client";
+
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { MutationConfig } from "@/lib/react-query";
 import { useAuthActions } from "@/stores/auth-store";
 
-const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 /**
  * Initiates Google OAuth flow by redirecting to backend OAuth endpoint
@@ -52,7 +54,7 @@ export const useOAuthCallback = ({
 			const [data] = args;
 			setAccessToken(data.accessToken);
 			toast.success("Login successful");
-			router.navigate({ to: "/" });
+			router.push("/");
 		},
 		onError: (error: Error, ...args) => {
 			const errorMessage =

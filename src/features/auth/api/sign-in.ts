@@ -1,6 +1,8 @@
+"use client";
+
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import apiClient from "@/lib/api-client";
@@ -41,7 +43,7 @@ export const useSignIn = ({ mutationConfig }: UseSignInOptions = {}) => {
 			const [data] = args;
 			setAccessToken(data.accessToken);
 			toast.success("Login success");
-			router.navigate({ to: "/" });
+			router.push("/");
 		},
 		onError: (error: Error, ...args) => {
 			const errorMessage =

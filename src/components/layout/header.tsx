@@ -1,6 +1,8 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
 import { AnimatePresence, easeInOut, motion } from "framer-motion";
 import { Heart, Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SignInButton } from "@/features/auth/components/signin-button";
 import { SignOutButton } from "@/features/auth/components/signout-button";
@@ -99,7 +101,7 @@ export function Header({ loading = false }: { loading?: boolean }) {
 							whileHover={{ scale: 1.02 }}
 							transition={{ type: "spring", stiffness: 400, damping: 25 }}
 						>
-							<Link to="/" className="flex items-center space-x-3">
+							<Link href="/" className="flex items-center space-x-3">
 								<div className="relative">
 									<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 via-rose-600 to-rose-700 shadow-lg">
 										<Heart className="h-5 w-5 text-white" />
@@ -127,7 +129,7 @@ export function Header({ loading = false }: { loading?: boolean }) {
 									onMouseLeave={() => setHoveredItem(null)}
 								>
 									<Link
-										to={item.href}
+										href={item.href}
 										className="text-foreground/80 hover:text-foreground relative rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200"
 									>
 										{hoveredItem === item.name && (
@@ -210,7 +212,7 @@ export function Header({ loading = false }: { loading?: boolean }) {
 													variants={mobileItemVariants}
 												>
 													<Link
-														to={item.href}
+														href={item.href}
 														className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
 														onClick={() => setIsMobileMenuOpen(false)}
 													>

@@ -1,13 +1,15 @@
-import { useNavigate } from "@tanstack/react-router";
+"use client";
+
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function SignUpButton({ className }: { className?: string }) {
-	const navigate = useNavigate();
+	const router = useRouter();
 
 	const handleSignUp = () => {
-		navigate({ to: "/auth/sign-up" });
+		router.push("/auth/sign-up");
 	};
 
 	return (

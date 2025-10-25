@@ -1,11 +1,13 @@
-import { useNavigate } from "@tanstack/react-router";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function SignInButton({ className }: { className?: string }) {
-	const navigate = useNavigate();
+	const router = useRouter();
 
 	const handleSignIn = () => {
-		navigate({ to: "/auth/sign-in" });
+		router.push("/auth/sign-in");
 	};
 
 	return (

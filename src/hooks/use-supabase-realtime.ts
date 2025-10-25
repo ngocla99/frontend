@@ -56,7 +56,9 @@ export const useSupabaseRealtime = ({
 				setConnectionState(status);
 
 				if (status === "SUBSCRIBED") {
-					console.log(`✅ Successfully subscribed to ${table} realtime updates`);
+					console.log(
+						`✅ Successfully subscribed to ${table} realtime updates`,
+					);
 				} else if (status === "CHANNEL_ERROR") {
 					console.error(`❌ Failed to subscribe to ${table} realtime`);
 				} else if (status === "TIMED_OUT") {

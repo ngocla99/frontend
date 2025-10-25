@@ -1,6 +1,8 @@
+"use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { Button } from "@/components/ui/button";
@@ -40,7 +42,7 @@ const profileUpdateSchema = z.object({
 type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
 
 export function ProfileUpdateForm() {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const user = useUser();
 
@@ -54,7 +56,7 @@ export function ProfileUpdateForm() {
 					queryKey: ["matching", "top", "infinite"],
 					refetchType: "all", // This ensures the query refetches even when inactive
 				});
-				navigate({ to: "/" });
+				router.push("/");
 			},
 		},
 	});

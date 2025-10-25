@@ -16,7 +16,7 @@ export const magicLinkSchema = z.object({
 			if (domain.includes(".edu")) return true;
 
 			// Check whitelist domains from env
-			const whitelist = import.meta.env.VITE_WHITELIST_EMAIL_DOMAINS || "";
+			const whitelist = process.env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS || "";
 			const whitelistDomains = whitelist
 				.split(",")
 				.map((d: string) => d.trim().toLowerCase())

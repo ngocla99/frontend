@@ -1,10 +1,12 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
 import {
 	AnimatePresence,
 	motion,
 	useMotionValueEvent,
 	useScroll,
 } from "motion/react";
+import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -67,7 +69,7 @@ export const FloatingNav = ({
 						return (
 							<Link
 								key={`link=${idx}`}
-								to={navItem.link}
+								href={navItem.link}
 								className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full"
 							>
 								<span>{navItem.name}</span>
@@ -79,7 +81,7 @@ export const FloatingNav = ({
 					return (
 						<Link
 							key={`link=${idx}`}
-							to={navItem.link}
+							href={navItem.link}
 							className={cn(
 								"relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500",
 							)}

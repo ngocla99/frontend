@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +60,7 @@ export function ProfileDropdown({ className }: { className?: string }) {
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem asChild>
-						<Link to="/profile">Profile</Link>
+						<Link href="/profile">Profile</Link>
 					</DropdownMenuItem>
 
 					<DropdownMenuItem asChild disabled>

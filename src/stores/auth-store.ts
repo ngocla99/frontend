@@ -51,7 +51,15 @@ const useAuthStore = create<AuthState>()(
 		}),
 		{
 			name: STORE_NAME.AUTH,
-			storage: createJSONStorage(() => localStorage),
+			storage: createJSONStorage(() =>
+				typeof window !== "undefined"
+					? localStorage
+					: {
+							getItem: () => null,
+							setItem: () => {},
+							removeItem: () => {},
+						},
+			),
 			partialize: (state) => ({
 				user: state.user,
 				session: state.session,

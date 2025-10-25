@@ -75,20 +75,20 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 		isFavorited = false,
 	} = data;
 	const { onOpen } = useUserMatchesActions();
-	const [isFavorite, setIsFavorite] = React.useState(isFavorited);
-	const { mutate: reactToMatch } = useReactToMatch();
+	const [, setIsFavorite] = React.useState(isFavorited);
+	const { mutate: _reactToMatch } = useReactToMatch();
 
 	// Update local state when server state changes
 	React.useEffect(() => {
 		setIsFavorite(isFavorited);
 	}, [isFavorited]);
 
-	const _handleFavoriteToggle = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		const next = !isFavorite;
-		setIsFavorite(next);
-		reactToMatch({ matchId: id, favorite: next });
-	};
+	// const handleFavoriteToggle = (e: React.MouseEvent) => {
+	// 	e.stopPropagation();
+	// 	const next = !isFavorite;
+	// 	setIsFavorite(next);
+	// 	reactToMatch({ matchId: id, favorite: next });
+	// };
 
 	const motionConfig = React.useMemo(() => {
 		if (isNewlyAdded) {

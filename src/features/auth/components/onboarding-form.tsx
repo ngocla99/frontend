@@ -1,6 +1,8 @@
+"use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -38,14 +40,14 @@ const onboardingSchema = z.object({
 });
 
 export function OnboardingForm() {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [currentStep, setCurrentStep] = React.useState(1);
 
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
 			onSuccess: () => {
-				navigate({ to: "/" });
+				router.push("/");
 				queryClient.invalidateQueries({
 					queryKey: getMeQueryOptions().queryKey,
 				});

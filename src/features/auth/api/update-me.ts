@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getMeQueryOptions } from "@/features/auth/api/get-me";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
 import type { UserApi } from "@/types/api";

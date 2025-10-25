@@ -1,5 +1,7 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { MutationConfig } from "@/lib/react-query";
 import { supabase } from "@/lib/supabase";
@@ -30,7 +32,7 @@ export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 		onError: (error: Error, ...args) => {
 			reset();
 			toast.success("Logged out successfully");
-			router.navigate({ to: "/auth/sign-in" });
+			router.push("/auth/sign-in");
 			onError?.(error, ...args);
 		},
 		...restConfig,

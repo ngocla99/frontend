@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { supabase } from "./supabase";
 
-const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 const apiClient = axios.create({
 	baseURL: BASE_API_URL,
