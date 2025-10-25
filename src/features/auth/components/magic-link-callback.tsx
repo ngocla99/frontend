@@ -1,4 +1,4 @@
-import { useRouter } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
@@ -22,11 +22,11 @@ export function MagicLinkCallback() {
 	React.useEffect(() => {
 		const timeoutId = setTimeout(() => {
 			toast.error("Authentication timeout. Please try again.");
-			router.navigate({ to: "/" });
+			router.push("/");
 		}, 15000);
 
 		return () => clearTimeout(timeoutId);
-	}, [isProcessing, router]);
+	}, [router]);
 
 	// Handle auth callback - exchange code for session
 	React.useEffect(() => {
@@ -67,7 +67,7 @@ export function MagicLinkCallback() {
 				toast.error(
 					error instanceof Error ? error.message : "Authentication failed",
 				);
-				router.navigate({ to: "/" });
+				router.push("/");
 			} finally {
 				setIsProcessing(false);
 			}
@@ -81,7 +81,7 @@ export function MagicLinkCallback() {
 		if (user && !isProcessing) {
 			setUser(user);
 			toast.success("Successfully signed in!");
-			router.navigate({ to: "/" });
+			router.push("/");
 		}
 	}, [user, isProcessing, setUser, router]);
 

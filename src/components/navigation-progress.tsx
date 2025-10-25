@@ -1,18 +1,22 @@
-import { useRouterState } from "@tanstack/react-router";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import LoadingBar, { type LoadingBarRef } from "react-top-loading-bar";
 
 export function NavigationProgress() {
 	const ref = useRef<LoadingBarRef>(null);
-	const state = useRouterState();
+	const pathname = usePathname();
 
 	useEffect(() => {
-		if (state.status === "pending") {
-			ref.current?.continuousStart();
-		} else {
+		// Start loading on pathname change
+		ref.current?.continuousStart();
+
+		// Complete after a short delay (Next.js handles navigation)
+		const timer = setTimeout(() => {
 			ref.current?.complete();
-		}
-	}, [state.status]);
+		}, 100);
+
+		return () => clearTimeout(timer);
+	}, [pathname]);
 
 	return (
 		<LoadingBar

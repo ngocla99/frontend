@@ -1,8 +1,8 @@
-import { useRouteContext } from "@tanstack/react-router";
 import { Flame } from "lucide-react";
 import { SlidingNumber } from "@/components/motion-primitives/sliding-number";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@/stores/auth-store";
 
 interface HeadCardProps {
 	stats: {
@@ -20,8 +20,8 @@ export const HeadCard = ({
 	activeFilter,
 }: HeadCardProps) => {
 	const { activeUsers, newMatches, viewedMatches } = stats;
-	const context = useRouteContext({ from: "/" });
-	const isAuthenticated = context.auth?.isAuthenticated;
+	const user = useUser();
+	const isAuthenticated = !!user;
 
 	return (
 		<Card className="p-4 bg-gradient-primary text-white border-0 shadow-match gap-0 rounded-2xl">

@@ -1,4 +1,4 @@
-import { useRouter } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useUser } from "@/stores/auth-store";
 
@@ -17,7 +17,7 @@ export function AuthGuard({
 	const router = useRouter();
 
 	const handleAuthRequired = () => {
-		router.navigate({ to: "/auth/sign-in" });
+		router.push("/auth/sign-in");
 		// confirm({
 		// 	type: "warning",
 		// 	title: "Authentication Required",

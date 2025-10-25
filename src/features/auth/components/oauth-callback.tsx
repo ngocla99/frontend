@@ -1,4 +1,4 @@
-import { useRouter, useSearch } from "@tanstack/react-router";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
@@ -10,8 +10,8 @@ export function OAuthCallback() {
 	const router = useRouter();
 	const { setAccessToken, setUser } = useAuthActions();
 
-	const searchParams = useSearch({ from: "/auth/callback" });
-	const accessToken = searchParams.token;
+	const searchParams = useSearchParams();
+	const accessToken = searchParams.get("token");
 
 	const { data: user } = useMe({
 		queryConfig: {
@@ -23,15 +23,15 @@ export function OAuthCallback() {
 		if (user) {
 			setUser(user);
 
-			router.navigate({ to: "/" });
+			router.push("/");
 		}
-	}, [user]);
+	}, [user, router, setUser]);
 
 	React.useEffect(() => {
 		const { error } = extractOAuthParams();
 		if (error) {
 			toast.error(`OAuth error: ${error}`);
-			router.navigate({ to: "/" });
+			router.push("/");
 			return;
 		}
 
@@ -41,8 +41,8 @@ export function OAuthCallback() {
 		}
 
 		toast.error("No access token received from authentication");
-		router.navigate({ to: "/" });
-	}, [accessToken]);
+		router.push("/");
+	}, [accessToken, router, setAccessToken]);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center">
