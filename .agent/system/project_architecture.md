@@ -9,7 +9,7 @@
 **Description:** A web application that uses facial recognition AI to match users based on facial similarity. Users can upload photos, discover matches with other users, compare themselves with celebrities, and view real-time matches with similarity scores.
 
 **Tech Stack:**
-- **Frontend:** React 19, TypeScript, Vite, TanStack Router, TanStack Query
+- **Frontend:** React 19, TypeScript, Next.js 16, TanStack Query
 - **Backend:** Python Flask, Supabase (PostgreSQL), Qdrant (Vector DB), InsightFace (AI)
 - **Authentication:** Supabase Auth (Magic Link + PKCE)
 - **Infrastructure:** Docker, Celery, Redis
@@ -24,8 +24,7 @@
 |-----------|---------|---------|
 | React | 19.0.0 | UI Framework |
 | TypeScript | 5.7.2 | Type Safety |
-| Vite | 7.1.4 | Build Tool & Dev Server |
-| TanStack Router | 1.130.2 | File-based Routing |
+| Next.js | 16.0.0 | Framework & Routing |
 | TanStack Query | 5.86.0 | Server State Management |
 | Zustand | 5.0.8 | Client State Management |
 | Tailwind CSS | 4.0.6 | Styling Framework |
@@ -44,8 +43,27 @@ frontend/
 │   ├── tasks/                # Feature PRDs & implementation plans
 │   └── sop/                  # Standard operating procedures
 ├── src/
-│   ├── app.tsx               # App initialization & providers
-│   ├── main.tsx              # Entry point
+│   ├── app/                  # Next.js App Router
+│   │   ├── layout.tsx        # Root layout (providers, fonts)
+│   │   ├── page.tsx          # Home page
+│   │   ├── providers.tsx     # React Query & Theme providers
+│   │   ├── error.tsx         # Error boundary
+│   │   ├── not-found.tsx     # 404 page
+│   │   ├── global-error.tsx  # Global error handler
+│   │   ├── (authenticated)/ # Protected routes group
+│   │   │   ├── layout.tsx   # Auth guard layout
+│   │   │   ├── live-matches/page.tsx
+│   │   │   ├── your-matches/page.tsx
+│   │   │   ├── profile/page.tsx
+│   │   │   ├── onboarding/page.tsx
+│   │   │   ├── 401/page.tsx
+│   │   │   └── 403/page.tsx
+│   │   ├── auth/            # Auth routes
+│   │   │   ├── layout.tsx   # Auth-specific layout
+│   │   │   ├── sign-in/page.tsx
+│   │   │   ├── sign-up/page.tsx
+│   │   │   └── callback/page.tsx
+│   │   └── 503/page.tsx     # Service unavailable
 │   ├── components/           # Shared UI components
 │   │   ├── ui/              # Radix UI & shadcn components
 │   │   ├── layout/          # Layout components (Header, RootLayout)
@@ -63,12 +81,6 @@ frontend/
 │   │       ├── hooks/      # Custom matching hooks
 │   │       ├── store/      # Matching-specific stores
 │   │       └── utils/      # Matching utilities
-│   ├── routes/             # File-based routes
-│   │   ├── __root.tsx      # Root layout
-│   │   ├── index.tsx       # Home page
-│   │   ├── _authenticated/ # Protected routes group
-│   │   ├── auth/           # Auth routes
-│   │   └── (errors)/       # Error pages (401, 403, 404, 500, 503)
 │   ├── stores/             # Global state management (Zustand)
 │   │   └── auth-store.ts   # Authentication state
 │   ├── hooks/              # Shared custom hooks
@@ -85,7 +97,7 @@ frontend/
 │   └── styles/             # Global styles
 ├── public/                 # Static assets
 ├── .env                    # Environment variables
-├── vite.config.ts         # Vite configuration
+├── next.config.ts         # Next.js configuration
 ├── tsconfig.json          # TypeScript configuration
 ├── biome.json             # Linter configuration
 └── package.json           # Dependencies & scripts
@@ -93,17 +105,49 @@ frontend/
 
 ### Key Architecture Patterns
 
-#### 1. File-Based Routing (TanStack Router)
+#### 1. File-Based Routing (Next.js App Router)
 
-Routes are automatically generated from the file structure in `src/routes/`:
+Routes are automatically generated from the file structure in `src/app/`:
 
-- `__root.tsx` - Root layout with error boundaries
-- `index.tsx` - Public home page
-- `_authenticated/` - Protected routes requiring authentication
+**Key Files:**
+- `layout.tsx` - Root layout with providers, fonts, error boundaries
+- `page.tsx` - Page component for the route
+- `error.tsx` - Error boundary for route segment
+- `not-found.tsx` - 404 page
+- `global-error.tsx` - Global error handler
+
+**Route Groups:**
+- `(authenticated)/` - Protected routes requiring authentication (parentheses = not in URL)
 - `auth/` - Authentication flow pages (sign-in, sign-up, callback)
-- `(errors)/` - Error pages (grouped, not in URL path)
 
-Route guards are implemented using `beforeLoad` in route configurations.
+**Protected Routes:**
+Route guards are implemented using layout components:
+```typescript
+// app/(authenticated)/layout.tsx
+export default function AuthenticatedLayout({ children }) {
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!session) router.push("/auth/sign-in");
+  }, [session, router]);
+
+  if (!session) return null;
+  return <>{children}</>;
+}
+```
+
+**Navigation:**
+```typescript
+import { useRouter, usePathname } from "next/navigation";
+
+const router = useRouter();
+const pathname = usePathname();
+
+router.push("/profile");       // Navigate
+router.back();                 // Go back
+router.refresh();              // Refresh current route
+```
 
 #### 2. Feature-Based Organization
 

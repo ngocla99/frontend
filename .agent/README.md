@@ -90,6 +90,16 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
   - Type safety guidelines
   - Real-world examples & migration guide
 
+- **[Next.js 16 Migration](./sop/nextjs-migration.md)** ✨ NEW
+  - Migration from Vite + TanStack Router to Next.js 16
+  - File structure changes and routing patterns
+  - Router API differences (`useRouter`, `usePathname`)
+  - Protected route implementation with layouts
+  - Font loading optimization
+  - Environment variable updates
+  - Common issues and solutions
+  - Migration checklist and best practices
+
 **Additional SOPs to document:**
 - How to add a new page/route
 - How to add database migrations
@@ -105,12 +115,13 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 ### Frontend Architecture
 
-**Framework:** React 19 + TypeScript + Vite
+**Framework:** React 19 + TypeScript + Next.js 16
 
-**Routing:** TanStack Router (file-based)
-- Routes are auto-generated from `src/routes/`
-- Protected routes use `_authenticated/` directory
-- Error pages in `(errors)/` directory
+**Routing:** Next.js App Router (file-based)
+- Routes are auto-generated from `src/app/`
+- Protected routes use `(authenticated)/` route group
+- Layout-based auth guards
+- Error handling with `error.tsx` and `not-found.tsx`
 
 **State Management:**
 - **Server State:** TanStack Query (caching, fetching, mutations)
@@ -178,8 +189,7 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 |----------|-----------|
 | Framework | React 19 |
 | Language | TypeScript 5.7 |
-| Build Tool | Vite 7.1 |
-| Routing | TanStack Router 1.130 |
+| Framework & Routing | Next.js 16.0 |
 | Server State | TanStack Query 5.86 |
 | Client State | Zustand 5.0 |
 | Styling | Tailwind CSS 4.0 |
@@ -226,9 +236,9 @@ docker-compose up -d  # API on port 5000
 
 **Frontend `.env`:**
 ```env
-VITE_BASE_API_URL=http://localhost:5000
-VITE_SUPABASE_URL=https://<project>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<key>
+NEXT_PUBLIC_BASE_API_URL=http://localhost:5000
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<key>
 ```
 
 **Backend `.env`:**
@@ -262,16 +272,24 @@ FRONTEND_URL=http://localhost:3000
 ### Frontend Structure
 ```
 src/
+├── app/                   # Next.js App Router
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Home page
+│   ├── (authenticated)/  # Protected routes
+│   │   ├── layout.tsx    # Auth guard
+│   │   ├── live-matches/
+│   │   ├── your-matches/
+│   │   └── profile/
+│   └── auth/             # Auth pages
+│       ├── sign-in/
+│       ├── sign-up/
+│       └── callback/
 ├── features/          # Feature modules (auth, matching)
 │   └── matching/
 │       ├── api/       # API calls + hooks
 │       ├── components/# Feature UI
 │       ├── hooks/     # Custom hooks
 │       └── store/     # Feature state
-├── routes/            # File-based routing
-│   ├── _authenticated/# Protected routes
-│   ├── auth/         # Auth pages
-│   └── (errors)/     # Error pages
 ├── stores/            # Global Zustand stores
 ├── lib/               # Utilities & configs
 │   ├── api-client.ts # Axios instance
@@ -306,18 +324,22 @@ app/
 
 ### Adding a New Frontend Route
 
-1. Create file in `src/routes/`:
-   - Public: `src/routes/my-page.tsx`
-   - Protected: `src/routes/_authenticated/my-page.tsx`
+1. Create directory in `src/app/`:
+   - Public: `src/app/my-page/page.tsx`
+   - Protected: `src/app/(authenticated)/my-page/page.tsx`
 
-2. Export route configuration:
+2. Export page component:
    ```typescript
-   export const Route = createFileRoute('/my-page')({
-     component: MyPage,
-   });
+   "use client"; // If using hooks/state
+
+   export default function MyPage() {
+     return <div>My Page Content</div>;
+   }
    ```
 
-3. Router auto-generates route tree
+3. Router automatically picks up new route
+
+**See:** [Next.js Migration SOP](./sop/nextjs-migration.md) for detailed guide
 
 ### Adding a New API Endpoint
 
@@ -354,8 +376,9 @@ const { setUser } = useAuthActions();  // Actions
 ### Common Issues
 
 **Frontend build errors:**
-- Clear Vite cache: `rm -rf node_modules/.vite`
+- Clear Next.js cache: `rm -rf .next`
 - Reinstall dependencies: `bun install`
+- Run `bun run build` to check for TypeScript errors
 
 **Auth not working:**
 - Check Supabase Auth settings
@@ -403,7 +426,7 @@ const { setUser } = useAuthActions();  // Actions
 
 ### External Documentation
 
-- [TanStack Router Docs](https://tanstack.com/router)
+- [Next.js App Router Docs](https://nextjs.org/docs/app)
 - [TanStack Query Docs](https://tanstack.com/query)
 - [Zustand Docs](https://zustand-demo.pmnd.rs/)
 - [Supabase Docs](https://supabase.com/docs)
@@ -435,6 +458,86 @@ const { setUser } = useAuthActions();  // Actions
 ---
 
 ## Recent Updates
+
+### October 2025 - Next.js 16 Migration 🚀
+
+**Major Frontend Migration: Vite + TanStack Router → Next.js 16 App Router**
+
+The frontend has been migrated from Vite + TanStack Router to Next.js 16 with App Router for improved performance, SEO, and developer experience.
+
+**Key Changes:**
+
+1. **Framework Migration**
+   - **Removed:** Vite 7.1, TanStack Router 1.130
+   - **Added:** Next.js 16.0 (includes routing, bundling, optimization)
+   - **Benefits:** SSR, better SEO, image optimization, automatic code splitting
+
+2. **Routing System**
+   - **Before:** `src/routes/` with `__root.tsx`, `_authenticated/`
+   - **After:** `src/app/` with `layout.tsx`, `(authenticated)/`
+   - **Route Guards:** Layout-based using `useSession()` + `useRouter()`
+
+3. **Router API Changes**
+   ```typescript
+   // Before (TanStack Router)
+   import { useRouter } from '@tanstack/react-router';
+   router.navigate({ to: '/profile' });
+
+   // After (Next.js)
+   import { useRouter } from 'next/navigation';
+   router.push('/profile');
+   ```
+
+4. **Font Loading Optimization**
+   - **Before:** Google Fonts via CSS `@import`
+   - **After:** Next.js `next/font/google` with automatic optimization
+   - **Benefits:** No external requests, optimized loading
+
+5. **Environment Variables**
+   - **Updated:** `VITE_*` → `NEXT_PUBLIC_*`
+   - **Config:** `vite.config.ts` → `next.config.ts`
+
+6. **Protected Routes**
+   - **Implementation:** Layout component with session check
+   - **Location:** `src/app/(authenticated)/layout.tsx`
+   - **Guards:** `useEffect` based redirect to sign-in
+
+7. **Component Updates**
+   - Added `"use client"` directive to interactive components
+   - Updated all router imports from TanStack to Next.js
+   - Fixed navigation patterns (`navigate()` → `push()`)
+
+**Migration Completed Components:**
+- ✅ All route pages migrated to App Router structure
+- ✅ Auth guards converted to layout-based
+- ✅ Router hooks updated (6 components)
+- ✅ Font loading optimized with `next/font/google`
+- ✅ Environment variables renamed
+- ✅ Build and dev scripts updated
+
+**Performance Improvements:**
+- Faster initial page load with automatic code splitting
+- Better SEO with server-side rendering
+- Optimized font loading (zero external requests)
+- Optimized image loading with `next/image`
+
+**Documentation:**
+- **New:** [Next.js Migration SOP](./sop/nextjs-migration.md) - Complete migration guide
+- **Updated:** [Project Architecture](./system/project_architecture.md) - Reflects Next.js structure
+- **Updated:** README.md - Updated tech stack and file structure
+
+**Related Pull Requests:**
+- Migrated routing system from TanStack Router to Next.js App Router
+- Updated all router usage across 6 components
+- Fixed CSS font loading issues
+- Implemented layout-based authentication guards
+
+**Breaking Changes:**
+- Router API completely changed (see migration SOP)
+- File structure reorganized (`routes/` → `app/`)
+- Environment variable naming convention updated
+
+---
 
 ### October 2025 - Baby Generation Feature Complete 👶✨
 
