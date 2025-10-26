@@ -2,7 +2,7 @@ import { Search, Star } from "lucide-react";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useCelebLiveMatches } from "@/features/matching/hooks/use-celeb-live-matches";
+import { useCelebMatches } from "@/features/matching/hooks/use-celeb-live-matches";
 import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ export const CelebrityMatchTab = ({
 }: CelebrityMatchTabProps) => {
 	const isMobile = useIsMobile();
 	const user = useUser();
-	const { matches: celebMatches, isLoading } = useCelebLiveMatches(
+	const { matches: celebMatches, isLoading } = useCelebMatches(
 		user?.id,
 		activePhotoId,
 	);

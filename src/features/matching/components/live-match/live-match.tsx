@@ -133,8 +133,8 @@ export function LiveMatch() {
 							</div>
 						) : matches.length > 0 ? (
 							<>
-								{matches.map((match) => {
-									return <MatchCard key={match.id} data={match} />;
+								{matches.map((match, index) => {
+									return <MatchCard key={match.id + index} data={match} />;
 								})}
 								<div ref={ref} />
 							</>

@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useUserLiveMatches } from "@/features/matching/hooks/use-user-live-matches";
+import { useUserMatches } from "@/features/matching/hooks/use-user-live-matches";
 import { useMatchId } from "@/features/matching/store/user-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ export const UniversityMatchTab = ({
 	const isMobile = useIsMobile();
 	const user = useUser();
 	const matchId = useMatchId();
-	const { matches: userMatches, isLoading } = useUserLiveMatches(
+	const { matches: userMatches, isLoading } = useUserMatches(
 		user?.id,
 		activePhotoId,
 	);

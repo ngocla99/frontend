@@ -29,12 +29,12 @@ export const useSupabaseRealtime = ({
 
 	useEffect(() => {
 		if (!enabled) {
-			console.log(`🔌 Supabase realtime disabled for ${table}`);
 			return;
 		}
 
-		const channelName = `${table}-${event}-${Date.now()}`;
-		console.log(`🔌 Subscribing to Supabase realtime: ${channelName}`);
+		// Use stable channel name without timestamp to prevent re-subscriptions
+		const filterSuffix = filter ? `-${filter.replace(/=/g, "-")}` : "";
+		const channelName = `${table}-${event}${filterSuffix}`;
 
 		channelRef.current = supabase
 			.channel(channelName)
@@ -47,28 +47,22 @@ export const useSupabaseRealtime = ({
 					...(filter && { filter }),
 				},
 				(payload) => {
-					console.log(`📡 Realtime event received on ${table}:`, event);
 					onDataRef.current(payload);
 				},
 			)
 			.subscribe((status) => {
-				console.log(`📊 Realtime subscription status for ${table}:`, status);
 				setConnectionState(status);
 
-				if (status === "SUBSCRIBED") {
-					console.log(
-						`✅ Successfully subscribed to ${table} realtime updates`,
-					);
-				} else if (status === "CHANNEL_ERROR") {
-					console.error(`❌ Failed to subscribe to ${table} realtime`);
+				// Only log errors in production, success in dev
+				if (status === "CHANNEL_ERROR") {
+					console.error(`❌ Realtime connection failed for ${table}`);
 				} else if (status === "TIMED_OUT") {
-					console.error(`⏱️ Subscription to ${table} timed out`);
+					console.error(`⏱️ Realtime subscription timeout for ${table}`);
 				}
 			});
 
 		return () => {
 			if (channelRef.current) {
-				console.log(`🔌 Unsubscribing from ${table} realtime`);
 				supabase.removeChannel(channelRef.current);
 				channelRef.current = null;
 				setConnectionState("idle");
