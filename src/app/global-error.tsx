@@ -4,7 +4,7 @@ import GeneralError from "@/components/errors/general-error";
 
 export default function GlobalError() {
 	return (
-		<html>
+		<html lang="en">
 			<body>
 				<GeneralError />
 			</body>

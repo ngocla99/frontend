@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Baby, Download, Heart, Share2, Sparkles, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BlurImage } from "@/components/blur-image";
 import { Button } from "@/components/ui/button";
 import { useGenerateBaby } from "../../api/generate-baby";
 import { useBabyForMatch } from "../../api/get-baby";
@@ -32,13 +33,18 @@ export const BabyGenerator = ({
 	const { mutate: generateBaby, isPending: isGenerating } = useGenerateBaby();
 
 	// Fetch existing baby for this match
-	const { data: existingBaby, isLoading: loadingExisting } = useBabyForMatch({
+	const {
+		data: existingBaby,
+		error,
+		isLoading: loadingExisting,
+	} = useBabyForMatch({
 		matchId,
 		queryConfig: {
 			enabled: !!matchId,
 			staleTime: 1000 * 60 * 5, // Cache for 5 minutes
 		},
 	});
+	console.log("🚀 ~ BabyGenerator ~ error:", error);
 
 	// Load existing baby image when available
 	useEffect(() => {
@@ -187,10 +193,12 @@ export const BabyGenerator = ({
 									{/* Baby image with glow */}
 									<div className="relative">
 										<div className="absolute -inset-2 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full blur-lg opacity-60" />
-										<img
+										<BlurImage
 											src={babyImage}
 											alt="Your baby"
-											className="relative w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white shadow-2xl"
+											width={112}
+											height={112}
+											className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-2xl"
 										/>
 									</div>
 
@@ -268,10 +276,12 @@ export const BabyGenerator = ({
 						<div className="relative">
 							<div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full blur-[2px] opacity-60 group-hover/avatar:opacity-100 transition-opacity duration-200" />
 							{userPhoto ? (
-								<img
+								<BlurImage
 									src={userPhoto}
 									alt="You"
-									className="relative w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-3 border-white shadow-lg"
+									width={80}
+									height={80}
+									className="relative w-16 h-16 md:w-20 md:h-20 rounded-full border-3 border-white shadow-lg"
 								/>
 							) : (
 								<div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center border-3 border-white shadow-lg">
@@ -307,10 +317,12 @@ export const BabyGenerator = ({
 						<div className="relative">
 							<div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-[2px] opacity-60 group-hover/avatar:opacity-100 transition-opacity duration-200" />
 							{matchPhoto ? (
-								<img
+								<BlurImage
 									src={matchPhoto}
 									alt={matchName || "Match"}
-									className="relative w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-3 border-white shadow-lg"
+									width={80}
+									height={80}
+									className="relative w-16 h-16 md:w-20 md:h-20 rounded-full border-3 border-white shadow-lg"
 								/>
 							) : (
 								<div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center border-3 border-white shadow-lg">

@@ -6,7 +6,6 @@ import {
 	QueryClientProvider,
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import { ThemeProvider } from "@/contexts/theme-context";
@@ -14,8 +13,6 @@ import { handleServerError } from "@/lib/utils/handle-server-error";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-	const router = useRouter();
-
 	const [queryClient] = React.useState(
 		() =>
 			new QueryClient({
@@ -56,10 +53,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 							}
 							if (error.response?.status === 500) {
 								toast.error("Internal Server Error!");
-								router.push("/500");
 							}
 							if (error.response?.status === 403) {
-								router.push("/403");
+								toast.error("Forbidden!");
 							}
 						}
 					},
