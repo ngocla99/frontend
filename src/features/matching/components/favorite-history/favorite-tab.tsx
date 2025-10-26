@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar, Heart, Trash2 } from "lucide-react";
+import { BlurImage } from "@/components/blur-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -61,9 +62,11 @@ export function FavoriteTab({ favorites }: FavoriteTabProps) {
 								<Card className="p-4 hover:shadow-md transition-shadow">
 									<div className="flex items-center gap-4">
 										<div className="relative">
-											<img
+											<BlurImage
 												src={favorite.other.image}
 												alt={favorite.other.name}
+												width={64}
+												height={64}
 												className="w-16 h-16 rounded-full object-cover"
 											/>
 											<div className="absolute -top-1 -right-1 text-lg">

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Clock, Heart, Sparkles } from "lucide-react";
 import React from "react";
 import { AuthGuard } from "@/components/auth-guard";
+import { BlurImage } from "@/components/blur-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -192,10 +193,12 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 						<div className="flex flex-col items-center gap-2">
 							<div className="relative group/avatar">
 								<div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full blur-[2px]" />
-								<img
+								<BlurImage
 									src={user1.image}
 									alt={user1.name}
-									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
+									width={56}
+									height={56}
+									className="relative w-14 h-14 rounded-full border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
 							</div>
 							<NameWithTooltip
@@ -303,10 +306,12 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 						<div className="flex flex-col items-center gap-2">
 							<div className="relative group/avatar">
 								<div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-[2px]" />
-								<img
+								<BlurImage
 									src={user2.image}
 									alt={user2.name}
-									className="relative w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
+									width={56}
+									height={56}
+									className="relative w-14 h-14 rounded-full border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 								/>
 							</div>
 							<NameWithTooltip

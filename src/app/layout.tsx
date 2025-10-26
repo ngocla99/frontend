@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 import "@/styles/old-styles.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -11,6 +11,9 @@ export const metadata: Metadata = {
 		apple: "/logo192.png",
 	},
 	manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
 	themeColor: "#000000",
 };
 
