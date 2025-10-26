@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react";
 import React from "react";
-import { ImageLoader } from "@/components/image-loader";
+import { BlurImage } from "@/components/blur-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,7 +86,7 @@ export function UniversityMatchCard({
 				<div className="flex flex-col items-center gap-2">
 					<div className="relative group/avatar">
 						<div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full blur-[2px]" />
-						<ImageLoader
+						<BlurImage
 							src={match.me.image}
 							alt={match.me.name}
 							width={56}
@@ -171,7 +171,7 @@ export function UniversityMatchCard({
 				<div className="flex flex-col items-center gap-2">
 					<div className="relative group/avatar">
 						<div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-[2px]" />
-						<ImageLoader
+						<BlurImage
 							src={match.other.image}
 							alt={match.other.name}
 							width={56}
@@ -266,7 +266,7 @@ export function UniversityMatchCard({
 									className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border"
 								>
 									<div className="flex items-center gap-3">
-										<ImageLoader
+										<BlurImage
 											src={individualMatch.image}
 											alt={`Match ${index + 1}`}
 											width={32}

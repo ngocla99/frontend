@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React from "react";
-import { ImageLoader } from "@/components/image-loader";
+import { BlurImage } from "@/components/blur-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -63,13 +63,15 @@ export const PhotoFilter = ({
 											: "hover:bg-muted text-muted-foreground hover:text-foreground",
 									)}
 								>
-									<ImageLoader
-										src={upload.image_url}
-										alt={`u${index}`}
-										className="size-6"
-										width={24}
-										height={24}
-									/>
+									<div className="size-6 rounded-full">
+										<BlurImage
+											src={upload.image_url}
+											alt={`u${index}`}
+											className="size-6 rounded-full"
+											width={24}
+											height={24}
+										/>
+									</div>
 
 									<div className="flex items-center gap-1">
 										{/* <Camera className="w-4 h-4" /> */}

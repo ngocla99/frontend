@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
 		remotePatterns: [
 			{
 				protocol: "https",
-				hostname: "*.supabase.co",
-				pathname: "/storage/v1/**",
+				hostname: "**.supabase.co", // Supabase storage images
+			},
+			{
+				protocol: "https",
+				hostname: "avatar.vercel.sh", // Vercel avatar images
 			},
 			{
 				protocol: "https",

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import React from "react";
-import { ImageLoader } from "@/components/image-loader";
+import { BlurImage } from "@/components/blur-image";
 import {
 	FileUpload,
 	type FileUploadRef,
@@ -58,13 +58,15 @@ export function UserPhoto() {
 					className="text-center space-y-8"
 				>
 					<div className="relative inline-block">
-						<ImageLoader
-							src={user?.image || ""}
-							alt="User profile"
-							width={128}
-							height={128}
-							className="rounded-full shadow-match"
-						/>
+						<div>
+							<BlurImage
+								src={user?.image || ""}
+								alt="User profile"
+								width={128}
+								height={128}
+								className="size-32 rounded-full shadow-match"
+							/>
+						</div>
 						<Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
 							{user?.gender === "male" ? "👨" : "👩"}
 						</Badge>

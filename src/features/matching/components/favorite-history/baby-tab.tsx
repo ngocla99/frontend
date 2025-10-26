@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar } from "lucide-react";
-import { ImageLoader } from "@/components/image-loader";
+import { BlurImage } from "@/components/blur-image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -89,7 +89,7 @@ export function BabyTab() {
 
 									{/* Photos Row */}
 									<div className="flex items-center justify-between">
-										<ImageLoader
+										<BlurImage
 											src={baby.me.image || ""}
 											alt={baby.me.name}
 											width={48}
@@ -100,7 +100,7 @@ export function BabyTab() {
 										{/* Display all baby images */}
 										<div className="flex gap-2">
 											{baby.images.slice(0, 3).map((img, index) => (
-												<ImageLoader
+												<BlurImage
 													key={img.id}
 													src={img.image_url}
 													alt={`Baby ${index + 1}`}
@@ -116,7 +116,7 @@ export function BabyTab() {
 											)}
 										</div>
 
-										<ImageLoader
+										<BlurImage
 											src={baby.other.image || ""}
 											alt={baby.other.name}
 											width={48}

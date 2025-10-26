@@ -2,7 +2,7 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <no need check> */
 
 import { Heart, Sparkles } from "lucide-react";
-import { ImageLoader } from "@/components/image-loader";
+import { BlurImage } from "@/components/blur-image";
 import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +38,7 @@ export const CelebrityMatchCard = ({
 			<div className="flex items-center gap-3 sm:gap-4">
 				{/* Celebrity Image */}
 				<div className="relative flex-shrink-0">
-					<ImageLoader
+					<BlurImage
 						src={celebMatch.celeb.image}
 						alt={celebMatch.celeb.name}
 						width={80}
