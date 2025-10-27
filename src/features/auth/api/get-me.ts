@@ -2,21 +2,10 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import type { QueryConfig } from "@/lib/react-query";
 import { useSession } from "@/stores/auth-store";
 import type { UserApi } from "@/types/api";
+import api from "@/lib/api-client";
 
 export const getMeApi = async (): Promise<UserApi> => {
-	const response = await fetch("/api/auth/me", {
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		credentials: "include", // Important: Include cookies for auth
-	});
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch user profile");
-	}
-
-	return response.json();
+	return api.get<UserApi>("/auth/me");
 };
 
 export const getMeQueryOptions = () => {

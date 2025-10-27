@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { BabyApi } from "@/types/api";
 
 // API Function
 export const generateBabyApi = (matchId: string): Promise<BabyApi> => {
-	return apiClient.post(`/api/v1/baby`, { match_id: matchId });
+	return api.post<BabyApi>("/baby", { match_id: matchId });
 };
 
 // Hooks

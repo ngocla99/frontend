@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { CelebMatchApi, Reaction } from "@/types/api";
@@ -13,14 +13,18 @@ export type CelebMatchInput = {
 	signal?: AbortSignal;
 };
 
-export const getCelebMatchApi = (
+export const getCelebMatchApi = async (
 	input: CelebMatchInput,
 ): Promise<CelebMatchApi[]> => {
-	const { signal, ...query } = input;
-	return apiClient.get("/api/v1/me/matches", {
-		params: { ...query, filter: "celeb" },
-		signal,
-	});
+	const { signal, face_id, limit, ...rest } = input;
+	const response = await api.post<{ celebrities: CelebMatchApi[]; total: number }>(
+		"/matches/celebrity",
+		{
+			face_id,
+			limit,
+		},
+	);
+	return response.celebrities;
 };
 
 export const getCelebMatchQueryOptions = (

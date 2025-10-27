@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
 
 export type ReactToMatchInput = {
@@ -10,12 +10,12 @@ export type ReactToMatchInput = {
 export const reactToMatchApi = (input: ReactToMatchInput) => {
 	if (input.favorite) {
 		// POST to add favorite reaction
-		return apiClient.post(`/api/v1/matches/${input.matchId}/react`, null, {
-			params: { type: "favorite" },
+		return api.post(`/matches/${input.matchId}/react`, {
+			reaction_type: "like",
 		});
 	} else {
 		// DELETE to remove reaction
-		return apiClient.delete(`/api/v1/matches/${input.matchId}/react`);
+		return api.delete(`/matches/${input.matchId}/react`);
 	}
 };
 

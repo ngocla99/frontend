@@ -1,12 +1,13 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { BabyApi } from "@/types/api";
 
-export const getBabyForMatchApi = (matchId: string): Promise<BabyApi> => {
-	return apiClient.get("/api/v1/baby", {
+export const getBabyForMatchApi = async (matchId: string): Promise<BabyApi | null> => {
+	const response = await api.get<{ baby: BabyApi | null }>("/baby", {
 		params: { match_id: matchId },
 	});
+	return response.baby;
 };
 
 export const getBabyForMatchQueryOptions = (matchId: string) => {
