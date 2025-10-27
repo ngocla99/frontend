@@ -10,9 +10,15 @@ import React from "react";
 import { toast } from "sonner";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { handleServerError } from "@/lib/utils/handle-server-error";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthActions, useAuthStore } from "@/stores/auth-store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+	const { initialize } = useAuthActions();
+
+	// Initialize Supabase auth listener
+	React.useEffect(() => {
+		initialize();
+	}, [initialize]);
 	const [queryClient] = React.useState(
 		() =>
 			new QueryClient({

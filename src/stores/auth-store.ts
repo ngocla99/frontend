@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import type { UserApi } from "@/types/api";
 import STORE_NAME from "./store-name";
 
@@ -36,6 +36,9 @@ const useAuthStore = create<AuthState>()(
 				setAccessToken: (accessToken) => set({ accessToken }),
 				reset: () => set({ user: null, session: null, accessToken: "" }),
 				initialize: async () => {
+					// Create Supabase client using SSR pattern
+					const supabase = createClient();
+
 					// Get initial session from Supabase
 					const {
 						data: { session },

@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { MutationConfig } from "@/lib/react-query";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 export const magicLinkSchema = z.object({
 	email: z
@@ -36,6 +36,8 @@ export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
 export const sendMagicLinkApi = async (
 	input: MagicLinkInput,
 ): Promise<{ message: string }> => {
+	const supabase = createClient();
+
 	const { error } = await supabase.auth.signInWithOtp({
 		email: input.email,
 		options: {

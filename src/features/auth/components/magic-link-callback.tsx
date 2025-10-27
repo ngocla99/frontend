@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { useAuthActions } from "@/stores/auth-store";
 import type { UserApi } from "@/types/api";
 import { useMe } from "../api/get-me";
@@ -36,6 +36,8 @@ export function MagicLinkCallback() {
 	React.useEffect(() => {
 		const handleAuthCallback = async () => {
 			try {
+				const supabase = createClient();
+
 				// Check if we have an error in the URL
 				const hashParams = new URLSearchParams(
 					window.location.hash.substring(1),

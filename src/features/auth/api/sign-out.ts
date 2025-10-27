@@ -4,10 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { MutationConfig } from "@/lib/react-query";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { useAuthActions } from "@/stores/auth-store";
 
 export const signOutApi = async () => {
+	const supabase = createClient();
 	return await supabase.auth.signOut();
 };
 
