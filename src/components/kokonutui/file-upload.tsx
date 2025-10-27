@@ -1,3 +1,4 @@
+"use client";
 /**
  * @author: @dorian_baffier
  * @description: File Upload

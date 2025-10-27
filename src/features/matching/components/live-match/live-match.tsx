@@ -56,8 +56,6 @@ export function LiveMatch() {
 	>("all");
 	const { ref, inView } = useInView();
 
-	// Note: Realtime subscription is now at RootLayout level to persist across page interactions
-
 	const {
 		data: liveMatchData,
 		isLoading,

@@ -23,6 +23,7 @@ export const getLiveMatchApi = async (
 		"/matches/top",
 		{
 			params: query,
+			signal,
 		},
 	);
 	return response.matches;

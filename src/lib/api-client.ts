@@ -1,126 +1,104 @@
-import { useNotifications } from '@/components/notifications';
-import { env } from '@/config/env';
+/** biome-ignore-all lint/suspicious/noExplicitAny: no need check */
+import { useNotifications } from "@/components/notifications";
+import { env } from "@/config/env";
 
 type RequestOptions = {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-  cookie?: string;
-  params?: Record<string, string | number | boolean | undefined | null>;
-  cache?: RequestCache;
-  next?: NextFetchRequestConfig;
+	method?: string;
+	headers?: Record<string, string>;
+	body?: any;
+	params?: Record<string, string | number | boolean | undefined | null>;
+	cache?: RequestCache;
+	next?: NextFetchRequestConfig;
+	signal?: AbortSignal; // 👈 allow aborting
 };
 
 function buildUrlWithParams(
-  url: string,
-  params?: RequestOptions['params'],
+	url: string,
+	params?: RequestOptions["params"],
 ): string {
-  if (!params) return url;
-  const filteredParams = Object.fromEntries(
-    Object.entries(params).filter(
-      ([, value]) => value !== undefined && value !== null,
-    ),
-  );
-  if (Object.keys(filteredParams).length === 0) return url;
-  const queryString = new URLSearchParams(
-    filteredParams as Record<string, string>,
-  ).toString();
-  return `${url}?${queryString}`;
-}
-
-// Create a separate function for getting server-side cookies that can be imported where needed
-export function getServerCookies() {
-  if (typeof window !== 'undefined') return '';
-
-  // Dynamic import next/headers only on server-side
-  return import('next/headers').then(({ cookies }) => {
-    try {
-      const cookieStore = cookies();
-      return cookieStore
-        .getAll()
-        .map((c) => `${c.name}=${c.value}`)
-        .join('; ');
-    } catch (error) {
-      console.error('Failed to access cookies:', error);
-      return '';
-    }
-  });
+	if (!params) return url;
+	const filteredParams = Object.fromEntries(
+		Object.entries(params).filter(
+			([, value]) => value !== undefined && value !== null,
+		),
+	);
+	if (Object.keys(filteredParams).length === 0) return url;
+	const queryString = new URLSearchParams(
+		filteredParams as Record<string, string>,
+	).toString();
+	return `${url}?${queryString}`;
 }
 
 async function fetchApi<T>(
-  url: string,
-  options: RequestOptions = {},
+	url: string,
+	options: RequestOptions = {},
 ): Promise<T> {
-  const {
-    method = 'GET',
-    headers = {},
-    body,
-    cookie,
-    params,
-    cache = 'no-store',
-    next,
-  } = options;
+	const {
+		method = "GET",
+		headers = {},
+		body,
+		params,
+		cache = "no-store",
+		next,
+		signal,
+	} = options;
 
-  // Get cookies from the request when running on server
-  let cookieHeader = cookie;
-  if (typeof window === 'undefined' && !cookie) {
-    cookieHeader = await getServerCookies();
-  }
+	const fullUrl = buildUrlWithParams(`${env.API_URL}${url}`, params);
 
-  const fullUrl = buildUrlWithParams(`${env.API_URL}${url}`, params);
+	// Detect if body is FormData for file uploads
+	const isFormData = body instanceof FormData;
 
-  // Detect if body is FormData for file uploads
-  const isFormData = body instanceof FormData;
+	const response = await fetch(fullUrl, {
+		method,
+		headers: {
+			// Only set Content-Type for JSON, let browser set it for FormData
+			...(isFormData ? {} : { "Content-Type": "application/json" }),
+			Accept: "application/json",
+			...headers,
+		},
+		// Don't stringify FormData, pass it directly
+		body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+		credentials: "include",
+		cache,
+		next,
+		signal,
+	});
 
-  const response = await fetch(fullUrl, {
-    method,
-    headers: {
-      // Only set Content-Type for JSON, let browser set it for FormData
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      Accept: 'application/json',
-      ...headers,
-      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-    },
-    // Don't stringify FormData, pass it directly
-    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
-    credentials: 'include',
-    cache,
-    next,
-  });
+	if (!response.ok) {
+		const errorData = await response
+			.json()
+			.catch(() => ({ message: response.statusText }));
+		const message = errorData.error || errorData.message || response.statusText;
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-    const message = errorData.error || errorData.message || response.statusText;
+		if (typeof window !== "undefined") {
+			useNotifications.getState().addNotification({
+				type: "error",
+				title: "Error",
+				message,
+			});
+		}
+		throw new Error(message);
+	}
 
-    if (typeof window !== 'undefined') {
-      useNotifications.getState().addNotification({
-        type: 'error',
-        title: 'Error',
-        message,
-      });
-    }
-    throw new Error(message);
-  }
-
-  return response.json();
+	return response.json();
 }
 
 export const api = {
-  get<T>(url: string, options?: RequestOptions): Promise<T> {
-    return fetchApi<T>(url, { ...options, method: 'GET' });
-  },
-  post<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
-    return fetchApi<T>(url, { ...options, method: 'POST', body });
-  },
-  put<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
-    return fetchApi<T>(url, { ...options, method: 'PUT', body });
-  },
-  patch<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
-    return fetchApi<T>(url, { ...options, method: 'PATCH', body });
-  },
-  delete<T>(url: string, options?: RequestOptions): Promise<T> {
-    return fetchApi<T>(url, { ...options, method: 'DELETE' });
-  },
+	get<T>(url: string, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "GET" });
+	},
+	post<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "POST", body });
+	},
+	put<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "PUT", body });
+	},
+	patch<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "PATCH", body });
+	},
+	delete<T>(url: string, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "DELETE" });
+	},
 };
 
 // Export as default for compatibility with existing imports
