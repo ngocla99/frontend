@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
-import type { SupabaseMatch } from "@/lib/supabase";
+import type { SupabaseMatch } from "@/types/api";
 
 /**
  * Hook for handling live match realtime updates

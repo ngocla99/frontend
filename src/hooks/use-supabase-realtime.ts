@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <no need check> */
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 type UseSupabaseRealtimeOptions = {
 	table: string;
@@ -31,6 +31,9 @@ export const useSupabaseRealtime = ({
 		if (!enabled) {
 			return;
 		}
+
+		// Create a new supabase client instance
+		const supabase = createClient();
 
 		// Use stable channel name without timestamp to prevent re-subscriptions
 		const filterSuffix = filter ? `-${filter.replace(/=/g, "-")}` : "";

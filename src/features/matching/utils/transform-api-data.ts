@@ -1,8 +1,7 @@
 import type { MatchCardProps } from "@/features/matching/components/live-match/match-card";
 import type { UniversityMatch } from "@/features/matching/components/user-match/university-match/university-match-tab";
-import type { SupabaseMatch } from "@/lib/supabase";
 import { getTimeAgo } from "@/lib/utils/date";
-import type { CelebMatchApi, LiveMatchApi, UserMatchApi } from "@/types/api";
+import type { CelebMatchApi, LiveMatchApi, SupabaseMatch, UserMatchApi } from "@/types/api";
 
 export const transformApiMatchToDisplayData = (
 	apiMatch: LiveMatchApi,

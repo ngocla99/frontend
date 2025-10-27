@@ -5,8 +5,13 @@ import { cn } from "@/lib/utils";
 // Helps prevent flickering from re-rendering
 export const BlurImage = memo((props: ImageProps) => {
 	const [loading, setLoading] = useState(true);
-	const [src, setSrc] = useState(props.src);
-	useEffect(() => setSrc(props.src), [props.src]); // update the `src` value when the `prop.src` value changes
+	// Provide fallback avatar if src is undefined/null
+	const fallbackSrc = props.src || `https://avatar.vercel.sh/${encodeURIComponent(props.alt || 'user')}`;
+	const [src, setSrc] = useState(fallbackSrc);
+	useEffect(() => {
+		const newSrc = props.src || `https://avatar.vercel.sh/${encodeURIComponent(props.alt || 'user')}`;
+		setSrc(newSrc);
+	}, [props.src, props.alt]); // update the `src` value when the `prop.src` value changes
 
 	const handleLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 		setLoading(false);

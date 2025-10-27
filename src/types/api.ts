@@ -137,3 +137,12 @@ export type BabyApi = {
 	};
 	created_at: string | null; // null when no baby generated yet
 };
+
+// Supabase database types
+export type SupabaseMatch = {
+	id: string;
+	face_a_id: string;
+	face_b_id: string;
+	similarity_score: number;
+	created_at: string;
+};
