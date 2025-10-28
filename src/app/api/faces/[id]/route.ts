@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withSession } from "@/lib/middleware/with-session";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 
 /**
  * DELETE /api/faces/[id] - Delete face image
@@ -31,7 +32,7 @@ export const DELETE = withSession(async ({ params, session, supabase }) => {
 
 	// Delete from storage
 	const { error: storageError } = await supabase.storage
-		.from("faces")
+		.from(STORAGE_BUCKETS.USER_IMAGES)
 		.remove([face.image_path]);
 
 	if (storageError) {
@@ -76,7 +77,7 @@ export const GET = withSession(async ({ params, supabase }) => {
 
 	// Get signed URL
 	const { data: signedUrlData } = await supabase.storage
-		.from("faces")
+		.from(STORAGE_BUCKETS.USER_IMAGES)
 		.createSignedUrl(face.image_path, 3600);
 
 	return NextResponse.json({

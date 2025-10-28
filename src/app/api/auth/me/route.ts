@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 import { createClient } from "@/lib/supabase/server";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 
 /**
  * GET /api/auth/me - Get current authenticated user profile
@@ -63,7 +64,7 @@ export async function GET(_request: NextRequest) {
 
 			if (face) {
 				const { data: signedUrl } = await supabase.storage
-					.from("faces")
+					.from(STORAGE_BUCKETS.USER_IMAGES)
 					.createSignedUrl(face.image_path, 3600);
 
 				defaultFaceImage = signedUrl?.signedUrl || null;

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { withSession } from "@/lib/middleware/with-session";
 import { extractEmbedding } from "@/lib/services/ai-service";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 
 /**
  * POST /api/faces - Upload face image
@@ -70,7 +71,7 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 
 	// Upload image to Supabase Storage
 	const { data: uploadData, error: uploadError } = await supabase.storage
-		.from("faces")
+		.from(STORAGE_BUCKETS.USER_IMAGES)
 		.upload(fileName, buffer, {
 			contentType: file.type,
 			upsert: false,
@@ -96,13 +97,13 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 	if (dbError) {
 		console.error("Database error:", dbError);
 		// Cleanup uploaded file if DB insert fails
-		await supabase.storage.from("faces").remove([fileName]);
+		await supabase.storage.from(STORAGE_BUCKETS.USER_IMAGES).remove([fileName]);
 		throw new Error(`Failed to save face record: ${dbError.message}`);
 	}
 
 	// Get signed URL for client
 	const { data: signedUrlData } = await supabase.storage
-		.from("faces")
+		.from(STORAGE_BUCKETS.USER_IMAGES)
 		.createSignedUrl(fileName, 3600); // 1 hour
 
 	return NextResponse.json(
@@ -140,7 +141,7 @@ export const GET = withSession(async ({ session, supabase }) => {
 	const facesWithUrls = await Promise.all(
 		(faces || []).map(async (face) => {
 			const { data } = await supabase.storage
-				.from("faces")
+				.from(STORAGE_BUCKETS.USER_IMAGES)
 				.createSignedUrl(face.image_path, 3600);
 
 			return {
