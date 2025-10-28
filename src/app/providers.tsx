@@ -10,15 +10,9 @@ import React from "react";
 import { toast } from "sonner";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { handleServerError } from "@/lib/utils/handle-server-error";
-import { useAuthActions, useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-	const { initialize } = useAuthActions();
-
-	// Initialize Supabase auth listener
-	React.useEffect(() => {
-		initialize();
-	}, [initialize]);
 	const [queryClient] = React.useState(
 		() =>
 			new QueryClient({
@@ -55,7 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 					onError: (error) => {
 						if (error instanceof AxiosError) {
 							if (error.response?.status === 401) {
-								useAuthStore.getState().actions.reset();
+								toast.error("Unauthorized! Please log in again.");
 							}
 							if (error.response?.status === 500) {
 								toast.error("Internal Server Error!");

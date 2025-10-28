@@ -74,11 +74,6 @@ const useAuthStore = create<AuthState>()(
 
 // Export atomic selectors
 export const useUser = () => useAuthStore((state) => state.user);
-export const useSession = () => useAuthStore((state) => state.session);
-export const useAccessToken = () => useAuthStore((state) => state.accessToken);
-
-// Export actions hook
-export const useAuthActions = () => useAuthStore((state) => state.actions);
 
 // Export raw store only for getState() usage in non-React contexts
 export { useAuthStore };
