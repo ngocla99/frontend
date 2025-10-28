@@ -416,189 +416,198 @@ export type LiveMatchApi = {
 
 ## Backend Architecture
 
+### Overview
+
+The backend is built with **Next.js API Routes** providing a TypeScript-first backend layer with direct Supabase integration.
+
 ### Technology Stack
 
 | Technology | Purpose |
 |-----------|---------|
-| Flask | Web framework |
-| InsightFace | Face recognition AI model |
+| **Next.js API Routes** | Backend API layer (TypeScript) |
 | FAL.AI | AI image generation for baby feature |
-| Qdrant | Vector database for embeddings |
-| Supabase | PostgreSQL database & storage |
-| Celery | Background task queue |
-| Redis | Celery broker |
-| Docker | Containerization |
+| Supabase | PostgreSQL database, storage, auth, realtime |
+| @supabase/ssr | Server-side Supabase client for Next.js |
 
 ### Project Structure
 
+#### Next.js API Routes
+
 ```
-backend/
-├── app/
-│   ├── __init__.py          # Flask app factory
-│   ├── config.py            # Configuration
-│   ├── db_bootstrap.py      # Database schema setup
-│   ├── celery_app.py        # Celery worker config
-│   ├── routes/              # API endpoints
-│   │   ├── auth_routes.py   # Authentication endpoints
-│   │   ├── faces_routes.py  # Face upload & management
-│   │   ├── matches_routes.py # Match queries
-│   │   ├── reactions_routes.py # Reactions to matches
-│   │   ├── celebrities_routes.py # Celebrity matches
-│   │   ├── baby_routes.py   # Baby generation endpoints
-│   │   └── legacy_routes.py # Legacy OAuth routes
-│   ├── services/            # Business logic
-│   │   ├── baby_service.py  # Baby generation service
-│   │   ├── user_service.py  # User profile management
-│   │   └── storage_helper.py # Supabase Storage helpers
-│   ├── tasks/               # Celery background tasks
-│   ├── schemas/             # Data validation schemas
-│   ├── models/              # Data models
-│   ├── middlewares/         # Request/response middleware
-│   └── tests/               # Unit & integration tests
-├── tools/                   # Utility scripts
-│   ├── fal_ai_generate.py   # FAL.AI test script
-│   ├── init-db.sql          # Database initialization
-│   └── bulk_add_celebrities.py # Celebrity data loader
-├── celeb-data/             # Celebrity face embeddings
-├── docs/                   # Backend documentation
-│   ├── API-specs.MD         # Complete API reference
-│   ├── api-list.mdc         # API endpoint list
-│   └── app-flow.mdc         # Application flow diagrams
-├── Dockerfile              # Main Docker image
-├── Dockerfile.api          # API service image
-├── Dockerfile.worker       # Celery worker image
-├── docker-compose.yml      # Multi-container setup
-├── requirements.txt        # Python dependencies (includes fal-client)
-└── run.py                 # Application entry point
+frontend/src/app/api/
+├── auth/
+│   └── me/
+│       └── route.ts         # GET/PATCH current user profile
+├── baby/
+│   ├── route.ts             # POST/GET baby generation
+│   └── list/
+│       └── route.ts         # GET baby list
+├── faces/
+│   ├── route.ts             # GET/POST faces
+│   └── [id]/
+│       └── route.ts         # DELETE face by ID
+├── matches/
+│   ├── top/
+│   │   └── route.ts         # GET top matches
+│   ├── celebrity/
+│   │   └── route.ts         # GET celebrity matches
+│   ├── user/
+│   │   └── [userId]/
+│   │       └── route.ts     # GET user matches
+│   └── [matchId]/
+│       └── react/
+│           └── route.ts     # POST/DELETE reactions
 ```
+
+**Key Features:**
+- **Direct Supabase Integration:** All API routes use `@supabase/ssr` for server-side auth
+- **Middleware Pattern:** `withSession()` helper provides authenticated session to routes
+- **Type Safety:** Full TypeScript integration with Next.js
+- **Error Handling:** Centralized error handler via `handleApiError()`
+- **Edge Compatible:** Can deploy to Vercel Edge Runtime
+
+**Next.js API Route Middleware Pattern:**
+
+```typescript
+// src/lib/middleware/with-session.ts
+export const withSession = (handler: AuthenticatedHandler) => {
+  return async (request: NextRequest) => {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    // Pass session context to handler
+    return handler({
+      request,
+      supabase,
+      session: { user, profile },
+      searchParams: request.nextUrl.searchParams,
+    });
+  };
+};
+
+// Usage in API route
+export const GET = withSession(async ({ supabase, session }) => {
+  // Authenticated route logic here
+  return NextResponse.json({ data: "protected" });
+});
+```
+
+**Benefits:**
+- Automatic authentication check
+- Pre-fetched user profile
+- Supabase client with auth context
+- Type-safe session object
+- Reusable across all API routes
 
 ### Key Components
 
-#### 1. Face Recognition Pipeline
-
-**InsightFace Integration:**
-```python
-# Initialize face recognition model
-face_app = FaceAnalysis(providers=['CPUExecutionProvider'])
-face_app.prepare(ctx_id=0, det_size=(640, 640))
-
-# Process uploaded image
-faces = face_app.get(image)
-embedding = faces[0].embedding  # 512-dimensional vector
-```
-
-**Flow:**
-1. User uploads photo → Flask endpoint
-2. Image validation & preprocessing
-3. InsightFace extracts face embedding (512D vector)
-4. Store image in Supabase Storage
-5. Store embedding in Qdrant vector database
-6. Create metadata record in PostgreSQL
-
-#### 2. Vector Search (Qdrant)
-
-**Purpose:** Fast similarity search for face embeddings
-
-**Collection Schema:**
-- **Vector:** 512-dimensional face embedding
-- **Payload:** user_id, face_id, metadata
-
-**Similarity Search:**
-```python
-# Find top N similar faces
-results = qdrant_client.search(
-    collection_name="faces",
-    query_vector=uploaded_face_embedding,
-    limit=20,
-    score_threshold=0.5  # Minimum similarity
-)
-```
-
-#### 3. Background Task Queue (Celery)
-
-**Purpose:** Handle computationally expensive operations asynchronously
-
-**Tasks:**
-- Batch celebrity matching
-- Periodic similarity matrix updates
-- Image processing pipelines
-
-**Configuration:**
-- **Broker:** Redis
-- **Result Backend:** Redis
-- **Concurrency:** Multi-worker setup
-
-#### 4. Baby Generation Pipeline (FAL.AI)
+#### 1. Baby Generation Pipeline (FAL.AI)
 
 **Purpose:** Generate AI baby images from two matched faces
 
 **Integration Flow:**
-```python
-# 1. Fetch source face images from match
-match = get_match(match_id)
-face_urls = get_signed_urls([match.face_a_id, match.face_b_id])
+```typescript
+// 1. Fetch source face images from match
+const { data: match } = await supabase
+  .from("matches")
+  .select(`
+    id, face_a_id, face_b_id,
+    face_a:faces!matches_face_a_id_fkey (image_path, profile),
+    face_b:faces!matches_face_b_id_fkey (image_path, profile)
+  `)
+  .eq("id", match_id)
+  .single();
 
-# 2. Call FAL.AI asynchronously (runs synchronously in blocking mode)
-response = fal_client.run_async(
-    "fal-ai/nano-banana/edit",
-    arguments={
-        "prompt": "make a photo of a baby.",
-        "image_urls": face_urls,
-        "num_images": 1,
-        "output_format": "jpeg",
-        "aspect_ratio": "1:1"
-    }
-)
+// 2. Generate signed URLs from Supabase Storage
+const [urlA, urlB] = await Promise.all([
+  supabase.storage.from("user-images").createSignedUrl(face_a.image_path, 3600),
+  supabase.storage.from("user-images").createSignedUrl(face_b.image_path, 3600),
+]);
 
-# 3. Extract generated image URL
-baby_image_url = response['images'][0]['url']
+// 3. Call FAL.AI API
+const response = await fetch(`https://fal.run/${FAL_MODEL_ID}`, {
+  method: "POST",
+  headers: {
+    Authorization: `Key ${FAL_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    prompt: "A cute baby face that combines features from both parents...",
+    image_url: urlA.data.signedUrl,
+    num_images: 1,
+    guidance_scale: 7.5,
+    num_inference_steps: 50,
+  }),
+});
 
-# 4. Store in database
-insert_baby(match_id, baby_image_url, generated_by=current_user)
+// 4. Extract generated image URL
+const babyImageUrl = response.images[0].url;
+
+// 5. Store in database
+const { data: baby } = await supabase
+  .from("babies")
+  .insert({
+    match_id,
+    image_url: babyImageUrl,
+    parent_a_id: profileA.id,
+    parent_b_id: profileB.id,
+  })
+  .select()
+  .single();
 ```
 
 **Configuration:**
 - **API Key:** `FAL_AI_API_KEY` environment variable
-- **Model:** `fal-ai/nano-banana/edit` (configurable via `FAL_BABY_MODEL_ID`)
-- **Execution:** Synchronous blocking call (future: async with Celery)
+- **Model:** `fal-ai/flux/dev` (configurable via `FAL_BABY_MODEL_ID`)
+- **Execution:** Synchronous HTTP call
 - **Image Storage:** External (FAL.AI CDN URLs)
-- **TTL:** Signed URLs expire based on `SUPABASE_SIGNED_URL_TTL`
+- **URL TTL:** Signed URLs valid for 1 hour
 
-**Service Layer (`app/services/baby_service.py`):**
-- `create_baby_from_match_service()` - Generate & store baby
-- `get_baby_for_match_service()` - Get latest baby for match
-- `list_my_generated_babies_service()` - List user's generated babies
-- `_get_match_participants_signed()` - Resolve match participants
-- `_fal_generate_baby_async()` - FAL.AI API wrapper
+**Implementation:** `src/app/api/baby/route.ts`
 
-#### 5. API Endpoints
+#### 2. API Endpoints
+
+All API endpoints are implemented as **Next.js API Routes** with direct Supabase integration:
 
 **Authentication:**
-- `GET /api/auth/me` - Get current user (Supabase JWT only)
+- `GET /api/auth/me` - Get current user profile (auto-creates if not exists)
 - `PATCH /api/auth/me` - Update current user profile
-- `POST /api/auth/logout` - Sign out
-
-**Note:** Magic link authentication is handled entirely by Supabase on the frontend. Legacy OAuth endpoints have been removed.
-
-**Face Management:**
-- `POST /api/v1/me/faces` - Upload face photo
-- `GET /api/v1/me/faces` - Get user's uploaded faces
-- `DELETE /api/v1/faces/:id` - Delete face
-
-**Matching:**
-- `GET /api/v1/matches/top` - Get top matches (live feed)
-- `GET /api/v1/me/matches` - Get user's matches (filter: user/celeb)
-- `GET /api/v1/feed` - Get live match feed
-- `POST /api/v1/match` - Calculate similarity between two faces
-
-**Reactions:**
-- `POST /api/v1/matches/:matchId/react` - React to match (favorite, etc.)
-- `DELETE /api/v1/matches/:matchId/react` - Remove reaction
 
 **Baby Generation:**
-- `POST /api/v1/baby` - Generate baby from match (match_id in request body)
-- `GET /api/v1/baby` - Get latest baby for match (match_id in request body)
-- `GET /api/v1/me/babies` - List all user's generated babies (supports filtering by user_id query param)
+- `POST /api/baby` - Generate baby from match (`match_id` in body)
+- `GET /api/baby?match_id=xxx` - Get baby for match
+- `GET /api/baby/list?user_id=xxx` - List all user's babies
+
+**Face Management:**
+- `GET /api/faces` - Get user's uploaded faces
+- `POST /api/faces` - Upload new face
+- `DELETE /api/faces/:id` - Delete face
+
+**Matching:**
+- `GET /api/matches/top` - Get top matches (live feed)
+- `GET /api/matches/celebrity` - Get celebrity matches
+- `GET /api/matches/user/:userId` - Get user's matches
+
+**Reactions:**
+- `POST /api/matches/:matchId/react` - React to match
+- `DELETE /api/matches/:matchId/react` - Remove reaction
+
+**All endpoints:**
+- Use `withSession()` middleware for authentication
+- Return JSON responses
+- Type-safe with TypeScript
+- Direct Supabase client integration
 
 ---
 
@@ -606,19 +615,25 @@ insert_baby(match_id, baby_image_url, generated_by=current_user)
 
 ### 1. Frontend ↔ Backend Communication
 
-**Protocol:** REST API over HTTPS
-**Authentication:** Bearer token in `Authorization` header
-**Content Type:** `application/json`
+**Architecture:** Next.js full-stack application with API Routes
 
-**Request Flow:**
+**Data Flow:**
 ```
 Frontend Component
   → React Query Hook
-    → Axios Client (with auth interceptor)
-      → Flask API Endpoint
-        → Service Layer
-          → Database/Qdrant/Supabase
+    → Fetch API / Axios
+      → Next.js API Route Handler (src/app/api/**/route.ts)
+        → Supabase Client (@supabase/ssr)
+          → PostgreSQL / Storage / Auth
+        → FAL.AI API (for baby generation)
 ```
+
+**Benefits:**
+- **Performance:** API routes run on same domain (no CORS)
+- **Type Safety:** Full TypeScript integration end-to-end
+- **Simplified Auth:** Direct Supabase SSR integration
+- **Edge Deployment:** Can deploy to Vercel Edge Runtime
+- **Developer Experience:** Single codebase for frontend and backend
 
 ### 2. Supabase Integration
 
@@ -634,24 +649,14 @@ Frontend Component
 - `user_face_map` - Mapping users to face IDs
 - `reactions` - User reactions to matches
 
-### 3. Qdrant Vector Database
-
-**Purpose:** Fast similarity search for 512D face embeddings
-
-**Integration:**
-- Backend stores embeddings after face processing
-- Search query returns top K similar faces
-- Results are enriched with user data from PostgreSQL
-
-### 4. External Services
+### 3. External Services
 
 - **FAL.AI:** AI image generation service for baby feature
-  - Model: `fal-ai/nano-banana/edit`
+  - Model: `fal-ai/flux/dev`
   - Use case: Generate baby images from two face inputs
-  - Integration: Python `fal-client` SDK
-- **Cloudflare:** CDN & DDoS protection (optional)
+  - Integration: Direct REST API calls from Next.js
 - **Supabase Storage:** Image hosting with CDN for user-uploaded faces
-- **SendGrid/Email Service:** Magic link emails (via Supabase Auth)
+- **Supabase Auth:** Magic link authentication emails
 
 ---
 
@@ -660,27 +665,29 @@ Frontend Component
 ### Development Environment
 
 ```
-Docker Compose Stack:
-├── api (Flask)          - Port 5000
-├── worker (Celery)      - Background tasks
-├── redis                - Task queue
-└── (External: Supabase, Qdrant Cloud)
+Next.js Development Server:
+├── Frontend (React)     - Port 3000
+├── API Routes           - Port 3000/api/*
+└── (External: Supabase)
 ```
 
-### Production Environment (Assumed)
+### Production Environment
 
 ```
-Frontend:
-└── Vercel (Static hosting + CDN)
-
-Backend:
-├── API Servers (Flask + Gunicorn)
-├── Celery Workers (background processing)
-├── Redis (task queue)
+Vercel Deployment:
+├── Frontend (Static + SSR)
+├── API Routes (Serverless Functions / Edge Runtime)
 └── External Services:
     ├── Supabase (Auth, DB, Storage, Realtime)
-    └── Qdrant Cloud (Vector DB)
+    └── FAL.AI (Baby image generation)
 ```
+
+**Deployment Configuration:**
+- **Platform:** Vercel (recommended) or any Node.js host
+- **Build Command:** `bun run build`
+- **Output Directory:** `.next`
+- **Environment Variables:** Set in Vercel dashboard
+- **Edge Runtime:** Optional for API routes
 
 ---
 
@@ -692,73 +699,44 @@ Backend:
 ```bash
 cd frontend
 bun install
-bun run dev  # Starts on port 3000
+bun run dev  # Starts Next.js dev server on port 3000
 ```
 
-**Backend:**
-```bash
-cd backend
-docker-compose up -d  # Starts API + Worker + Redis
-```
+**Development URLs:**
+- Frontend: http://localhost:3000
+- API Routes: http://localhost:3000/api/*
 
 ### Environment Variables
 
-**Frontend (`.env`):**
+**Environment Variables (`.env`):**
 ```env
-VITE_BASE_API_URL=http://localhost:5000
-VITE_SUPABASE_URL=https://<project>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<key>
-VITE_WHITELIST_EMAIL_DOMAINS=gmail.com
-```
+# Client-side variables (NEXT_PUBLIC_ prefix)
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<anon-key>
 
-**Backend (`.env`):**
-```env
-# Authentication (Legacy OAuth - Deprecated)
-GOOGLE_CLIENT_ID=<oauth-client-id>  # No longer used
-GOOGLE_CLIENT_SECRET=<oauth-secret>  # No longer used
-
-# Supabase (Database, Storage, Auth)
-SUPABASE_URL=<supabase-url>
-SUPABASE_KEY=<supabase-service-key>
-SUPABASE_JWT_SECRET=<supabase-jwt-secret>  # Required for token verification
-SUPABASE_SIGNED_URL_TTL=3600  # Signed URL expiration (optional, default 60s)
-
-# Qdrant (Vector Database)
-QDRANT_URL=<qdrant-url>
-QDRANT_API_KEY=<qdrant-key>
-
-# FAL.AI (Baby Generation)
+# Server-only variables (no prefix)
 FAL_AI_API_KEY=<fal-api-key>
-FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit  # Optional, default model
-
-# Frontend
-FRONTEND_URL=http://localhost:3000
+FAL_BABY_MODEL_ID=fal-ai/flux/dev  # Optional, defaults to flux/dev
 ```
 
 ### Code Quality Tools
 
-**Frontend:**
 - **Linter:** Biome (`bun run lint`)
 - **Type Checker:** TypeScript (`bun run build`)
 - **Testing:** Vitest (`bun run test`)
-
-**Backend:**
-- **Linter:** Flake8 / Black (assumed)
-- **Testing:** pytest (assumed)
 
 ---
 
 ## Key Features
 
-### 1. Face Upload & Processing
-- User uploads photo
-- AI extracts face embedding (InsightFace)
-- Stored in Qdrant vector DB for matching
-- Image saved to Supabase Storage with CDN delivery
+### 1. Face Upload & Management
+- User uploads photos to Supabase Storage
+- Image optimization and CDN delivery
 - Multiple faces per user supported
+- Face management (view, delete)
 
 ### 2. Live Match Feed
-- Real-time display of new matches as they're discovered
+- Real-time display of matches
 - Sorted by similarity score (highest first)
 - Pagination with infinite scroll
 - Supabase Realtime for instant updates
@@ -766,40 +744,30 @@ FRONTEND_URL=http://localhost:3000
 
 ### 3. User-to-User Matching
 - View detailed matches with other users
-- See all face-to-face comparisons
-- Aggregate similarity scores across multiple photos
 - Reaction system (favorite, etc.)
-- Filter by school, gender
 - Match history tracking
+- Profile information display
 
-### 4. Celebrity Matching
-- Compare user faces to pre-computed celebrity database
-- Find top lookalike celebrities
-- Pre-seeded celebrity embeddings in Qdrant
-- Celebrity metadata (name, images)
-
-### 5. AI Baby Generation
+### 4. AI Baby Generation
 - **Generate synthetic baby images from two matched faces**
 - **Powered by FAL.AI image generation model**
 - **Flow:**
   1. User selects a match
-  2. Backend fetches face images from Supabase Storage
+  2. Next.js API route fetches face images from Supabase Storage
   3. Calls FAL.AI API with both face images
   4. Stores generated baby image URL in `babies` table
-  5. Returns baby with participant details (me/other)
+  5. Returns baby with participant details
 - **Features:**
   - Multiple generations per match supported
   - Baby gallery showing all user's generated babies
-  - Filter babies by specific match partner
-  - Latest baby per match displayed by default
   - Fast generation (~3-5 seconds)
 - **Technical Details:**
-  - Model: `fal-ai/nano-banana/edit`
-  - Synchronous execution (blocking API call)
+  - Model: `fal-ai/flux/dev`
+  - Synchronous HTTP call
   - External image hosting (FAL.AI CDN)
-  - Signed URLs for source images (TTL-based)
+  - Signed URLs for source images (1 hour TTL)
 
-### 6. Profile Management
+### 5. Profile Management
 - Edit user profile (name, gender, school)
 - Manage uploaded photos
 - View match history
@@ -810,22 +778,21 @@ FRONTEND_URL=http://localhost:3000
 ## Future Considerations
 
 ### Scalability
-- Implement Redis caching layer for API responses
-- Add CDN for image delivery
-- Horizontal scaling for Flask API
+- Implement caching layer for API responses (Redis/Upstash)
 - Database read replicas for high traffic
+- Edge function optimization for global performance
 
 ### Monitoring
 - Add error tracking (Sentry)
-- Performance monitoring (Web Vitals)
+- Performance monitoring (Vercel Analytics)
 - API analytics (request rates, latency)
 - User behavior analytics
 
 ### Security
-- Implement rate limiting
-- Add CSRF protection
+- Implement rate limiting on API routes
 - Content moderation for uploaded images
 - Privacy controls for profile visibility
+- CAPTCHA for sign-up
 
 ---
 

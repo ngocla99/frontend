@@ -202,16 +202,14 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 ### Backend
 | Category | Technology |
 |----------|-----------|
-| Framework | Flask |
-| Language | Python 3.x |
-| AI Models | InsightFace (face recognition), FAL.AI (image generation) |
-| Vector DB | Qdrant |
+| Framework | Next.js API Routes |
+| Language | TypeScript 5.7 |
+| AI Integration | FAL.AI (baby image generation) |
 | Database | PostgreSQL (Supabase) |
-| Auth | Supabase Auth |
+| Auth | Supabase Auth (SSR) |
 | Storage | Supabase Storage |
-| Task Queue | Celery + Redis |
-| Container | Docker |
-| Dependencies | fal-client (FAL.AI SDK) |
+| Middleware | @supabase/ssr |
+| Deployment | Vercel (Serverless/Edge) |
 
 ---
 
@@ -219,41 +217,30 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 ### Running Locally
 
-**Frontend:**
 ```bash
 cd frontend
 bun install
-bun run dev  # http://localhost:3000
-```
-
-**Backend:**
-```bash
-cd backend
-docker-compose up -d  # API on port 5000
+bun run dev  # Starts on http://localhost:3000
 ```
 
 ### Environment Setup
 
-**Frontend `.env`:**
+**Environment Variables (`.env`):**
 ```env
-NEXT_PUBLIC_BASE_API_URL=http://localhost:5000
+# Client-side variables (NEXT_PUBLIC_ prefix)
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<anon-key>
+
+# Server-only variables (no prefix)
+FAL_AI_API_KEY=<fal-api-key>
+FAL_BABY_MODEL_ID=fal-ai/flux/dev  # Optional, defaults to flux/dev
 ```
 
-**Backend `.env`:**
-```env
-SUPABASE_URL=<url>
-SUPABASE_KEY=<service-key>
-SUPABASE_SIGNED_URL_TTL=3600
-QDRANT_URL=<url>
-QDRANT_API_KEY=<key>
-GOOGLE_CLIENT_ID=<oauth-id>
-GOOGLE_CLIENT_SECRET=<oauth-secret>
-FAL_AI_API_KEY=<fal-api-key>
-FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit
-FRONTEND_URL=http://localhost:3000
-```
+**Note:** Server-only variables (without `NEXT_PUBLIC_` prefix) are only accessible in:
+- Next.js API routes (`src/app/api/**/route.ts`)
+- Server components
+- `getServerSideProps` / `getStaticProps`
+
 
 ### Code Quality
 
@@ -300,22 +287,31 @@ src/
 └── types/            # TypeScript types
 ```
 
-### Backend Structure
+### Backend Structure (Next.js API Routes)
 ```
-app/
-├── routes/           # API endpoints
-│   ├── auth_routes.py
-│   ├── faces_routes.py
-│   ├── matches_routes.py
-│   ├── reactions_routes.py
-│   ├── celebrities_routes.py
-│   └── baby_routes.py      # Baby generation endpoints
-├── services/         # Business logic
-│   ├── baby_service.py     # FAL.AI integration
-│   ├── user_service.py
-│   └── storage_helper.py
-├── tasks/            # Celery tasks
-└── schemas/          # Data validation
+src/app/api/
+├── auth/
+│   └── me/
+│       └── route.ts      # GET/PATCH user profile
+├── baby/
+│   ├── route.ts          # POST/GET baby generation
+│   └── list/
+│       └── route.ts      # GET baby list
+├── faces/
+│   ├── route.ts          # GET/POST faces
+│   └── [id]/
+│       └── route.ts      # DELETE face by ID
+└── matches/
+    ├── top/
+    │   └── route.ts      # GET top matches
+    ├── celebrity/
+    │   └── route.ts      # GET celebrity matches
+    ├── user/
+    │   └── [userId]/
+    │       └── route.ts  # GET user matches
+    └── [matchId]/
+        └── react/
+            └── route.ts  # POST/DELETE reactions
 ```
 
 ---
@@ -343,15 +339,27 @@ app/
 
 ### Adding a New API Endpoint
 
+**Next.js API Route:**
+1. Create route file: `src/app/api/<endpoint>/route.ts`
+2. Use `withSession` middleware for authenticated routes
+3. Export HTTP method handlers (GET, POST, PATCH, DELETE)
+4. Return NextResponse with JSON
+
+**Example:**
+```typescript
+import { NextResponse } from "next/server";
+import { withSession } from "@/lib/middleware/with-session";
+
+export const GET = withSession(async ({ supabase, session }) => {
+  // Your logic here
+  return NextResponse.json({ data: "success" });
+});
+```
+
 **Frontend Side:**
 1. Create API file: `src/features/<feature>/api/my-action.ts`
 2. Define API function + React Query hook
 3. Export for component use
-
-**Backend Side:**
-1. Add route in `app/routes/<feature>_routes.py`
-2. Implement handler with auth middleware
-3. Update API documentation
 
 ### Working with State
 
@@ -386,9 +394,9 @@ const { setUser } = useAuthActions();  // Actions
 - Check browser console for auth errors
 
 **API calls failing:**
-- Verify backend is running (`docker-compose ps`)
-- Check CORS settings in backend
+- Check Next.js dev server is running
 - Inspect network tab for error details
+- Verify environment variables are set correctly
 
 **Realtime not updating:**
 - Check Supabase Realtime configuration
@@ -459,83 +467,164 @@ const { setUser } = useAuthActions();  // Actions
 
 ## Recent Updates
 
-### October 2025 - Next.js 16 Migration 🚀
+### October 2025 - Next.js 16 Full-Stack Migration 🚀
 
-**Major Frontend Migration: Vite + TanStack Router → Next.js 16 App Router**
+**Major Changes:**
+1. **Frontend:** Vite + TanStack Router → Next.js 16 App Router
+2. **Backend:** Complete TypeScript-first backend with Next.js API Routes
+3. **Architecture:** Full-stack Next.js application with Supabase integration
 
-The frontend has been migrated from Vite + TanStack Router to Next.js 16 with App Router for improved performance, SEO, and developer experience.
+---
 
-**Key Changes:**
+#### 1. Next.js 16 App Router Migration
 
-1. **Framework Migration**
-   - **Removed:** Vite 7.1, TanStack Router 1.130
-   - **Added:** Next.js 16.0 (includes routing, bundling, optimization)
-   - **Benefits:** SSR, better SEO, image optimization, automatic code splitting
+**Framework Migration:**
+- **Removed:** Vite 7.1, TanStack Router 1.130
+- **Added:** Next.js 16.0 (routing, bundling, SSR, optimization)
+- **Benefits:** Better performance, SEO, automatic code splitting, edge deployment
 
-2. **Routing System**
-   - **Before:** `src/routes/` with `__root.tsx`, `_authenticated/`
-   - **After:** `src/app/` with `layout.tsx`, `(authenticated)/`
-   - **Route Guards:** Layout-based using `useSession()` + `useRouter()`
+**Routing System:**
+- **Before:** `src/routes/` with `__root.tsx`, `_authenticated/`
+- **After:** `src/app/` with `layout.tsx`, `(authenticated)/`
+- **Route Guards:** Layout-based with `useSession()` + redirect
 
-3. **Router API Changes**
-   ```typescript
-   // Before (TanStack Router)
-   import { useRouter } from '@tanstack/react-router';
-   router.navigate({ to: '/profile' });
+**Router API Changes:**
+```typescript
+// Before (TanStack Router)
+import { useRouter } from '@tanstack/react-router';
+router.navigate({ to: '/profile' });
 
-   // After (Next.js)
-   import { useRouter } from 'next/navigation';
-   router.push('/profile');
-   ```
+// After (Next.js)
+import { useRouter } from 'next/navigation';
+router.push('/profile');
+```
 
-4. **Font Loading Optimization**
-   - **Before:** Google Fonts via CSS `@import`
-   - **After:** Next.js `next/font/google` with automatic optimization
-   - **Benefits:** No external requests, optimized loading
+**Environment Variables:**
+- **Updated:** `VITE_*` → `NEXT_PUBLIC_*` (client-side)
+- **Server-only:** No prefix (e.g., `FAL_AI_API_KEY`)
+- **Config:** `vite.config.ts` → `next.config.ts`
 
-5. **Environment Variables**
-   - **Updated:** `VITE_*` → `NEXT_PUBLIC_*`
-   - **Config:** `vite.config.ts` → `next.config.ts`
-
-6. **Protected Routes**
-   - **Implementation:** Layout component with session check
-   - **Location:** `src/app/(authenticated)/layout.tsx`
-   - **Guards:** `useEffect` based redirect to sign-in
-
-7. **Component Updates**
-   - Added `"use client"` directive to interactive components
-   - Updated all router imports from TanStack to Next.js
-   - Fixed navigation patterns (`navigate()` → `push()`)
-
-**Migration Completed Components:**
-- ✅ All route pages migrated to App Router structure
-- ✅ Auth guards converted to layout-based
-- ✅ Router hooks updated (6 components)
-- ✅ Font loading optimized with `next/font/google`
-- ✅ Environment variables renamed
-- ✅ Build and dev scripts updated
+**Font Loading:**
+- **Before:** CSS `@import` from Google Fonts
+- **After:** `next/font/google` with automatic optimization
+- **Benefits:** Zero external requests, optimized loading
 
 **Performance Improvements:**
-- Faster initial page load with automatic code splitting
-- Better SEO with server-side rendering
-- Optimized font loading (zero external requests)
-- Optimized image loading with `next/image`
+- ✅ Faster initial page load (automatic code splitting)
+- ✅ Server-side rendering for better SEO
+- ✅ Optimized font & image loading
+- ✅ Edge deployment ready
 
-**Documentation:**
-- **New:** [Next.js Migration SOP](./sop/nextjs-migration.md) - Complete migration guide
-- **Updated:** [Project Architecture](./system/project_architecture.md) - Reflects Next.js structure
-- **Updated:** README.md - Updated tech stack and file structure
+---
 
-**Related Pull Requests:**
-- Migrated routing system from TanStack Router to Next.js App Router
-- Updated all router usage across 6 components
-- Fixed CSS font loading issues
-- Implemented layout-based authentication guards
+#### 2. Backend Architecture - TypeScript First
+
+**Architecture Overview:**
+
+The application uses **Next.js API Routes** as a full-stack TypeScript solution:
+
+**Next.js API Routes:**
+- Direct Supabase integration via `@supabase/ssr`
+- Baby generation (FAL.AI integration)
+- Profile management (auto-create, update)
+- Match queries & reactions
+- Face management
+
+**Benefits:**
+- ✅ **Type Safety:** Full TypeScript end-to-end
+- ✅ **Performance:** Same-origin requests, no CORS
+- ✅ **Simplified Auth:** Direct Supabase SSR integration
+- ✅ **Edge Deployment:** Can deploy to Vercel Edge Runtime
+- ✅ **Developer Experience:** Single codebase for frontend and backend
+
+---
+
+#### 3. Next.js API Routes Implementation
+
+**API Structure:**
+```
+src/app/api/
+├── auth/me/         # GET/PATCH user profile
+├── baby/            # POST/GET baby generation
+│   └── list/        # GET baby list
+├── faces/           # GET/POST/DELETE faces
+└── matches/         # GET matches, POST reactions
+```
+
+**Key Features:**
+
+**Middleware Pattern (`withSession`):**
+```typescript
+// Automatic auth + profile fetching
+export const GET = withSession(async ({ supabase, session }) => {
+  // session.user and session.profile available
+  return NextResponse.json({ data: "protected" });
+});
+```
+
+**Baby Generation:**
+- Implemented in Next.js API route `src/app/api/baby/route.ts`
+- Direct FAL.AI API calls from TypeScript
+- Type-safe with full TypeScript integration
+- Simplified deployment
+
+**Error Handling:**
+```typescript
+// Centralized error handler
+import { handleApiError } from '@/lib/middleware/error-handler';
+
+try {
+  // API logic
+} catch (error) {
+  return handleApiError(error);
+}
+```
+
+**Completed Features:**
+- ✅ Baby generation endpoints (POST/GET)
+- ✅ User profile endpoints (GET/PATCH with auto-create)
+- ✅ Baby list endpoint (GET with filters)
+- ✅ Authentication middleware
+- ✅ Face management endpoints
+- ✅ Match query endpoints
+- ✅ Reaction endpoints
+
+---
+
+#### 4. Documentation Updates
+
+**New Documentation:**
+- ✅ [Next.js Migration SOP](./sop/nextjs-migration.md) - Complete migration guide
+
+**Updated Documentation:**
+- ✅ [Project Architecture](./system/project_architecture.md) - Full-stack Next.js architecture
+- ✅ [Database Schema](./system/database_schema.md) - Next.js API integration patterns
+- ✅ [README.md](./README.md) - Updated tech stack and structure
+
+---
+
+#### 5. Migration Completed
+
+**Frontend:**
+- ✅ All pages migrated to App Router
+- ✅ Auth guards converted to layouts
+- ✅ Router hooks updated (6 components)
+- ✅ Font loading optimized
+- ✅ Environment variables updated
+- ✅ Build scripts updated
+
+**Backend:**
+- ✅ Next.js API routes implemented
+- ✅ `withSession` middleware created
+- ✅ Baby generation implemented
+- ✅ Profile management (with auto-create)
+- ✅ Error handling standardized
+- ✅ FAL.AI integration
 
 **Breaking Changes:**
-- Router API completely changed (see migration SOP)
-- File structure reorganized (`routes/` → `app/`)
-- Environment variable naming convention updated
+- ⚠️ Router API changed (TanStack → Next.js)
+- ⚠️ File structure changed (`routes/` → `app/`)
+- ⚠️ Environment variables renamed (`VITE_*` → `NEXT_PUBLIC_*`)
 
 ---
 

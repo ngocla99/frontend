@@ -4,7 +4,11 @@
 
 ## Overview
 
-The application uses **Supabase PostgreSQL** for relational data and **Qdrant** for vector embeddings. This document details the database schema, relationships, and data flow.
+The application uses **Supabase PostgreSQL** for relational data. This document details the database schema, relationships, and data flow.
+
+**Database Access Patterns:**
+- **Next.js API Routes:** Direct Supabase client access via `@supabase/ssr`
+- **Frontend:** Supabase client for real-time subscriptions and auth
 
 ---
 
@@ -234,76 +238,30 @@ Pre-computed similarity scores between users.
 
 ---
 
-## Qdrant Vector Database
-
-### Collection: `faces`
-
-Stores 512-dimensional face embeddings for similarity search.
-
-**Vector Configuration:**
-- **Dimensions:** 512
-- **Distance Metric:** Cosine similarity
-- **Index:** HNSW (Hierarchical Navigable Small World)
-
-**Payload Schema:**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `user_id` | `string` | User who owns this face |
-| `face_id` | `string` | Unique face identifier (UUID) |
-| `image_url` | `string` | URL to face image in Supabase Storage |
-| `uploaded_at` | `timestamp` | Upload time |
-| `is_celebrity` | `boolean` | Whether this is a celebrity face |
-| `celebrity_name` | `string` | Celebrity name (if applicable) |
-
-**Usage:**
-1. Store face embeddings after InsightFace processing
-2. Perform similarity search to find top K matches
-3. Filter by `is_celebrity` for celebrity-only matching
-4. Return `face_id` to join with PostgreSQL data
-
-**Search Query Example:**
-```python
-results = qdrant_client.search(
-    collection_name="faces",
-    query_vector=uploaded_face_embedding,  # 512D vector
-    limit=20,
-    score_threshold=0.5,  # Minimum similarity
-    query_filter={
-        "must_not": [
-            {"key": "user_id", "match": {"value": current_user_id}}
-        ]
-    }
-)
-```
-
----
-
 ## Entity Relationships
 
 ```
 ┌─────────────────┐
-│     users       │
+│   profiles      │
 │ PK: id          │
-│ UK: user_id     │
 │ UK: email       │
 └────────┬────────┘
          │
          │ 1:N
          ▼
-┌─────────────────┐         ┌──────────────────┐
-│ user_face_map   │────────▶│ Qdrant: faces    │
-│ PK: id          │  joins  │ vector + payload │
-│ FK: user_id     │────┐    └──────────────────┘
-│     face_id     │    │
-└────────┬────────┘    │
-         │             │
-         │ N:M         │
-         ▼             ▼
-┌─────────────────┐   ┌──────────────────┐
-│    matches      │   │   celebrities    │
-│ PK: id          │   │ (embedded data)  │
-│     face_a_id   │───┘   └──────────────────┘
+┌─────────────────┐
+│     faces       │
+│ PK: id          │
+│ FK: profile_id  │
+│     image_path  │
+└────────┬────────┘
+         │
+         │ N:M
+         ▼
+┌─────────────────┐
+│    matches      │
+│ PK: id          │
+│     face_a_id   │
 │     face_b_id   │
 │     similarity  │
 └────────┬────────┘
@@ -315,8 +273,8 @@ results = qdrant_client.search(
          │    │      babies          │
          │    │ PK: id               │
          │    │ FK: match_id         │
-         │    │ FK: generated_by_    │
-         │    │     profile_id       │
+         │    │ FK: parent_a_id      │
+         │    │ FK: parent_b_id      │
          │    │     image_url        │
          │    └─────────────────────┘
          │
@@ -328,20 +286,6 @@ results = qdrant_client.search(
 │ FK: match_id    │
 │     reaction_type│
 └─────────────────┘
-
-Background Tasks:
-┌─────────────────┐
-│   live_tasks    │──┐
-│ PK: id          │  │ 1:N
-│     status      │  │
-└─────────────────┘  ▼
-                 ┌──────────────────────┐
-                 │ live_match_results   │
-                 │ PK: id               │
-                 │ FK: task_id          │
-                 │     source_user_id   │
-                 │     target_user_id   │
-                 └──────────────────────┘
 ```
 
 ---
@@ -353,46 +297,53 @@ Background Tasks:
 ```
 1. User uploads image via frontend
    ↓
-2. POST /api/v1/faces
+2. POST /api/faces (Next.js API Route)
    ↓
-3. Backend:
-   - Validate image
-   - Extract face embedding (InsightFace)
+3. Next.js API Handler:
+   - Authenticate via withSession middleware
+   - Validate image (file type, size)
    - Upload image to Supabase Storage
-   - Store embedding in Qdrant with payload:
-     {
-       user_id: "user-123",
-       face_id: "face-456",
-       image_url: "https://storage.supabase.co/...",
-       uploaded_at: "2025-10-15T10:30:00Z"
-     }
-   - Insert record in user_face_map:
-     INSERT INTO user_face_map (user_id, face_id)
-     VALUES ('user-123', 'face-456')
+   - Insert record in faces table:
+     INSERT INTO faces (profile_id, image_path)
+     VALUES (current_user_id, 'path/to/image.jpg')
+     RETURNING *
    ↓
 4. Return face details to frontend
+   {
+     id: "face-123",
+     profile_id: "user-456",
+     image_path: "path/to/image.jpg",
+     created_at: "2025-10-15T10:30:00Z"
+   }
 ```
 
 ### 2. Live Match Discovery
 
 ```
-1. New user uploads face (triggers background matching)
+1. User queries for live matches
    ↓
-2. Celery task:
-   - Fetch embedding from Qdrant
-   - Search for top 20 similar faces
-   - Filter out existing matches
+2. GET /api/matches/top (Next.js API Route)
    ↓
-3. For each match:
-   - INSERT INTO matches (face_a_id, face_b_id, similarity_score)
-   - Supabase Realtime publishes INSERT event
+3. Next.js API Handler:
+   - Authenticate via withSession middleware
+   - Query matches table with joins:
+     SELECT m.*,
+            fa.image_path as face_a_image, fa.profile as profile_a,
+            fb.image_path as face_b_image, fb.profile as profile_b
+     FROM matches m
+     JOIN faces fa ON m.face_a_id = fa.id
+     JOIN faces fb ON m.face_b_id = fb.id
+     ORDER BY m.similarity_score DESC, m.created_at DESC
+     LIMIT 20
    ↓
-4. Frontend:
-   - Receives realtime event
-   - Invalidates React Query cache
-   - Refetches live matches with full user data
+4. Return enriched match data to frontend
    ↓
-5. Display in live match feed
+5. Frontend displays in live match feed
+   ↓
+6. Supabase Realtime subscription:
+   - Listen for INSERT events on matches table
+   - On new match → invalidate React Query cache
+   - Auto-refetch to show new matches
 ```
 
 ### 3. User Views Match Details
@@ -400,95 +351,89 @@ Background Tasks:
 ```
 1. User clicks on match card
    ↓
-2. GET /api/v1/matches/user/:userId
+2. GET /api/matches/user/:userId (Next.js API Route)
    ↓
-3. Backend query:
-   SELECT
-     m.*,
-     ua.name AS user_a_name,
-     ub.name AS user_b_name,
-     COUNT(DISTINCT m.id) AS match_count
-   FROM matches m
-   JOIN user_face_map fa ON m.face_a_id = fa.face_id
-   JOIN user_face_map fb ON m.face_b_id = fb.face_id
-   JOIN users ua ON fa.user_id = ua.user_id
-   JOIN users ub ON fb.user_id = ub.user_id
-   WHERE (ua.user_id = :current_user OR ub.user_id = :current_user)
-     AND (ua.user_id = :target_user OR ub.user_id = :target_user)
-   GROUP BY m.id
-   ORDER BY m.similarity_score DESC
+3. Next.js API Handler:
+   - Authenticate via withSession middleware
+   - Query matches with profile joins:
+     SELECT m.*,
+            fa.image_path as face_a_image,
+            fb.image_path as face_b_image,
+            pa.name as user_a_name, pa.school as user_a_school,
+            pb.name as user_b_name, pb.school as user_b_school
+     FROM matches m
+     JOIN faces fa ON m.face_a_id = fa.id
+     JOIN faces fb ON m.face_b_id = fb.id
+     JOIN profiles pa ON fa.profile_id = pa.id
+     JOIN profiles pb ON fb.profile_id = pb.id
+     WHERE (pa.id = :current_user_id OR pb.id = :current_user_id)
+       AND (pa.id = :target_user_id OR pb.id = :target_user_id)
+     ORDER BY m.similarity_score DESC
    ↓
-4. Return aggregated match data with user profiles
+4. Return match details with participant profiles
 ```
 
-### 4. Celebrity Matching
-
-```
-1. User initiates celebrity match
-   ↓
-2. GET /api/v1/matches/celeb?face_id=face-456
-   ↓
-3. Backend:
-   - Fetch user's face embedding from Qdrant
-   - Search Qdrant with filter: is_celebrity = true
-   - Retrieve top N celebrity matches
-   ↓
-4. Enrich results with celebrity metadata
-   ↓
-5. INSERT INTO matches for each celebrity match
-   ↓
-6. Return celebrity match results
-```
-
-### 5. Baby Generation from Match
+### 5. Baby Generation from Match (Next.js API Route)
 
 ```
 1. User clicks "Generate Baby" on match detail page
    ↓
-2. POST /api/v1/baby
+2. POST /api/baby (Next.js API Route)
    Body: { "match_id": "<uuid>" }
    ↓
-3. Backend:
-   - Fetch match record:
-     SELECT * FROM matches WHERE id = :match_id
-   - Get face images for face_a_id and face_b_id:
-     SELECT image_path FROM faces WHERE id IN (face_a_id, face_b_id)
-   - Generate signed URLs from Supabase Storage
+3. Next.js API Handler (src/app/api/baby/route.ts):
+   - Authenticate via withSession middleware
+   - Fetch match record with joins:
+     SELECT m.*,
+            face_a.image_path, face_a.profile,
+            face_b.image_path, face_b.profile
+     FROM matches m
+     JOIN faces face_a ON m.face_a_id = face_a.id
+     JOIN faces face_b ON m.face_b_id = face_b.id
+     WHERE m.id = :match_id
+   - Generate signed URLs from Supabase Storage (1 hour TTL)
    ↓
 4. Call FAL.AI API (synchronous):
-   - POST to fal-ai/nano-banana/edit model
+   - POST to https://fal.run/fal-ai/flux/dev
+   - Headers: Authorization: Key ${FAL_API_KEY}
    - Payload: {
-       prompt: "make a photo of a baby.",
-       image_urls: [signed_url_a, signed_url_b],
+       prompt: "A cute baby face...",
+       image_url: signed_url_a,  // Base image
        num_images: 1,
-       output_format: "jpeg",
-       aspect_ratio: "1:1"
+       guidance_scale: 7.5,
+       num_inference_steps: 50
      }
    - Receive generated baby image URL
    ↓
-5. Store baby record:
-   INSERT INTO babies (match_id, generated_by_profile_id, image_url)
-   VALUES (:match_id, :current_user_profile_id, :fal_image_url)
+5. Store baby record in database:
+   INSERT INTO babies (match_id, parent_a_id, parent_b_id, image_url)
+   VALUES (:match_id, :profile_a_id, :profile_b_id, :fal_image_url)
+   RETURNING *
    ↓
-6. Fetch participant details:
-   - Query profiles for face_a and face_b owners
-   - Generate signed URLs for participant images
-   - Determine "me" vs "other" based on current user
-   ↓
-7. Return response:
+6. Return response with participant details:
    {
-     id: match_id,
-     image_url: baby_image_url,
-     me: { id, name, image, school },
-     other: { id, name, image, school },
-     created_at: timestamp
+     id: baby.id,
+     match_id: baby.match_id,
+     image_url: baby.image_url,
+     created_at: baby.created_at,
+     parents: {
+       a: { id, name, gender },
+       b: { id, name, gender }
+     }
    }
    ↓
-8. Frontend:
+7. Frontend:
    - Display generated baby image
    - Store in baby gallery
    - Invalidate baby queries to refresh list
 ```
+
+**Key Changes from Flask Backend:**
+- ✅ Now handled by Next.js API route (src/app/api/baby/route.ts)
+- ✅ Direct Supabase integration via @supabase/ssr
+- ✅ Simplified authentication via withSession middleware
+- ✅ Type-safe with TypeScript
+- ✅ Same-origin requests (no CORS issues)
 
 ---
 
@@ -569,10 +514,7 @@ This populates Qdrant with celebrity face embeddings and metadata.
 **Supabase:**
 - Automated daily backups (managed by Supabase)
 - Point-in-time recovery available
-
-**Qdrant:**
-- Periodic snapshots (configured in Qdrant Cloud)
-- Celebrity data can be re-seeded from `celeb-data/`
+- Export options for manual backups
 
 ---
 
