@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { findSimilarFaces } from "@/lib/db/vector";
 import { withSession } from "@/lib/middleware/with-session";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 /**
  * GET /api/matches/user/[userId] - Find matches for a specific user
@@ -61,11 +62,11 @@ export const GET = withSession(async ({ params, searchParams, supabase }) => {
 		similarFaces.map(async (match) => {
 			const { data: matchImageUrl } = await supabase.storage
 				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(match.image_path, 3600);
+				.createSignedUrl(match.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 			const { data: userImageUrl } = await supabase.storage
 				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(face.image_path, 3600);
+				.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 			return {
 				match_id: null, // New match, not saved yet

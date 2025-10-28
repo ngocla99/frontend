@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { createClient } from "@/lib/supabase/server";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 /**
  * GET /api/matches/top - Get all user-user matches (live feed)
@@ -102,10 +103,10 @@ export async function GET(request: NextRequest) {
 				const [urlA, urlB] = await Promise.all([
 					supabase.storage
 						.from(STORAGE_BUCKETS.USER_IMAGES)
-						.createSignedUrl(faceA.image_path, 3600),
+						.createSignedUrl(faceA.image_path, env.SUPABASE_SIGNED_URL_TTL),
 					supabase.storage
 						.from(STORAGE_BUCKETS.USER_IMAGES)
-						.createSignedUrl(faceB.image_path, 3600),
+						.createSignedUrl(faceB.image_path, env.SUPABASE_SIGNED_URL_TTL),
 				]);
 
 				// Get public URLs as fallback if signed URLs fail

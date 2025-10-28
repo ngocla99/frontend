@@ -3,6 +3,7 @@ import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 import { createClient } from "@/lib/supabase/server";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 /**
  * GET /api/auth/me - Get current authenticated user profile
@@ -65,7 +66,7 @@ export async function GET(_request: NextRequest) {
 			if (face) {
 				const { data: signedUrl } = await supabase.storage
 					.from(STORAGE_BUCKETS.USER_IMAGES)
-					.createSignedUrl(face.image_path, 3600);
+					.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 				defaultFaceImage = signedUrl?.signedUrl || null;
 			}

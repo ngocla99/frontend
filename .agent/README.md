@@ -90,7 +90,7 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
   - Type safety guidelines
   - Real-world examples & migration guide
 
-- **[Next.js 16 Migration](./sop/nextjs-migration.md)** ✨ NEW
+- **[Next.js 16 Migration](./sop/nextjs-migration.md)**
   - Migration from Vite + TanStack Router to Next.js 16
   - File structure changes and routing patterns
   - Router API differences (`useRouter`, `usePathname`)
@@ -99,6 +99,15 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
   - Environment variable updates
   - Common issues and solutions
   - Migration checklist and best practices
+
+- **[Environment Variables](./sop/environment-variables.md)** ✨ NEW
+  - Type-safe environment configuration with @t3-oss/env-nextjs
+  - Client vs server variable management
+  - Zod validation schemas and patterns
+  - Adding new environment variables
+  - Real-world examples (Supabase, AI services, signed URLs)
+  - Best practices and troubleshooting
+  - Migration guide from process.env
 
 **Additional SOPs to document:**
 - How to add a new page/route
@@ -197,6 +206,7 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 | Backend Client | Supabase JS 2.58 |
 | HTTP Client | Axios 1.11 |
 | Validation | Zod 4.1 |
+| Env Config | @t3-oss/env-nextjs 0.13 |
 | Animations | Framer Motion 12.23 |
 
 ### Backend
@@ -758,6 +768,68 @@ The baby generation feature is now fully functional on the frontend, connecting 
 
 ---
 
-**Last Updated:** 2025-10-16
+### October 2025 - Type-Safe Environment Configuration 🔧
+
+**Environment Variable System Overhaul (Completed 2025-10-28)**
+
+Migrated to `@t3-oss/env-nextjs` for fully type-safe, validated environment variables.
+
+**Key Changes:**
+
+1. **Centralized Configuration** (`src/config/env.ts`)
+   - ✅ All environment variables defined with Zod schemas
+   - ✅ Runtime validation at build time
+   - ✅ Full TypeScript support with auto-completion
+   - ✅ Replaced all `process.env` usage with typed `env` import
+
+2. **Updated Variables:**
+   - `NEXT_PUBLIC_BASE_API_URL` - API base URL (default: `/api`)
+   - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL (validated)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase public key
+   - `NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS` - Email domain whitelist
+   - `SUPABASE_SIGNED_URL_TTL` - Configurable signed URL timeout (default: 86400s / 24 hours)
+   - `PYTHON_AI_SERVICE_URL` - Python AI service endpoint
+   - `PYTHON_AI_SERVICE_API_KEY` - AI service authentication
+   - `FAL_AI_API_KEY` - FAL.AI API key
+   - `FAL_BABY_MODEL_ID` - FAL.AI model (default: `fal-ai/nano-banana/edit`)
+
+3. **Code Updates (12+ files):**
+   - ✅ Updated all API routes to use `env.SUPABASE_SIGNED_URL_TTL`
+   - ✅ Replaced hardcoded `3600` timeout values with configurable env var
+   - ✅ All Supabase clients use validated environment variables
+   - ✅ AI service integrations use typed configuration
+   - ✅ Removed non-null assertions (`!`) from environment access
+
+4. **Benefits:**
+   - 🎯 **Type Safety:** Auto-completion and compile-time validation
+   - 🛡️ **Runtime Validation:** Invalid values caught at build time
+   - 📝 **Self-Documenting:** Clear schemas show expected types and defaults
+   - 🔧 **Configurable:** Easy to change settings per environment (dev/staging/prod)
+   - 🚀 **Better DX:** No more undefined variables at runtime
+
+**Breaking Changes:**
+- ⚠️ Removed `.env` file structure changed (see `.env.example`)
+- ⚠️ Direct `process.env` usage no longer allowed
+- ⚠️ Must use `import { env } from "@/config/env"` pattern
+
+**Migration Example:**
+```typescript
+// Before
+const ttl = Number(process.env.SUPABASE_SIGNED_URL_TTL || "3600");
+const apiKey = process.env.FAL_AI_API_KEY!;
+
+// After
+import { env } from "@/config/env";
+const ttl = env.SUPABASE_SIGNED_URL_TTL;  // Type: number, validated
+const apiKey = env.FAL_AI_API_KEY;        // Type: string, validated
+```
+
+**Related Documentation:**
+- [Environment Variables SOP](./sop/environment-variables.md) - Complete configuration guide
+- [Project Architecture](./system/project_architecture.md) - Updated with env config details
+
+---
+
+**Last Updated:** 2025-10-28
 
 **Maintained By:** Engineering Team

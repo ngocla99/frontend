@@ -708,16 +708,49 @@ bun run dev  # Starts Next.js dev server on port 3000
 
 ### Environment Variables
 
+**Configuration:** Type-safe environment variables using `@t3-oss/env-nextjs` with Zod validation.
+
+**Location:** `src/config/env.ts` - Centralized configuration with runtime validation
+
 **Environment Variables (`.env`):**
 ```env
-# Client-side variables (NEXT_PUBLIC_ prefix)
-NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<anon-key>
+# Application Environment
+NODE_ENV=development
 
-# Server-only variables (no prefix)
+# Client-side variables (NEXT_PUBLIC_ prefix - exposed to browser)
+NEXT_PUBLIC_BASE_API_URL=/api
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS=example.com,another.edu
+
+# Server-only variables (never exposed to browser)
+SUPABASE_SIGNED_URL_TTL=86400  # Default: 24 hours (configurable)
+PYTHON_AI_SERVICE_URL=http://localhost:5000
+PYTHON_AI_SERVICE_API_KEY=<ai-service-key>
 FAL_AI_API_KEY=<fal-api-key>
-FAL_BABY_MODEL_ID=fal-ai/flux/dev  # Optional, defaults to flux/dev
+FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit  # Optional, has default
 ```
+
+**Key Features:**
+- ✅ **Type Safety:** All variables fully typed with auto-completion
+- ✅ **Runtime Validation:** Invalid values caught at build time with Zod
+- ✅ **Centralized:** Single source of truth in `src/config/env.ts`
+- ✅ **Defaults:** Sensible defaults for optional variables
+- ✅ **Documentation:** Self-documenting with `.env.example`
+
+**Usage:**
+```typescript
+import { env } from "@/config/env";
+
+// Server-side (API routes, server components)
+const apiKey = env.FAL_AI_API_KEY;
+const ttl = env.SUPABASE_SIGNED_URL_TTL;  // Type: number
+
+// Client-side (components)
+const apiUrl = env.NEXT_PUBLIC_BASE_API_URL;
+```
+
+**See:** [Environment Variables SOP](../sop/environment-variables.md) for complete guide
 
 ### Code Quality Tools
 

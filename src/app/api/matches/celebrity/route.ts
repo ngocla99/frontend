@@ -3,6 +3,7 @@ import { findCelebrityMatches } from "@/lib/db/vector";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { createClient } from "@/lib/supabase/server";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 /**
  * POST /api/matches/celebrity - Find celebrity lookalikes
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
 			celebrities.map(async (celeb) => {
 				const { data: imageUrl } = await supabase.storage
 					.from(STORAGE_BUCKETS.USER_IMAGES)
-					.createSignedUrl(celeb.image_path, 3600);
+					.createSignedUrl(celeb.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 				return {
 					celebrity_id: celeb.face_id,
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
 		// Get user face image URL
 		const { data: userImageUrl } = await supabase.storage
 			.from(STORAGE_BUCKETS.USER_IMAGES)
-			.createSignedUrl(face.image_path, 3600);
+			.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 		return NextResponse.json({
 			user_face: {

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { withSession } from "@/lib/middleware/with-session";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 // FAL.AI Configuration
-const FAL_API_KEY = process.env.FAL_AI_API_KEY!;
-const FAL_MODEL_ID = process.env.FAL_BABY_MODEL_ID || "fal-ai/nano-banana/edit";
+const FAL_API_KEY = env.FAL_AI_API_KEY;
+const FAL_MODEL_ID = env.FAL_BABY_MODEL_ID;
 
 /**
  * POST /api/baby - Generate baby image from match
@@ -73,14 +74,14 @@ export const POST = withSession(async ({ request, supabase }) => {
 		? matchData.face_b[0]
 		: matchData.face_b;
 
-	// Get signed URLs for both faces (valid for 1 hour)
+	// Get signed URLs for both faces
 	const [urlA, urlB] = await Promise.all([
 		supabase.storage
 			.from(STORAGE_BUCKETS.USER_IMAGES)
-			.createSignedUrl(faceA.image_path, 3600),
+			.createSignedUrl(faceA.image_path, env.SUPABASE_SIGNED_URL_TTL),
 		supabase.storage
 			.from(STORAGE_BUCKETS.USER_IMAGES)
-			.createSignedUrl(faceB.image_path, 3600),
+			.createSignedUrl(faceB.image_path, env.SUPABASE_SIGNED_URL_TTL),
 	]);
 
 	if (!urlA.data?.signedUrl || !urlB.data?.signedUrl) {

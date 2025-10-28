@@ -5,6 +5,8 @@
  * The microservice handles InsightFace model inference for embedding extraction.
  */
 
+import { env } from "@/config/env";
+
 interface ExtractEmbeddingResponse {
 	face_detected: boolean;
 	embedding: number[];
@@ -32,8 +34,8 @@ interface BatchExtractResponse {
 	failed: number;
 }
 
-const AI_SERVICE_URL = process.env.PYTHON_AI_SERVICE_URL!;
-const AI_SERVICE_API_KEY = process.env.PYTHON_AI_SERVICE_API_KEY!;
+const AI_SERVICE_URL = env.PYTHON_AI_SERVICE_URL;
+const AI_SERVICE_API_KEY = env.PYTHON_AI_SERVICE_API_KEY;
 
 /**
  * Extract face embedding from image buffer

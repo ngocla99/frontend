@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { MutationConfig } from "@/lib/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { env } from "@/config/env";
 
 export const magicLinkSchema = z.object({
 	email: z
@@ -16,7 +17,7 @@ export const magicLinkSchema = z.object({
 			if (domain.includes(".edu")) return true;
 
 			// Check whitelist domains from env
-			const whitelist = process.env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS || "";
+			const whitelist = env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS;
 			const whitelistDomains = whitelist
 				.split(",")
 				.map((d: string) => d.trim().toLowerCase())

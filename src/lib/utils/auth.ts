@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { env } from "@/config/env";
 
 /**
  * Extracts the Supabase project reference from the NEXT_PUBLIC_SUPABASE_URL
@@ -28,8 +29,7 @@ export const getAuthTokenCookieName = (supabaseUrl: string): string => {
 
 // Use the environment variable to generate the cookie name dynamically
 export const AUTH_TOKEN_COOKIE_NAME = getAuthTokenCookieName(
-	process.env.NEXT_PUBLIC_SUPABASE_URL ||
-		"https://lsbzbltpmmtplakdrjvq.supabase.co",
+	env.NEXT_PUBLIC_SUPABASE_URL,
 );
 
 export const checkLoggedIn = async () => {

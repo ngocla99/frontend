@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import "./src/config/env";
 
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
@@ -19,14 +20,6 @@ const nextConfig: NextConfig = {
 				hostname: "fal.media", // FAL.AI baby images
 			},
 		],
-	},
-
-	// Environment variables
-	env: {
-		NEXT_PUBLIC_BASE_API_URL: process.env.NEXT_PUBLIC_BASE_API_URL,
-		NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-		NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:
-			process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
 	},
 };
 

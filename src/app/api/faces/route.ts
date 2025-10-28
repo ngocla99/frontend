@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { withSession } from "@/lib/middleware/with-session";
 import { extractEmbedding } from "@/lib/services/ai-service";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { env } from "@/config/env";
 
 /**
  * POST /api/faces - Upload face image
@@ -13,7 +14,8 @@ import { STORAGE_BUCKETS } from "@/lib/constants/constant";
  * 3. Extract face embedding via Python AI service
  * 4. Upload image to Supabase Storage
  * 5. Save face record with embedding to database
- * 6. Return face details with signed URL
+ * 6. Update user's profile default_face_id to the newly uploaded face
+ * 7. Return face details with signed URL
  */
 export const POST = withSession(async ({ request, session, supabase }) => {
 	const { profile } = session;
@@ -101,10 +103,22 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		throw new Error(`Failed to save face record: ${dbError.message}`);
 	}
 
+	// Update profile's default_face_id to the newly uploaded face
+	const { error: updateError } = await supabase
+		.from("profiles")
+		.update({ default_face_id: face.id })
+		.eq("id", profile.id);
+
+	if (updateError) {
+		console.error("Failed to update default_face_id:", updateError);
+		// Note: We don't throw here to avoid failing the upload
+		// The face was created successfully, just the default wasn't set
+	}
+
 	// Get signed URL for client
 	const { data: signedUrlData } = await supabase.storage
 		.from(STORAGE_BUCKETS.USER_IMAGES)
-		.createSignedUrl(fileName, 3600); // 1 hour
+		.createSignedUrl(fileName, env.SUPABASE_SIGNED_URL_TTL);
 
 	return NextResponse.json(
 		{
@@ -142,7 +156,7 @@ export const GET = withSession(async ({ session, supabase }) => {
 		(faces || []).map(async (face) => {
 			const { data } = await supabase.storage
 				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(face.image_path, 3600);
+				.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 			return {
 				id: face.id,
