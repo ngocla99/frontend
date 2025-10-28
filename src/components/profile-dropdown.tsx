@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSignOut } from "@/features/auth/api/sign-out";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 
 export function ProfileDropdown({ className }: { className?: string }) {
 	const user = useUser();

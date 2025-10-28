@@ -21,7 +21,7 @@ import {
 	useState,
 } from "react";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 import { AuthGuard } from "../auth-guard";
 import confirm from "../confirm";
 

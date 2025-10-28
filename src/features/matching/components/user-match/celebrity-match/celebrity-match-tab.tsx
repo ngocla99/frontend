@@ -6,7 +6,7 @@ import { useCelebMatches } from "@/features/matching/hooks/use-celeb-live-matche
 import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 import { CelebrityMatchCard } from "./celebrity-match-card";
 import { CelebrityMatchCardSkeleton } from "./celebrity-match-card-skeleton";
 

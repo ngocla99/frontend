@@ -1,27 +1,17 @@
-import { redirect } from "next/navigation";
 import { RootLayout } from "@/components/layout/root-layout";
-import { useMe } from "@/features/auth/api/get-me";
 import { checkLoggedIn } from "@/lib/utils/auth";
-import { useUser } from "@/stores/auth-store";
+import { redirect } from "next/navigation";
 
-export default function AuthenticatedLayout({
-	children,
+export default async function AuthenticatedLayout({
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	// const { data: user } = useMe();
-	// const router = useRouter();
-	checkLoggedIn();
+  const isLoggedIn = await checkLoggedIn();
 
-	// useEffect(() => {
-	// if (!user) {
-	// 	redirect("/auth/sign-in");
-	// }
-	// }, [user, router]);
+  if (!isLoggedIn) {
+    redirect("/auth/sign-in");
+  }
 
-	// if (!user) {
-	// 	return null; // or loading spinner
-	// }
-
-	return <RootLayout>{children}</RootLayout>;
+  return <RootLayout>{children}</RootLayout>;
 }

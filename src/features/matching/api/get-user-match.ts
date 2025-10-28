@@ -4,7 +4,7 @@ import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { Reaction, UserMatchApi } from "@/types/api";
 import { transformApiUserMatchesToDisplayData } from "../utils/transform-api-data";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 
 export type UserMatchInput = {
 	userId?: string;

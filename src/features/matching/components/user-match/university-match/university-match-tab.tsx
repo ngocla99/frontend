@@ -4,7 +4,7 @@ import { useUserMatches } from "@/features/matching/hooks/use-user-live-matches"
 import { useMatchId } from "@/features/matching/store/user-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 import { UniversityMatchCard } from "./university-match-card";
 import { UniversityMatchSkeleton } from "./university-match-skeleton";
 

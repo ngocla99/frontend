@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = ({ className }: { className?: string }) => {

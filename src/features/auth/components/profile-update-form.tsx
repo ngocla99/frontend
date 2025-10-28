@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 import { useUpdateMe } from "../api/update-me";
 
 const profileUpdateSchema = z.object({
