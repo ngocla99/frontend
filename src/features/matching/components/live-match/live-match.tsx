@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import React from "react";
 import { useInView } from "react-intersection-observer";
@@ -53,8 +55,6 @@ export function LiveMatch() {
 		"all" | "new" | "viewed"
 	>("all");
 	const { ref, inView } = useInView();
-
-	// Note: Realtime subscription is now at RootLayout level to persist across page interactions
 
 	const {
 		data: liveMatchData,

@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 
 // Types
@@ -31,21 +31,17 @@ export type GetBabyListInput = {
 };
 
 // API Function
-export const getBabyListApi = (
+export const getBabyListApi = async (
 	input: GetBabyListInput = {},
-	signal?: AbortSignal,
+	_signal?: AbortSignal,
 ): Promise<BabyListItem[]> => {
-	const params = new URLSearchParams();
-	if (input.userId) params.append("user_id", input.userId);
-	if (input.skip !== undefined) params.append("skip", String(input.skip));
-	if (input.limit !== undefined) params.append("limit", String(input.limit));
-
-	const queryString = params.toString();
-	const url = queryString
-		? `/api/v1/me/babies?${queryString}`
-		: "/api/v1/me/babies";
-
-	return apiClient.get(url, { signal });
+	const response = await api.get<{
+		babies: BabyListItem[];
+		total: number;
+		skip: number;
+		limit: number;
+	}>("/baby/list", { params: input });
+	return response.babies;
 };
 
 // Query Options

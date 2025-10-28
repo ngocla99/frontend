@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { z } from "zod";
 import { getMeQueryOptions } from "@/features/auth/api/get-me";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
 import type { UserApi, UserPhotosResponse } from "@/types/api";
 import { getUserPhotosQueryOptions } from "./get-user-photos";
@@ -16,15 +15,14 @@ export type UploadFaceInput = z.infer<typeof uploadFaceSchema>;
 
 export const uploadFaceApi = (
 	input: UploadFaceInput,
-): Promise<{ id: string; image_url: string; live_task_id: string }> => {
+): Promise<{ id: string; image_url: string; created_at: string }> => {
 	const formData = new FormData();
 	formData.append("file", input.file);
 
-	return apiClient.post("/api/v1/me/faces", formData, {
-		headers: {
-			"Content-Type": "multipart/form-data",
-		},
-	});
+	return api.post<{ id: string; image_url: string; created_at: string }>(
+		"/faces",
+		formData,
+	);
 };
 
 type UseUploadFaceOptions = {
@@ -72,10 +70,7 @@ export const useUploadFace = ({
 			);
 		},
 		onError: (error: Error, ...args) => {
-			const errorMessage =
-				error instanceof AxiosError
-					? error.response?.data?.error
-					: "Upload face failed";
+			const errorMessage = error.message || "Upload face failed";
 			toast.error(errorMessage);
 			onError?.(error, ...args);
 		},

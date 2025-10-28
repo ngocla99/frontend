@@ -3,7 +3,7 @@ import {
 	useInfiniteQuery,
 	useQuery,
 } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { LiveMatchApi } from "@/types/api";
@@ -15,14 +15,18 @@ export type LiveMatchInput = {
 	signal?: AbortSignal;
 };
 
-export const getLiveMatchApi = (
+export const getLiveMatchApi = async (
 	input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
 	const { signal, ...query } = input;
-	return apiClient.get("/api/v1/matches/top", {
-		params: { ...query, filter: "user" },
-		signal,
-	});
+	const response = await api.get<{ matches: LiveMatchApi[]; total: number }>(
+		"/matches/top",
+		{
+			params: query,
+			signal,
+		},
+	);
+	return response.matches;
 };
 
 export const getLiveMatchQueryOptions = (input: LiveMatchInput) => {

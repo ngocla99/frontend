@@ -1,25 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { useEffect } from "react";
+import { useUser } from "@/features/auth/api/get-me";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUser } from "@/stores/auth-store";
 
 export default function OnboardingPage() {
 	const user = useUser();
 	const isMobile = useIsMobile();
-	const router = useRouter();
 
 	useEffect(() => {
 		if (user?.name && user?.school && user?.gender) {
 			if (isMobile) {
-				router.push("/your-matches");
+				redirect("/your-matches");
 			} else {
-				router.push("/");
+				redirect("/");
 			}
 		}
-	}, [user, isMobile, router]);
+	}, [user, isMobile]);
 
 	if (user?.name && user?.school && user?.gender) {
 		return null;

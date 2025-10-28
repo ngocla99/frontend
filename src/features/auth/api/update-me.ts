@@ -1,8 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { z } from "zod";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
 import type { UserApi } from "@/types/api";
 
@@ -16,7 +15,7 @@ export const updateMeSchema = z.object({
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
 
 export const updateMeApi = (input: UpdateMeInput): Promise<UserApi> => {
-	return apiClient.patch(`/api/auth/me`, input);
+	return api.patch<UserApi>("/auth/me", input);
 };
 
 type UseUpdateMeOptions = {
@@ -32,10 +31,7 @@ export const useUpdateMe = ({ mutationConfig }: UseUpdateMeOptions = {}) => {
 			onSuccess?.(...args);
 		},
 		onError: (error: Error, ...args) => {
-			const errorMessage =
-				error instanceof AxiosError
-					? error.response?.data?.error
-					: "User update failed";
+			const errorMessage = error.message || "User update failed";
 			toast.error(errorMessage);
 			onError?.(error, ...args);
 		},

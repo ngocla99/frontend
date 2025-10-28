@@ -1,40 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase-server";
-
-// Protected routes that require authentication
-const protectedRoutes = [
-	"/live-matches",
-	"/your-matches",
-	"/profile",
-	"/onboarding",
-];
+import type { NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-	const { pathname } = request.nextUrl;
-
-	// Check if route is protected
-	const isProtectedRoute = protectedRoutes.some((route) =>
-		pathname.startsWith(route),
-	);
-
-	if (!isProtectedRoute) {
-		return NextResponse.next();
-	}
-
-	// Check authentication
-	const supabase = await createClient();
-	const {
-		data: { session },
-	} = await supabase.auth.getSession();
-
-	// Redirect to sign-in if not authenticated
-	if (!session) {
-		const signInUrl = new URL("/auth/sign-in", request.url);
-		signInUrl.searchParams.set("redirect", pathname);
-		return NextResponse.redirect(signInUrl);
-	}
-
-	return NextResponse.next();
+	// update user's auth session
+	return await updateSession(request);
 }
 
 export const config = {

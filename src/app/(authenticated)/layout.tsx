@@ -1,26 +1,16 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
 import { RootLayout } from "@/components/layout/root-layout";
-import { useSession } from "@/stores/auth-store";
+import { checkLoggedIn } from "@/lib/utils/auth";
 
-export default function AuthenticatedLayout({
+export default async function AuthenticatedLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const session = useSession();
-	const router = useRouter();
+	const isLoggedIn = await checkLoggedIn();
 
-	useEffect(() => {
-		if (!session) {
-			router.push("/auth/sign-in");
-		}
-	}, [session, router]);
-
-	if (!session) {
-		return null; // or loading spinner
+	if (!isLoggedIn) {
+		redirect("/auth/sign-in");
 	}
 
 	return <RootLayout>{children}</RootLayout>;

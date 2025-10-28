@@ -1,73 +1,105 @@
-import axios from "axios";
-import Cookies from "js-cookie";
-import { supabase } from "./supabase";
+/** biome-ignore-all lint/suspicious/noExplicitAny: no need check */
+import { useNotifications } from "@/components/notifications";
+import { env } from "@/config/env";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+type RequestOptions = {
+	method?: string;
+	headers?: Record<string, string>;
+	body?: any;
+	params?: Record<string, string | number | boolean | undefined | null>;
+	cache?: RequestCache;
+	next?: NextFetchRequestConfig;
+	signal?: AbortSignal; // 👈 allow aborting
+};
 
-const apiClient = axios.create({
-	baseURL: BASE_API_URL,
-	headers: {
-		"Content-Type": "application/json",
-		"ngrok-skip-browser-warning": "true",
-	},
-});
+function buildUrlWithParams(
+	url: string,
+	params?: RequestOptions["params"],
+): string {
+	if (!params) return url;
+	const filteredParams = Object.fromEntries(
+		Object.entries(params).filter(
+			([, value]) => value !== undefined && value !== null,
+		),
+	);
+	if (Object.keys(filteredParams).length === 0) return url;
+	const queryString = new URLSearchParams(
+		filteredParams as Record<string, string>,
+	).toString();
+	return `${url}?${queryString}`;
+}
 
-// Add token to all requests (supports both Supabase and legacy OAuth)
-apiClient.interceptors.request.use(
-	async (config) => {
-		// Priority 1: Try Supabase session (magic link flow)
-		const {
-			data: { session },
-		} = await supabase.auth.getSession();
+async function fetchApi<T>(
+	url: string,
+	options: RequestOptions = {},
+): Promise<T> {
+	const {
+		method = "GET",
+		headers = {},
+		body,
+		params,
+		cache = "no-store",
+		next,
+		signal,
+	} = options;
 
-		if (session?.access_token && !config.headers.Authorization) {
-			config.headers.Authorization = `Bearer ${session.access_token}`;
-			return config;
+	const fullUrl = buildUrlWithParams(`${env.API_URL}${url}`, params);
+
+	// Detect if body is FormData for file uploads
+	const isFormData = body instanceof FormData;
+
+	const response = await fetch(fullUrl, {
+		method,
+		headers: {
+			// Only set Content-Type for JSON, let browser set it for FormData
+			...(isFormData ? {} : { "Content-Type": "application/json" }),
+			Accept: "application/json",
+			...headers,
+		},
+		// Don't stringify FormData, pass it directly
+		body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+		credentials: "include",
+		cache,
+		next,
+		signal,
+	});
+
+	if (!response.ok) {
+		const errorData = await response
+			.json()
+			.catch(() => ({ message: response.statusText }));
+		const message = errorData.error || errorData.message || response.statusText;
+
+		if (typeof window !== "undefined") {
+			useNotifications.getState().addNotification({
+				type: "error",
+				title: "Error",
+				message,
+			});
 		}
+		throw new Error(message);
+	}
 
-		// Priority 2: Fall back to legacy OAuth token from cookies
-		const cookieToken = Cookies.get("access_token");
-		if (cookieToken && !config.headers.Authorization) {
-			const token = JSON.parse(cookieToken);
-			if (token) {
-				config.headers.Authorization = `Bearer ${token}`;
-			}
-		}
+	return response.json();
+}
 
-		return config;
+export const api = {
+	get<T>(url: string, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "GET" });
 	},
-	(error) => Promise.reject(error),
-);
-
-// Add a response interceptor
-apiClient.interceptors.response.use(
-	async (response) => {
-		return response.data;
+	post<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "POST", body });
 	},
-	async (error) => {
-		// If the error status is 401, the token may have expired
-		if (error.response?.status === 401) {
-			// Try to refresh the session
-			const {
-				data: { session },
-				error: refreshError,
-			} = await supabase.auth.refreshSession();
-
-			if (refreshError || !session) {
-				// If refresh fails, sign out and redirect to sign in
-				await supabase.auth.signOut();
-				window.location.replace("/auth/sign-in");
-				return Promise.reject(error);
-			}
-
-			// Retry the original request with new token
-			const originalRequest = error.config;
-			originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
-			return axios(originalRequest);
-		}
-
-		return Promise.reject(error);
+	put<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "PUT", body });
 	},
-);
+	patch<T>(url: string, body?: any, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "PATCH", body });
+	},
+	delete<T>(url: string, options?: RequestOptions): Promise<T> {
+		return fetchApi<T>(url, { ...options, method: "DELETE" });
+	},
+};
 
-export default apiClient;
+// Export as default for compatibility with existing imports
+export default api;

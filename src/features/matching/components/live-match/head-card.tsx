@@ -2,7 +2,7 @@ import { Flame } from "lucide-react";
 import { SlidingNumber } from "@/components/motion-primitives/sliding-number";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { useUser } from "@/stores/auth-store";
+import { useUser } from "@/features/auth/api/get-me";
 
 interface HeadCardProps {
 	stats: {

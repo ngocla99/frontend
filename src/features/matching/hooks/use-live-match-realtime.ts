@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useSupabaseRealtime } from "@/hooks/use-supabase-realtime";
-import type { SupabaseMatch } from "@/lib/supabase";
+import type { SupabaseMatch } from "@/types/api";
 
 /**
  * Hook for handling live match realtime updates
@@ -12,7 +12,7 @@ export const useMatchRealtime = () => {
 	const queryClient = useQueryClient();
 
 	const handleMatchInsert = useCallback(
-		(payload: { new: SupabaseMatch }) => {
+		(_payload: { new: SupabaseMatch }) => {
 			// Invalidate all match-related queries to trigger refetch
 			// This covers: live matches, user matches, celeb matches
 			queryClient.invalidateQueries({

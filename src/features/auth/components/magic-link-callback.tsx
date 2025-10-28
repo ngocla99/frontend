@@ -4,23 +4,10 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { useAuthActions } from "@/stores/auth-store";
-import type { UserApi } from "@/types/api";
-import { useMe } from "../api/get-me";
+import { createClient } from "@/lib/supabase/client";
 
 export function MagicLinkCallback() {
 	const router = useRouter();
-	const { setSession, setUser } = useAuthActions();
-	const [isProcessing, setIsProcessing] = React.useState(true);
-	const [sessionReady, setSessionReady] = React.useState(false);
-
-	const { data: user } = useMe({
-		queryConfig: {
-			enabled: sessionReady,
-			select: (data: any) => (data.data as UserApi) || data,
-		},
-	});
 
 	// Timeout redirect after 30 seconds
 	React.useEffect(() => {
@@ -32,10 +19,11 @@ export function MagicLinkCallback() {
 		return () => clearTimeout(timeoutId);
 	}, [router]);
 
-	// Handle auth callback - exchange code for session
 	React.useEffect(() => {
 		const handleAuthCallback = async () => {
 			try {
+				const supabase = createClient();
+
 				// Check if we have an error in the URL
 				const hashParams = new URLSearchParams(
 					window.location.hash.substring(1),
@@ -64,30 +52,19 @@ export function MagicLinkCallback() {
 					throw new Error("No session found after authentication");
 				}
 
-				setSession(session);
-				setSessionReady(true);
+				toast.success("Successfully signed in!");
+				router.push("/");
 			} catch (error) {
 				console.error("Auth callback error:", error);
 				toast.error(
 					error instanceof Error ? error.message : "Authentication failed",
 				);
 				router.push("/");
-			} finally {
-				setIsProcessing(false);
 			}
 		};
 
 		handleAuthCallback();
-	}, [setSession, router]);
-
-	// Redirect after user data is loaded
-	React.useEffect(() => {
-		if (user && !isProcessing) {
-			setUser(user);
-			toast.success("Successfully signed in!");
-			router.push("/");
-		}
-	}, [user, isProcessing, setUser, router]);
+	}, [router]);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center">

@@ -1,3 +1,4 @@
+"use client";
 /**
  * @author: @dorian_baffier
  * @description: File Upload
@@ -19,8 +20,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useUser } from "@/features/auth/api/get-me";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
 import { AuthGuard } from "../auth-guard";
 import confirm from "../confirm";
 

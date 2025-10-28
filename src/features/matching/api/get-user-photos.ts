@@ -1,10 +1,14 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { UserPhotosResponse } from "@/types/api";
 
-export const getUserPhotosApi = (): Promise<UserPhotosResponse> => {
-	return apiClient.get("/api/v1/me/faces");
+export const getUserPhotosApi = async (): Promise<UserPhotosResponse> => {
+	const response = await api.get<{ faces: any[]; total: number }>("/faces");
+	return {
+		faces: response.faces,
+		number_of_faces: response.total,
+	};
 };
 
 export const getUserPhotosQueryOptions = () => {

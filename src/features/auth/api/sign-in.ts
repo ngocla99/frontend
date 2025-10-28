@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import apiClient from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
-import { useAuthActions } from "@/stores/auth-store";
 
 export const signInSchema = z.object({
 	email: z
@@ -32,7 +31,6 @@ type UseSignInOptions = {
 };
 
 export const useSignIn = ({ mutationConfig }: UseSignInOptions = {}) => {
-	const { setAccessToken } = useAuthActions();
 	const router = useRouter();
 
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
@@ -40,8 +38,6 @@ export const useSignIn = ({ mutationConfig }: UseSignInOptions = {}) => {
 	return useMutation({
 		onSuccess: (...args) => {
 			onSuccess?.(...args);
-			const [data] = args;
-			setAccessToken(data.accessToken);
 			toast.success("Login success");
 			router.push("/");
 		},

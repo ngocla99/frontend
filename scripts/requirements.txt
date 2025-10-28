@@ -1,0 +1,5 @@
+# Python dependencies for migration scripts
+
+qdrant-client==1.7.0
+supabase==2.3.0
+python-dotenv==1.0.0

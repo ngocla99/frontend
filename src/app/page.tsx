@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import { RootLayout } from "@/components/layout/root-layout";
+import { useMe } from "@/features/auth/api/get-me";
 import { LiveMatch } from "@/features/matching/components/live-match/live-match";
 import { MatchDialog } from "@/features/matching/components/match-dialog/match-dialog";
 import { MatchNavMobile } from "@/features/matching/components/match-nav-mobile";
@@ -10,21 +11,19 @@ import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-
 import { UserMatch } from "@/features/matching/components/user-match/user-match";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
 
 export default function HomePage() {
 	const isMobile = useIsMobile();
-	const user = useUser();
-	const router = useRouter();
+	const { data: user } = useMe();
 
 	// TODO: Add a check for age
 	const isOnboarding = user && (!user?.name || !user?.gender);
 
 	useEffect(() => {
 		if (isOnboarding) {
-			router.push("/onboarding");
+			redirect("/onboarding");
 		}
-	}, [isOnboarding, router]);
+	}, [isOnboarding]);
 
 	return (
 		<RootLayout>

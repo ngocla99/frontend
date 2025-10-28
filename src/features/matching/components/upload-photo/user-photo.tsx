@@ -9,8 +9,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@/features/auth/api/get-me";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/stores/auth-store";
 import { useUploadFace } from "../../api/upload-face";
 import { FavoriteHistory } from "../favorite-history/favorite-history";
 

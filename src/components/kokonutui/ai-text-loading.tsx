@@ -1,3 +1,4 @@
+"use client";
 /**
  * @author: @kokonutui
  * @description: AI Text Loading
