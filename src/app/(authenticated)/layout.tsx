@@ -1,17 +1,17 @@
+import { redirect } from "next/navigation";
 import { RootLayout } from "@/components/layout/root-layout";
 import { checkLoggedIn } from "@/lib/utils/auth";
-import { redirect } from "next/navigation";
 
 export default async function AuthenticatedLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  const isLoggedIn = await checkLoggedIn();
+	const isLoggedIn = await checkLoggedIn();
 
-  if (!isLoggedIn) {
-    redirect("/auth/sign-in");
-  }
+	if (!isLoggedIn) {
+		redirect("/auth/sign-in");
+	}
 
-  return <RootLayout>{children}</RootLayout>;
+	return <RootLayout>{children}</RootLayout>;
 }

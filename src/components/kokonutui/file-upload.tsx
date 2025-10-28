@@ -20,8 +20,8 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { cn } from "@/lib/utils";
 import { useUser } from "@/features/auth/api/get-me";
+import { cn } from "@/lib/utils";
 import { AuthGuard } from "../auth-guard";
 import confirm from "../confirm";
 

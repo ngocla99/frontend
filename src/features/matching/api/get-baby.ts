@@ -3,7 +3,9 @@ import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { BabyApi } from "@/types/api";
 
-export const getBabyForMatchApi = async (matchId: string): Promise<BabyApi | null> => {
+export const getBabyForMatchApi = async (
+	matchId: string,
+): Promise<BabyApi | null> => {
 	const response = await api.get<{ baby: BabyApi | null }>("/baby", {
 		params: { match_id: matchId },
 	});

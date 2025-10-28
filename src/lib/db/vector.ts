@@ -5,22 +5,22 @@
  * and performing similarity searches using pgvector's HNSW index.
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/supabase/server";
 
 export interface SimilarFace {
-  face_id: string
-  profile_id: string
-  similarity: number
-  image_path: string
-  profile_name: string
-  profile_type: 'user' | 'celebrity'
+	face_id: string;
+	profile_id: string;
+	similarity: number;
+	image_path: string;
+	profile_name: string;
+	profile_type: "user" | "celebrity";
 }
 
 export interface CelebrityMatch {
-  face_id: string
-  celebrity_name: string
-  similarity: number
-  image_path: string
+	face_id: string;
+	celebrity_name: string;
+	similarity: number;
+	image_path: string;
 }
 
 /**
@@ -40,34 +40,30 @@ export interface CelebrityMatch {
  * ```
  */
 export async function findSimilarFaces(
-  embedding: number[],
-  options: {
-    threshold?: number
-    limit?: number
-    excludeProfileId?: string
-  } = {}
+	embedding: number[],
+	options: {
+		threshold?: number;
+		limit?: number;
+		excludeProfileId?: string;
+	} = {},
 ): Promise<SimilarFace[]> {
-  const {
-    threshold = 0.5,
-    limit = 20,
-    excludeProfileId,
-  } = options
+	const { threshold = 0.5, limit = 20, excludeProfileId } = options;
 
-  const supabase = await createClient()
+	const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc('find_similar_faces', {
-    query_embedding: embedding,
-    match_threshold: threshold,
-    match_count: limit,
-    exclude_profile_id: excludeProfileId || null,
-  })
+	const { data, error } = await supabase.rpc("find_similar_faces", {
+		query_embedding: embedding,
+		match_threshold: threshold,
+		match_count: limit,
+		exclude_profile_id: excludeProfileId || null,
+	});
 
-  if (error) {
-    console.error('Vector search error:', error)
-    throw new Error(`Failed to find similar faces: ${error.message}`)
-  }
+	if (error) {
+		console.error("Vector search error:", error);
+		throw new Error(`Failed to find similar faces: ${error.message}`);
+	}
 
-  return data as SimilarFace[]
+	return data as SimilarFace[];
 }
 
 /**
@@ -84,22 +80,22 @@ export async function findSimilarFaces(
  * ```
  */
 export async function findCelebrityMatches(
-  embedding: number[],
-  limit: number = 10
+	embedding: number[],
+	limit: number = 10,
 ): Promise<CelebrityMatch[]> {
-  const supabase = await createClient()
+	const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc('find_celebrity_matches', {
-    query_embedding: embedding,
-    match_count: limit,
-  })
+	const { data, error } = await supabase.rpc("find_celebrity_matches", {
+		query_embedding: embedding,
+		match_count: limit,
+	});
 
-  if (error) {
-    console.error('Celebrity search error:', error)
-    throw new Error(`Failed to find celebrity matches: ${error.message}`)
-  }
+	if (error) {
+		console.error("Celebrity search error:", error);
+		throw new Error(`Failed to find celebrity matches: ${error.message}`);
+	}
 
-  return data as CelebrityMatch[]
+	return data as CelebrityMatch[];
 }
 
 /**
@@ -115,19 +111,19 @@ export async function findCelebrityMatches(
  * ```
  */
 export async function upsertFaceEmbedding(
-  faceId: string,
-  embedding: number[]
+	faceId: string,
+	embedding: number[],
 ): Promise<void> {
-  const supabase = await createClient()
+	const supabase = await createClient();
 
-  const { error } = await supabase
-    .from('faces')
-    .update({ embedding })
-    .eq('id', faceId)
+	const { error } = await supabase
+		.from("faces")
+		.update({ embedding })
+		.eq("id", faceId);
 
-  if (error) {
-    throw new Error(`Failed to update embedding: ${error.message}`)
-  }
+	if (error) {
+		throw new Error(`Failed to update embedding: ${error.message}`);
+	}
 }
 
 /**
@@ -136,21 +132,23 @@ export async function upsertFaceEmbedding(
  * @returns Migration statistics including total faces and embedding count
  */
 export async function getMigrationProgress() {
-  const supabase = await createClient()
+	const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc('verify_migration_progress')
+	const { data, error } = await supabase.rpc("verify_migration_progress");
 
-  if (error) {
-    console.error('Migration verification error:', error)
-    throw new Error(`Failed to verify migration: ${error.message}`)
-  }
+	if (error) {
+		console.error("Migration verification error:", error);
+		throw new Error(`Failed to verify migration: ${error.message}`);
+	}
 
-  return data?.[0] || {
-    total_faces: 0,
-    faces_with_embedding: 0,
-    faces_with_qdrant_id: 0,
-    migration_progress_pct: 0
-  }
+	return (
+		data?.[0] || {
+			total_faces: 0,
+			faces_with_embedding: 0,
+			faces_with_qdrant_id: 0,
+			migration_progress_pct: 0,
+		}
+	);
 }
 
 /**
@@ -163,10 +161,10 @@ export async function getMigrationProgress() {
  * For InsightFace embeddings (L2-normalized), cosine distance is recommended.
  */
 export const VECTOR_DISTANCE_METRICS = {
-  COSINE: '<=>',
-  EUCLIDEAN: '<->',
-  INNER_PRODUCT: '<#>',
-} as const
+	COSINE: "<=>",
+	EUCLIDEAN: "<->",
+	INNER_PRODUCT: "<#>",
+} as const;
 
 /**
  * Recommended similarity thresholds for face matching
@@ -177,7 +175,7 @@ export const VECTOR_DISTANCE_METRICS = {
  * - LOW: Loose matching (some resemblance)
  */
 export const SIMILARITY_THRESHOLDS = {
-  HIGH: 0.8,    // > 80% similarity
-  MEDIUM: 0.65, // > 65% similarity
-  LOW: 0.5,     // > 50% similarity
-} as const
+	HIGH: 0.8, // > 80% similarity
+	MEDIUM: 0.65, // > 65% similarity
+	LOW: 0.5, // > 50% similarity
+} as const;

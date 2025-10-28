@@ -12,7 +12,7 @@ export const useMatchRealtime = () => {
 	const queryClient = useQueryClient();
 
 	const handleMatchInsert = useCallback(
-		(payload: { new: SupabaseMatch }) => {
+		(_payload: { new: SupabaseMatch }) => {
 			// Invalidate all match-related queries to trigger refetch
 			// This covers: live matches, user matches, celeb matches
 			queryClient.invalidateQueries({

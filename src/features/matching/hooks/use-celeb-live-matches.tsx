@@ -1,9 +1,6 @@
 import { useCelebMatch } from "../api/get-celeb-match";
 
-export const useCelebMatches = (
-	userId?: string,
-	faceId?: string | null,
-) => {
+export const useCelebMatches = (_userId?: string, faceId?: string | null) => {
 	const {
 		data: celebMatches,
 		isLoading,

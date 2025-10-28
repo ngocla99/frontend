@@ -2,11 +2,11 @@ import { Search, Star } from "lucide-react";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useUser } from "@/features/auth/api/get-me";
 import { useCelebMatches } from "@/features/matching/hooks/use-celeb-live-matches";
 import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/features/auth/api/get-me";
 import { CelebrityMatchCard } from "./celebrity-match-card";
 import { CelebrityMatchCardSkeleton } from "./celebrity-match-card-skeleton";
 

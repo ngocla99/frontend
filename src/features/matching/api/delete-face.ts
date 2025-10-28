@@ -4,7 +4,9 @@ import api from "@/lib/api-client";
 import type { MutationConfig } from "@/lib/react-query";
 import { getUserPhotosQueryOptions } from "./get-user-photos";
 
-export const deleteFaceApi = (faceId: string): Promise<{ message: string; id: string }> => {
+export const deleteFaceApi = (
+	faceId: string,
+): Promise<{ message: string; id: string }> => {
 	return api.delete<{ message: string; id: string }>(`/faces/${faceId}`);
 };
 
@@ -12,7 +14,9 @@ type UseDeleteFaceOptions = {
 	mutationConfig?: MutationConfig<typeof deleteFaceApi>;
 };
 
-export const useDeleteFace = ({ mutationConfig }: UseDeleteFaceOptions = {}) => {
+export const useDeleteFace = ({
+	mutationConfig,
+}: UseDeleteFaceOptions = {}) => {
 	const queryClient = useQueryClient();
 	const { onSuccess, onError, ...restConfig } = mutationConfig || {};
 

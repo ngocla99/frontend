@@ -5,10 +5,10 @@ import {
 	type FileUploadRef,
 } from "@/components/kokonutui/file-upload";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@/features/auth/api/get-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/features/auth/api/get-me";
 import { UserPhoto } from "./user-photo";
 
 export const UploadPhoto = ({ className }: { className?: string }) => {

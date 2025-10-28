@@ -33,12 +33,14 @@ export type GetBabyListInput = {
 // API Function
 export const getBabyListApi = async (
 	input: GetBabyListInput = {},
-	signal?: AbortSignal,
+	_signal?: AbortSignal,
 ): Promise<BabyListItem[]> => {
-	const response = await api.get<{ babies: BabyListItem[]; total: number; skip: number; limit: number }>(
-		"/baby/list",
-		{ params: input },
-	);
+	const response = await api.get<{
+		babies: BabyListItem[];
+		total: number;
+		skip: number;
+		limit: number;
+	}>("/baby/list", { params: input });
 	return response.babies;
 };
 

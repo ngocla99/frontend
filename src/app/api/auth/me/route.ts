@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * GET /api/auth/me - Get current authenticated user profile
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
 	try {
 		const supabase = await createClient();
 

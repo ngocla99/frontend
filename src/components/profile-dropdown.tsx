@@ -12,9 +12,9 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/features/auth/api/get-me";
 import { useSignOut } from "@/features/auth/api/sign-out";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/features/auth/api/get-me";
 
 export function ProfileDropdown({ className }: { className?: string }) {
 	const user = useUser();

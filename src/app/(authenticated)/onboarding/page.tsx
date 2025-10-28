@@ -2,9 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
+import { useUser } from "@/features/auth/api/get-me";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUser } from "@/features/auth/api/get-me";
 
 export default function OnboardingPage() {
 	const user = useUser();

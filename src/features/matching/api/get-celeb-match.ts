@@ -17,13 +17,13 @@ export const getCelebMatchApi = async (
 	input: CelebMatchInput,
 ): Promise<CelebMatchApi[]> => {
 	const { signal, face_id, limit, ...rest } = input;
-	const response = await api.post<{ celebrities: CelebMatchApi[]; total: number }>(
-		"/matches/celebrity",
-		{
-			face_id,
-			limit,
-		},
-	);
+	const response = await api.post<{
+		celebrities: CelebMatchApi[];
+		total: number;
+	}>("/matches/celebrity", {
+		face_id,
+		limit,
+	});
 	return response.celebrities;
 };
 

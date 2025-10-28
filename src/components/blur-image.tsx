@@ -6,10 +6,14 @@ import { cn } from "@/lib/utils";
 export const BlurImage = memo((props: ImageProps) => {
 	const [loading, setLoading] = useState(true);
 	// Provide fallback avatar if src is undefined/null
-	const fallbackSrc = props.src || `https://avatar.vercel.sh/${encodeURIComponent(props.alt || 'user')}`;
+	const fallbackSrc =
+		props.src ||
+		`https://avatar.vercel.sh/${encodeURIComponent(props.alt || "user")}`;
 	const [src, setSrc] = useState(fallbackSrc);
 	useEffect(() => {
-		const newSrc = props.src || `https://avatar.vercel.sh/${encodeURIComponent(props.alt || 'user')}`;
+		const newSrc =
+			props.src ||
+			`https://avatar.vercel.sh/${encodeURIComponent(props.alt || "user")}`;
 		setSrc(newSrc);
 	}, [props.src, props.alt]); // update the `src` value when the `prop.src` value changes
 

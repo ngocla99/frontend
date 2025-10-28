@@ -19,7 +19,10 @@ export const uploadFaceApi = (
 	const formData = new FormData();
 	formData.append("file", input.file);
 
-	return api.post<{ id: string; image_url: string; created_at: string }>("/faces", formData);
+	return api.post<{ id: string; image_url: string; created_at: string }>(
+		"/faces",
+		formData,
+	);
 };
 
 type UseUploadFaceOptions = {

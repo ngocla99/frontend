@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
 	try {
 		const supabase = await createClient();
 		const { searchParams } = new URL(request.url);
-		const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
-		const skip = parseInt(searchParams.get("skip") || "0");
+		const limit = Math.min(
+			parseInt(searchParams.get("limit") || "20", 10),
+			100,
+		);
+		const skip = parseInt(searchParams.get("skip") || "0", 10);
 
 		// Get recent user-user matches with profile and face data
 		// Filter for matches where both profiles are users (not celebrities)

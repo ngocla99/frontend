@@ -1,6 +1,6 @@
 import { useUserMatch } from "../api/get-user-match";
 
-export const useUserMatches = (userId?: string, faceId?: string | null) => {
+export const useUserMatches = (_userId?: string, faceId?: string | null) => {
 	const {
 		data: userMatches,
 		isLoading,

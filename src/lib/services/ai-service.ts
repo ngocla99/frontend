@@ -6,34 +6,34 @@
  */
 
 interface ExtractEmbeddingResponse {
-  face_detected: boolean
-  embedding: number[]
-  bbox: number[]
-  confidence: number
-  error?: string
+	face_detected: boolean;
+	embedding: number[];
+	bbox: number[];
+	confidence: number;
+	error?: string;
 }
 
 interface CompareFacesResponse {
-  similarity: number
-  distance: number
+	similarity: number;
+	distance: number;
 }
 
 interface BatchExtractResponse {
-  results: Array<{
-    index: number
-    face_detected: boolean
-    embedding?: number[]
-    bbox?: number[]
-    confidence?: number
-    error?: string
-  }>
-  total: number
-  successful: number
-  failed: number
+	results: Array<{
+		index: number;
+		face_detected: boolean;
+		embedding?: number[];
+		bbox?: number[];
+		confidence?: number;
+		error?: string;
+	}>;
+	total: number;
+	successful: number;
+	failed: number;
 }
 
-const AI_SERVICE_URL = process.env.PYTHON_AI_SERVICE_URL!
-const AI_SERVICE_API_KEY = process.env.PYTHON_AI_SERVICE_API_KEY!
+const AI_SERVICE_URL = process.env.PYTHON_AI_SERVICE_URL!;
+const AI_SERVICE_API_KEY = process.env.PYTHON_AI_SERVICE_API_KEY!;
 
 /**
  * Extract face embedding from image buffer
@@ -49,33 +49,31 @@ const AI_SERVICE_API_KEY = process.env.PYTHON_AI_SERVICE_API_KEY!
  * await upsertFaceEmbedding(faceId, embedding);
  * ```
  */
-export async function extractEmbedding(
-  imageBuffer: Buffer
-): Promise<number[]> {
-  const formData = new FormData()
-  const blob = new Blob([imageBuffer], { type: 'image/jpeg' })
-  formData.append('file', blob, 'face.jpg')
+export async function extractEmbedding(imageBuffer: Buffer): Promise<number[]> {
+	const formData = new FormData();
+	const blob = new Blob([imageBuffer], { type: "image/jpeg" });
+	formData.append("file", blob, "face.jpg");
 
-  const response = await fetch(`${AI_SERVICE_URL}/extract-embedding`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${AI_SERVICE_API_KEY}`,
-    },
-    body: formData,
-  })
+	const response = await fetch(`${AI_SERVICE_URL}/extract-embedding`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+		},
+		body: formData,
+	});
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to extract embedding')
-  }
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || "Failed to extract embedding");
+	}
 
-  const data: ExtractEmbeddingResponse = await response.json()
+	const data: ExtractEmbeddingResponse = await response.json();
 
-  if (!data.face_detected) {
-    throw new Error('No face detected in image')
-  }
+	if (!data.face_detected) {
+		throw new Error("No face detected in image");
+	}
 
-  return data.embedding
+	return data.embedding;
 }
 
 /**
@@ -92,31 +90,31 @@ export async function extractEmbedding(
  * ```
  */
 export async function extractEmbeddingFromBase64(
-  imageBase64: string
+	imageBase64: string,
 ): Promise<number[]> {
-  const response = await fetch(`${AI_SERVICE_URL}/extract-embedding`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${AI_SERVICE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      image_base64: imageBase64,
-    }),
-  })
+	const response = await fetch(`${AI_SERVICE_URL}/extract-embedding`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			image_base64: imageBase64,
+		}),
+	});
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to extract embedding')
-  }
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || "Failed to extract embedding");
+	}
 
-  const data: ExtractEmbeddingResponse = await response.json()
+	const data: ExtractEmbeddingResponse = await response.json();
 
-  if (!data.face_detected) {
-    throw new Error('No face detected in image')
-  }
+	if (!data.face_detected) {
+		throw new Error("No face detected in image");
+	}
 
-  return data.embedding
+	return data.embedding;
 }
 
 /**
@@ -135,27 +133,27 @@ export async function extractEmbeddingFromBase64(
  * ```
  */
 export async function compareFaces(
-  embeddingA: number[],
-  embeddingB: number[]
+	embeddingA: number[],
+	embeddingB: number[],
 ): Promise<number> {
-  const response = await fetch(`${AI_SERVICE_URL}/compare-faces`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${AI_SERVICE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      embedding_a: embeddingA,
-      embedding_b: embeddingB,
-    }),
-  })
+	const response = await fetch(`${AI_SERVICE_URL}/compare-faces`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			embedding_a: embeddingA,
+			embedding_b: embeddingB,
+		}),
+	});
 
-  if (!response.ok) {
-    throw new Error('Failed to compare faces')
-  }
+	if (!response.ok) {
+		throw new Error("Failed to compare faces");
+	}
 
-  const data: CompareFacesResponse = await response.json()
-  return data.similarity
+	const data: CompareFacesResponse = await response.json();
+	return data.similarity;
 }
 
 /**
@@ -181,24 +179,24 @@ export async function compareFaces(
  * ```
  */
 export async function batchExtractEmbeddings(
-  imageBase64Array: string[]
+	imageBase64Array: string[],
 ): Promise<BatchExtractResponse> {
-  const response = await fetch(`${AI_SERVICE_URL}/batch-extract`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${AI_SERVICE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      images: imageBase64Array,
-    }),
-  })
+	const response = await fetch(`${AI_SERVICE_URL}/batch-extract`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			images: imageBase64Array,
+		}),
+	});
 
-  if (!response.ok) {
-    throw new Error('Failed to batch extract embeddings')
-  }
+	if (!response.ok) {
+		throw new Error("Failed to batch extract embeddings");
+	}
 
-  return await response.json()
+	return await response.json();
 }
 
 /**
@@ -215,22 +213,21 @@ export async function batchExtractEmbeddings(
  * ```
  */
 export async function checkAIServiceHealth(): Promise<boolean> {
-  try {
-    const response = await fetch(`${AI_SERVICE_URL}/health`, {
-      method: 'GET',
-    })
+	try {
+		const response = await fetch(`${AI_SERVICE_URL}/health`, {
+			method: "GET",
+		});
 
-    if (!response.ok) {
-      return false
-    }
+		if (!response.ok) {
+			return false;
+		}
 
-    const data = await response.json()
-    return data.status === 'healthy'
-
-  } catch (error) {
-    console.error('AI service health check failed:', error)
-    return false
-  }
+		const data = await response.json();
+		return data.status === "healthy";
+	} catch (error) {
+		console.error("AI service health check failed:", error);
+		return false;
+	}
 }
 
 /**
@@ -240,20 +237,20 @@ export async function checkAIServiceHealth(): Promise<boolean> {
  * @returns True if valid (512 dimensions), false otherwise
  */
 export function validateEmbedding(embedding: number[]): boolean {
-  return Array.isArray(embedding) && embedding.length === 512
+	return Array.isArray(embedding) && embedding.length === 512;
 }
 
 /**
  * Error types for AI service
  */
 export class AIServiceError extends Error {
-  constructor(
-    message: string,
-    public code: 'NO_FACE_DETECTED' | 'API_ERROR' | 'NETWORK_ERROR'
-  ) {
-    super(message)
-    this.name = 'AIServiceError'
-  }
+	constructor(
+		message: string,
+		public code: "NO_FACE_DETECTED" | "API_ERROR" | "NETWORK_ERROR",
+	) {
+		super(message);
+		this.name = "AIServiceError";
+	}
 }
 
 /**
@@ -263,17 +260,17 @@ export class AIServiceError extends Error {
  * @returns Embedding or throws AIServiceError
  */
 export async function extractEmbeddingWithErrorHandling(
-  imageBuffer: Buffer
+	imageBuffer: Buffer,
 ): Promise<number[]> {
-  try {
-    return await extractEmbedding(imageBuffer)
-  } catch (error: any) {
-    if (error.message.includes('No face detected')) {
-      throw new AIServiceError('No face detected in image', 'NO_FACE_DETECTED')
-    } else if (error.message.includes('Failed to extract')) {
-      throw new AIServiceError('AI service error', 'API_ERROR')
-    } else {
-      throw new AIServiceError('Network error', 'NETWORK_ERROR')
-    }
-  }
+	try {
+		return await extractEmbedding(imageBuffer);
+	} catch (error: any) {
+		if (error.message.includes("No face detected")) {
+			throw new AIServiceError("No face detected in image", "NO_FACE_DETECTED");
+		} else if (error.message.includes("Failed to extract")) {
+			throw new AIServiceError("AI service error", "API_ERROR");
+		} else {
+			throw new AIServiceError("Network error", "NETWORK_ERROR");
+		}
+	}
 }
