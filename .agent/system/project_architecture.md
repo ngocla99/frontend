@@ -37,7 +37,7 @@
 ### Project Structure
 
 ```
-frontend/
+web/
 ├── .agent/                    # Documentation & context
 │   ├── system/               # System architecture docs
 │   ├── tasks/                # Feature PRDs & implementation plans
@@ -434,7 +434,7 @@ The backend is built with **Next.js API Routes** providing a TypeScript-first ba
 #### Next.js API Routes
 
 ```
-frontend/src/app/api/
+web/src/app/api/
 ├── auth/
 │   └── me/
 │       └── route.ts         # GET/PATCH current user profile
@@ -697,7 +697,7 @@ Vercel Deployment:
 
 **Frontend:**
 ```bash
-cd frontend
+cd web
 bun install
 bun run dev  # Starts Next.js dev server on port 3000
 ```

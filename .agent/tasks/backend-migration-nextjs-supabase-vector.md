@@ -1061,7 +1061,7 @@ openssl rand -base64 32
 ### 3.1 Project Structure
 
 ```
-frontend/
+web/
 ├── src/
 │   ├── app/
 │   │   ├── api/                    # NEW: API routes

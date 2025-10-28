@@ -218,7 +218,7 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 ### Running Locally
 
 ```bash
-cd frontend
+cd web
 bun install
 bun run dev  # Starts on http://localhost:3000
 ```
