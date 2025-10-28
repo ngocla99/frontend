@@ -1,6 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { handleApiError } from "@/lib/middleware/error-handler";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { withSession } from "@/lib/middleware/with-session";
 
 /**
  * POST /api/matches/[matchId]/react - Add reaction to match
@@ -8,24 +7,9 @@ import { createClient } from "@/lib/supabase/server";
  * Request body:
  *   - reaction_type: 'like' | 'love' | 'wow' | etc.
  */
-export async function POST(
-	request: NextRequest,
-	{ params }: { params: { matchId: string } },
-) {
-	try {
-		const supabase = await createClient();
+export const POST = withSession(
+	async ({ request, params, session, supabase }) => {
 		const matchId = params.matchId;
-
-		// Authenticate user
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser();
-
-		if (authError || !user) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
 		const body = await request.json();
 		const { reaction_type } = body;
 
@@ -47,23 +31,12 @@ export async function POST(
 			return NextResponse.json({ error: "Match not found" }, { status: 404 });
 		}
 
-		// Get user profile
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("id")
-			.eq("id", user.id)
-			.single();
-
-		if (!profile) {
-			return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-		}
-
 		// Check if reaction already exists
 		const { data: existingReaction } = await supabase
 			.from("reactions")
 			.select("id, reaction_type")
 			.eq("match_id", matchId)
-			.eq("user_id", profile.id)
+			.eq("user_id", session.profile.id)
 			.single();
 
 		if (existingReaction) {
@@ -95,7 +68,7 @@ export async function POST(
 			.from("reactions")
 			.insert({
 				match_id: matchId,
-				user_id: profile.id,
+				user_id: session.profile.id,
 				reaction_type,
 			})
 			.select()
@@ -114,108 +87,59 @@ export async function POST(
 			},
 			{ status: 201 },
 		);
-	} catch (error) {
-		return handleApiError(error);
-	}
-}
+	},
+);
 
 /**
  * DELETE /api/matches/[matchId]/react - Remove reaction from match
  */
-export async function DELETE(
-	_request: NextRequest,
-	{ params }: { params: { matchId: string } },
-) {
-	try {
-		const supabase = await createClient();
-		const matchId = params.matchId;
+export const DELETE = withSession(async ({ params, session, supabase }) => {
+	const matchId = params.matchId;
 
-		// Authenticate user
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser();
+	// Delete reaction
+	const { error: deleteError } = await supabase
+		.from("reactions")
+		.delete()
+		.eq("match_id", matchId)
+		.eq("user_id", session.profile.id);
 
-		if (authError || !user) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
-		// Get user profile
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("id")
-			.eq("id", user.id)
-			.single();
-
-		if (!profile) {
-			return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-		}
-
-		// Delete reaction
-		const { error: deleteError } = await supabase
-			.from("reactions")
-			.delete()
-			.eq("match_id", matchId)
-			.eq("user_id", profile.id);
-
-		if (deleteError) {
-			throw deleteError;
-		}
-
-		return NextResponse.json({
-			message: "Reaction removed successfully",
-			match_id: matchId,
-		});
-	} catch (error) {
-		return handleApiError(error);
+	if (deleteError) {
+		throw deleteError;
 	}
-}
+
+	return NextResponse.json({
+		message: "Reaction removed successfully",
+		match_id: matchId,
+	});
+});
 
 /**
  * GET /api/matches/[matchId]/react - Get user's reaction for this match
  */
-export async function GET(
-	_request: NextRequest,
-	{ params }: { params: { matchId: string } },
-) {
-	try {
-		const supabase = await createClient();
-		const matchId = params.matchId;
+export const GET = withSession(async ({ params, session, supabase }) => {
+	const matchId = params.matchId;
 
-		// Authenticate user
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser();
+	// Get user's reaction
+	const { data: reaction, error: reactionError } = await supabase
+		.from("reactions")
+		.select("id, reaction_type, created_at")
+		.eq("match_id", matchId)
+		.eq("user_id", session.user.id)
+		.single();
 
-		if (authError || !user) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	if (reactionError) {
+		if (reactionError.code === "PGRST116") {
+			// No reaction found
+			return NextResponse.json({ reaction: null });
 		}
-
-		// Get user's reaction
-		const { data: reaction, error: reactionError } = await supabase
-			.from("reactions")
-			.select("id, reaction_type, created_at")
-			.eq("match_id", matchId)
-			.eq("user_id", user.id)
-			.single();
-
-		if (reactionError) {
-			if (reactionError.code === "PGRST116") {
-				// No reaction found
-				return NextResponse.json({ reaction: null });
-			}
-			throw reactionError;
-		}
-
-		return NextResponse.json({
-			reaction: {
-				id: reaction.id,
-				reaction_type: reaction.reaction_type,
-				created_at: reaction.created_at,
-			},
-		});
-	} catch (error) {
-		return handleApiError(error);
+		throw reactionError;
 	}
-}
+
+	return NextResponse.json({
+		reaction: {
+			id: reaction.id,
+			reaction_type: reaction.reaction_type,
+			created_at: reaction.created_at,
+		},
+	});
+});

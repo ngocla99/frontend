@@ -1,15 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/lib/middleware/error-handler";
+import { withSession } from "@/lib/middleware/with-session";
 import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/auth/me - Get current authenticated user profile
+ *
+ * This endpoint handles profile creation if the profile doesn't exist yet.
+ * This is typically called during onboarding or first login.
  */
 export async function GET(_request: NextRequest) {
 	try {
 		const supabase = await createClient();
 
-		// Get authenticated user from cookies
+		// Authenticate user
 		const {
 			data: { user },
 			error: authError,
@@ -84,47 +88,31 @@ export async function GET(_request: NextRequest) {
 /**
  * PATCH /api/auth/me - Update current user profile
  */
-export async function PATCH(request: NextRequest) {
-	try {
-		const supabase = await createClient();
+export const PATCH = withSession(async ({ request, session, supabase }) => {
+	const body = await request.json();
 
-		// Get authenticated user from cookies
-		const {
-			data: { user },
-			error: authError,
-		} = await supabase.auth.getUser();
+	// Validate and sanitize input
+	const updates: any = {};
+	if (body.name !== undefined) updates.name = body.name;
+	if (body.gender !== undefined) updates.gender = body.gender;
+	if (body.school !== undefined) updates.school = body.school;
+	if (body.default_face_id !== undefined)
+		updates.default_face_id = body.default_face_id;
 
-		if (authError || !user) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
+	// Update profile
+	const { data, error } = await supabase
+		.from("profiles")
+		.update({
+			...updates,
+			updated_at: new Date().toISOString(),
+		})
+		.eq("id", session.user.id)
+		.select()
+		.single();
 
-		const body = await request.json();
-
-		// Validate and sanitize input
-		const updates: any = {};
-		if (body.name !== undefined) updates.name = body.name;
-		if (body.gender !== undefined) updates.gender = body.gender;
-		if (body.school !== undefined) updates.school = body.school;
-		if (body.default_face_id !== undefined)
-			updates.default_face_id = body.default_face_id;
-
-		// Update profile
-		const { data, error } = await supabase
-			.from("profiles")
-			.update({
-				...updates,
-				updated_at: new Date().toISOString(),
-			})
-			.eq("id", user.id)
-			.select()
-			.single();
-
-		if (error) {
-			throw new Error(`Failed to update profile: ${error.message}`);
-		}
-
-		return NextResponse.json(data);
-	} catch (error) {
-		return handleApiError(error);
+	if (error) {
+		throw new Error(`Failed to update profile: ${error.message}`);
 	}
-}
+
+	return NextResponse.json(data);
+});

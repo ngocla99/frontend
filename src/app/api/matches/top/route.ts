@@ -66,33 +66,56 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Filter out any matches where profile data is still null (extra safety)
-		const validMatches = (matches || []).filter(
-			(match) => match.face_a?.profile && match.face_b?.profile,
-		);
+		const validMatches = (matches || []).filter((match: any) => {
+			const faceA = Array.isArray(match.face_a)
+				? match.face_a[0]
+				: match.face_a;
+			const faceB = Array.isArray(match.face_b)
+				? match.face_b[0]
+				: match.face_b;
+			const profileA = Array.isArray(faceA?.profile)
+				? faceA.profile[0]
+				: faceA?.profile;
+			const profileB = Array.isArray(faceB?.profile)
+				? faceB.profile[0]
+				: faceB?.profile;
+			return profileA && profileB;
+		});
 
 		// Generate signed URLs for images
 		const matchesWithUrls = await Promise.all(
-			validMatches.map(async (match) => {
+			validMatches.map(async (match: any) => {
+				const faceA = Array.isArray(match.face_a)
+					? match.face_a[0]
+					: match.face_a;
+				const faceB = Array.isArray(match.face_b)
+					? match.face_b[0]
+					: match.face_b;
+				const profileA = Array.isArray(faceA.profile)
+					? faceA.profile[0]
+					: faceA.profile;
+				const profileB = Array.isArray(faceB.profile)
+					? faceB.profile[0]
+					: faceB.profile;
+
 				const [urlA, urlB] = await Promise.all([
 					supabase.storage
 						.from("user-images")
-						.createSignedUrl(match.face_a.image_path, 3600),
+						.createSignedUrl(faceA.image_path, 3600),
 					supabase.storage
 						.from("user-images")
-						.createSignedUrl(match.face_b.image_path, 3600),
+						.createSignedUrl(faceB.image_path, 3600),
 				]);
 
 				// Get public URLs as fallback if signed URLs fail
 				const imageUrlA =
 					urlA.data?.signedUrl ||
-					supabase.storage
-						.from("user-images")
-						.getPublicUrl(match.face_a.image_path).data.publicUrl;
+					supabase.storage.from("user-images").getPublicUrl(faceA.image_path)
+						.data.publicUrl;
 				const imageUrlB =
 					urlB.data?.signedUrl ||
-					supabase.storage
-						.from("user-images")
-						.getPublicUrl(match.face_b.image_path).data.publicUrl;
+					supabase.storage.from("user-images").getPublicUrl(faceB.image_path)
+						.data.publicUrl;
 
 				return {
 					id: match.id,
@@ -100,21 +123,21 @@ export async function GET(request: NextRequest) {
 					created_at: match.created_at,
 					users: {
 						a: {
-							id: match.face_a.profile.id,
-							name: match.face_a.profile.name,
-							profile_type: match.face_a.profile.profile_type,
-							gender: match.face_a.profile.gender,
-							school: match.face_a.profile.school,
-							face_id: match.face_a.id,
+							id: profileA.id,
+							name: profileA.name,
+							profile_type: profileA.profile_type,
+							gender: profileA.gender,
+							school: profileA.school,
+							face_id: faceA.id,
 							image: imageUrlA,
 						},
 						b: {
-							id: match.face_b.profile.id,
-							name: match.face_b.profile.name,
-							profile_type: match.face_b.profile.profile_type,
-							gender: match.face_b.profile.gender,
-							school: match.face_b.profile.school,
-							face_id: match.face_b.id,
+							id: profileB.id,
+							name: profileB.name,
+							profile_type: profileB.profile_type,
+							gender: profileB.gender,
+							school: profileB.school,
+							face_id: faceB.id,
 							image: imageUrlB,
 						},
 					},

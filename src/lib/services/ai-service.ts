@@ -51,7 +51,7 @@ const AI_SERVICE_API_KEY = process.env.PYTHON_AI_SERVICE_API_KEY!;
  */
 export async function extractEmbedding(imageBuffer: Buffer): Promise<number[]> {
 	const formData = new FormData();
-	const blob = new Blob([imageBuffer], { type: "image/jpeg" });
+	const blob = new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" });
 	formData.append("file", blob, "face.jpg");
 
 	const response = await fetch(`${AI_SERVICE_URL}/extract-embedding`, {
