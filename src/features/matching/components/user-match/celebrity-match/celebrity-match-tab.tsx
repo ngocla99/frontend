@@ -4,8 +4,7 @@ import { Search, Star } from "lucide-react";
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useUser } from "@/features/auth/api/get-me";
-import { useCelebMatches } from "@/features/matching/hooks/use-celeb-live-matches";
+import { useCelebMatch } from "@/features/matching/api/get-celeb-match";
 import type { CelebMatch } from "@/features/matching/utils/transform-api-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -20,16 +19,17 @@ export const CelebrityMatchTab = ({
 	activePhotoId,
 }: CelebrityMatchTabProps) => {
 	const isMobile = useIsMobile();
-	const user = useUser();
-	const { matches: celebMatches, isLoading } = useCelebMatches(
-		user?.id,
-		activePhotoId,
-	);
+	const { data: celebMatches, isLoading } = useCelebMatch({
+		input: { faceId: activePhotoId!, limit: 50, offset: 0 },
+		queryConfig: {
+			enabled: !!activePhotoId,
+		},
+	});
 	const [selectedCelebrity, setSelectedCelebrity] =
 		React.useState<CelebMatch | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const filteredCelebrities = celebMatches.filter(
+	const filteredCelebrities = (celebMatches ?? []).filter(
 		(celebMatch) =>
 			celebMatch.celeb.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			celebMatch?.celeb?.school

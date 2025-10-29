@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { findSimilarFaces } from "@/lib/db/vector";
 import { withSession } from "@/lib/middleware/with-session";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
-import { env } from "@/config/env";
 
 /**
  * GET /api/matches/user/[userId] - Find matches for a specific user

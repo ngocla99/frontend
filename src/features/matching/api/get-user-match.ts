@@ -1,42 +1,40 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import api from "@/lib/api-client";
-import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { Reaction, UserMatchApi } from "@/types/api";
 import { transformApiUserMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type UserMatchInput = {
-	userId?: string;
+	faceId: string;
+	matchType?: "user" | "celebrity" | "all";
 	limit: number;
 	offset: number;
-	threshold?: number;
 	reaction?: Reaction;
-	face_id?: string;
 	signal?: AbortSignal;
 };
 
 export const getUserMatchApi = async (
 	input: UserMatchInput,
 ): Promise<UserMatchApi[]> => {
-	const { signal, offset, userId, threshold = 0.5, ...query } = input;
-	if (!userId) {
-		throw new Error("userId is required");
-	}
+	const { signal, offset, faceId, matchType = "all", ...query } = input;
+
 	const response = await api.get<{ matches: UserMatchApi[]; total: number }>(
-		`/matches/user/${userId}`,
+		"/matches/for-image",
 		{
-			params: { ...query, skip: offset, threshold, limit: input.limit },
+			params: {
+				...query,
+				face_id: faceId,
+				match_type: matchType,
+				skip: offset,
+				limit: input.limit,
+			},
+			signal,
 		},
 	);
 	return response.matches;
 };
 
-export const getUserMatchQueryOptions = (
-	input = {
-		limit: 50,
-		offset: PAGINATION.DEFAULT_OFFSET,
-	},
-) => {
+export const getUserMatchQueryOptions = (input: UserMatchInput) => {
 	return queryOptions({
 		queryKey: ["matching", "user", input],
 		queryFn: ({ signal }) => getUserMatchApi({ ...input, signal }),
@@ -45,13 +43,10 @@ export const getUserMatchQueryOptions = (
 
 type UseUserMatchOptions = {
 	queryConfig?: QueryConfig<typeof getUserMatchQueryOptions>;
-	input?: UserMatchInput;
+	input: UserMatchInput;
 };
 
-export const useUserMatch = ({
-	input,
-	queryConfig,
-}: UseUserMatchOptions = {}) => {
+export const useUserMatch = ({ input, queryConfig }: UseUserMatchOptions) => {
 	return useQuery({
 		...getUserMatchQueryOptions(input),
 		...queryConfig,

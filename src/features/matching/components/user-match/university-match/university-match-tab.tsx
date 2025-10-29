@@ -1,7 +1,8 @@
+"use client";
+
 import { Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useUser } from "@/features/auth/api/get-me";
-import { useUserMatches } from "@/features/matching/hooks/use-user-live-matches";
+import { useUserMatch } from "@/features/matching/api/get-user-match";
 import { useMatchId } from "@/features/matching/store/user-matches";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -47,12 +48,18 @@ export const UniversityMatchTab = ({
 	activePhotoId,
 }: UniversityMatchTabProps) => {
 	const isMobile = useIsMobile();
-	const user = useUser();
 	const matchId = useMatchId();
-	const { matches: userMatches, isLoading } = useUserMatches(
-		user?.id,
-		activePhotoId,
-	);
+	const { data: userMatches, isLoading } = useUserMatch({
+		input: {
+			faceId: activePhotoId!,
+			matchType: "user",
+			limit: 50,
+			offset: 0,
+		},
+		queryConfig: {
+			enabled: !!activePhotoId,
+		},
+	});
 
 	const universityMatch: UniversityMatch[] =
 		userMatches && userMatches.length > 0 ? userMatches : [];

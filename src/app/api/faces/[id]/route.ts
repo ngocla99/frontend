@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { withSession } from "@/lib/middleware/with-session";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { withSession } from "@/lib/middleware/with-session";
 
 /**
  * DELETE /api/faces/[id] - Delete face image
