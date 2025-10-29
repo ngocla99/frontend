@@ -1,7 +1,8 @@
+"use client";
+
 import { motion } from "framer-motion";
 import React from "react";
 import { BlurImage } from "@/components/blur-image";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useUserPhotos } from "@/features/matching/api/get-user-photos";
@@ -78,7 +79,7 @@ export const PhotoFilter = ({
 										<span className="font-medium">Photo {index + 1}</span>
 									</div>
 
-									<Badge
+									{/* <Badge
 										variant={isActive ? "secondary" : "outline"}
 										className={cn(
 											"ml-1 min-w-[24px] justify-center",
@@ -88,7 +89,7 @@ export const PhotoFilter = ({
 										)}
 									>
 										{upload.number_of_user_matches}
-									</Badge>
+									</Badge> */}
 								</Button>
 							</motion.div>
 						);

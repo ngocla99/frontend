@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { env } from "@/config/env";
+import {
+	checkBothUsersGeneratedBaby,
+	checkMutualConnection,
+	createMutualConnection,
+} from "@/lib/connections";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import { createAndBroadcastNotification } from "@/lib/notifications";
-import {
-	checkMutualConnection,
-	checkBothUsersGeneratedBaby,
-	createMutualConnection,
-} from "@/lib/connections";
 
 // FAL.AI Configuration
 const FAL_API_KEY = env.FAL_AI_API_KEY;
@@ -51,7 +51,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
         face_a:faces!matches_face_a_id_fkey (
           id,
           image_path,
-          profile:profiles (
+          profile:profiles!faces_profile_id_fkey (
             id,
             name,
             gender
@@ -60,7 +60,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
         face_b:faces!matches_face_b_id_fkey (
           id,
           image_path,
-          profile:profiles (
+          profile:profiles!faces_profile_id_fkey (
             id,
             name,
             gender
@@ -109,7 +109,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 		},
 		body: JSON.stringify({
 			prompt: `A cute baby face that combines features from both parents. Natural lighting, high quality photo, adorable infant.`,
-			image_url: urlA.data.signedUrl, // Use first parent's face as base
+			image_urls: [urlA.data.signedUrl, urlB.data.signedUrl], // Use first parent's face as base
 			num_images: 1,
 			guidance_scale: 7.5,
 			num_inference_steps: 50,
