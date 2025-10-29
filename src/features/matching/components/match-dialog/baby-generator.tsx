@@ -1,11 +1,20 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Baby, Download, Heart, Share2, Sparkles, Zap } from "lucide-react";
+import { Baby, Download, Heart, MessageCircle, Share2, Sparkles, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BlurImage } from "@/components/blur-image";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { useGenerateBaby } from "../../api/generate-baby";
 import { useBabyForMatch } from "../../api/get-baby";
 import type { MatchMode } from "../../store/user-matches";
@@ -29,7 +38,13 @@ export const BabyGenerator = ({
 	mode = "own-match",
 	onBack,
 }: BabyGeneratorProps) => {
+	const router = useRouter();
 	const [babyImage, setBabyImage] = useState<string>("");
+	const [mutualConnection, setMutualConnection] = useState<{
+		id: string;
+		icebreaker: string;
+	} | null>(null);
+	const [showMutualDialog, setShowMutualDialog] = useState(false);
 	const isLiveMatch = mode === "live-match";
 
 	const { mutate: generateBaby, isPending: isGenerating } = useGenerateBaby();
@@ -70,7 +85,15 @@ export const BabyGenerator = ({
 					return;
 				}
 				setBabyImage(data.image_url);
-				toast.success("Your baby is ready! 🎉");
+
+				// Check if mutual connection was created
+				if (data.mutual_connection) {
+					setMutualConnection(data.mutual_connection);
+					setShowMutualDialog(true);
+					toast.success("It's a match! Chat unlocked! 💬");
+				} else {
+					toast.success("Baby generated! Notification sent. 👶");
+				}
 			},
 			// biome-ignore lint/suspicious/noExplicitAny: <no need check>
 			onError: (error: any) => {
@@ -459,6 +482,64 @@ export const BabyGenerator = ({
 					</div>
 				)}
 			</motion.div>
+
+			{/* Mutual Connection Celebration Dialog */}
+			<Dialog open={showMutualDialog} onOpenChange={setShowMutualDialog}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="text-center text-2xl">
+							<motion.div
+								initial={{ scale: 0 }}
+								animate={{ scale: 1 }}
+								transition={{ type: "spring", stiffness: 200 }}
+								className="flex flex-col items-center gap-2"
+							>
+								<Heart className="w-12 h-12 text-red-500 fill-red-500" />
+								<span>It's a Match!</span>
+							</motion.div>
+						</DialogTitle>
+						<DialogDescription className="text-center space-y-4 pt-4">
+							<motion.p
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.2 }}
+								className="text-base"
+							>
+								You both generated a baby together! 🎉
+							</motion.p>
+							<motion.p
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: 0.3 }}
+								className="text-sm text-muted-foreground"
+							>
+								Chat is now unlocked. Start your conversation!
+							</motion.p>
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="flex flex-col gap-2 sm:flex-col">
+						<Button
+							onClick={() => {
+								if (mutualConnection?.id) {
+									router.push(`/chat/${mutualConnection.id}`);
+								}
+							}}
+							className="w-full"
+							size="lg"
+						>
+							<MessageCircle className="w-4 h-4 mr-2" />
+							Start Chatting
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => setShowMutualDialog(false)}
+							className="w-full"
+						>
+							Maybe Later
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

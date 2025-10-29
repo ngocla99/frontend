@@ -144,6 +144,11 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		const key = otherProfile.id;
 
 		if (!groupedMatches.has(key)) {
+			// Get profile data, handling both array and object cases
+			const myProfile = Array.isArray(myFaceData.profile)
+				? myFaceData.profile[0]
+				: myFaceData.profile;
+
 			// Get signed URL for other user's image (use their default face or first match face)
 			const { data: otherImageUrl } = await supabase.storage
 				.from(STORAGE_BUCKETS.USER_IMAGES)
@@ -152,15 +157,15 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			// Get signed URL for my image
 			const { data: myImageUrl } = await supabase.storage
 				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(myFace.image_path, env.SUPABASE_SIGNED_URL_TTL);
+				.createSignedUrl(myFaceData.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 			groupedMatches.set(key, {
 				me: {
-					id: myFace.profile.id,
-					name: myFace.profile.name,
-					gender: myFace.profile.gender,
+					id: myProfile.id,
+					name: myProfile.name,
+					gender: myProfile.gender,
 					image: myImageUrl?.signedUrl || "",
-					school: myFace.profile.school,
+					school: myProfile.school,
 				},
 				other: {
 					id: otherProfile.id,
@@ -209,7 +214,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 	if (matchType === "celebrity") {
 		// Flatten: each individual match becomes a separate entry
 		finalMatches = allMatches.flatMap((group) =>
-			group.matches.map((match) => ({
+			group.matches.map((match: any) => ({
 				id: match.id,
 				created_at: match.created_at,
 				celeb: {

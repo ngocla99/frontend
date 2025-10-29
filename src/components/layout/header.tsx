@@ -8,6 +8,7 @@ import { useUser } from "@/features/auth/api/get-me";
 import { SignInButton } from "@/features/auth/components/signin-button";
 import { SignOutButton } from "@/features/auth/components/signout-button";
 import { SignUpButton } from "@/features/auth/components/signup-button";
+import { NotificationCenter } from "@/features/notifications/components/notification-center";
 import { ProfileDropdown } from "../profile-dropdown";
 import { Separator } from "../ui/separator";
 
@@ -160,7 +161,10 @@ export function Header({ loading = false }: { loading?: boolean }) {
 								variants={itemVariants}
 							>
 								{user ? (
-									<ProfileDropdown />
+									<>
+										<NotificationCenter userId={user.id} />
+										<ProfileDropdown />
+									</>
 								) : (
 									<>
 										<SignInButton />

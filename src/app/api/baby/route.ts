@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
+import { createAndBroadcastNotification } from "@/lib/notifications";
+import {
+	checkMutualConnection,
+	checkBothUsersGeneratedBaby,
+	createMutualConnection,
+} from "@/lib/connections";
 
 // FAL.AI Configuration
 const FAL_API_KEY = env.FAL_AI_API_KEY;
@@ -19,9 +25,12 @@ const FAL_MODEL_ID = env.FAL_BABY_MODEL_ID;
  * 3. Get both face images
  * 4. Call FAL.AI to generate baby image
  * 5. Save baby record to database
- * 6. Return baby details
+ * 6. Create notification for other user
+ * 7. Check for mutual connection (both users generated baby)
+ * 8. If mutual: create connection, send icebreaker, notify both users
+ * 9. Return baby details with mutual connection info
  */
-export const POST = withSession(async ({ request, supabase }) => {
+export const POST = withSession(async ({ request, supabase, session }) => {
 	const body = await request.json();
 	const { match_id } = body;
 
@@ -135,6 +144,7 @@ export const POST = withSession(async ({ request, supabase }) => {
 			image_url: babyImageUrl,
 			parent_a_id: profileA.id,
 			parent_b_id: profileB.id,
+			generated_by_profile_id: session.user.id, // Track who generated this baby
 		})
 		.select()
 		.single();
@@ -142,6 +152,55 @@ export const POST = withSession(async ({ request, supabase }) => {
 	if (babyError) {
 		console.error("Database error:", babyError);
 		throw new Error(`Failed to save baby record: ${babyError.message}`);
+	}
+
+	// Determine the other user (the one who didn't generate this baby)
+	const otherUserId =
+		session.user.id === profileA.id ? profileB.id : profileA.id;
+
+	// Create notification for the other user
+	await createAndBroadcastNotification(supabase, {
+		user_id: otherUserId,
+		type: "baby_generated",
+		title: "Someone generated a Fuze with you! 👶",
+		message: "Check out your matches to see who it might be!",
+		related_id: baby.id,
+		related_type: "baby",
+	});
+
+	// Check if mutual connection should be created
+	// (both users have now generated babies for this match)
+	const existingConnection = await checkMutualConnection(supabase, match_id);
+
+	let mutualConnection = null;
+
+	if (!existingConnection) {
+		// Check if both users have generated babies
+		const bothGenerated = await checkBothUsersGeneratedBaby(
+			supabase,
+			match_id,
+			profileA.id,
+			profileB.id,
+		);
+
+		if (bothGenerated) {
+			// Create mutual connection!
+			const { connection, icebreaker } = await createMutualConnection(
+				supabase,
+				{
+					profile_a_id: profileA.id,
+					profile_b_id: profileB.id,
+					match_id: matchData.id,
+					baby_id: baby.id,
+				},
+			);
+
+			mutualConnection = {
+				id: connection.id,
+				created_at: connection.created_at,
+				icebreaker,
+			};
+		}
 	}
 
 	return NextResponse.json(
@@ -162,6 +221,7 @@ export const POST = withSession(async ({ request, supabase }) => {
 					gender: profileB.gender,
 				},
 			},
+			mutual_connection: mutualConnection, // Include mutual connection info if created
 		},
 		{ status: 201 },
 	);

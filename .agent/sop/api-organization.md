@@ -70,48 +70,42 @@ data.ts
 
 ## File Structure Template
 
-Every API file should follow this standard structure:
+Every API file should follow this **standardized structure**:
+
+### For Query Operations (GET)
 
 ```typescript
 // 1. Imports
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
-import type { ResourceApi } from "@/types/api";
+import type { ResourceApi, GetResourceInput } from "../types";
 
-// 2. Types (if needed for this file only)
-export type GetResourceInput = {
-  id: string;
-};
-
-// 3. API Function (raw fetch logic)
-export const getResourceApi = (
+// 2. API Function (with AbortSignal support)
+export const getResourceApi = async (
   input: GetResourceInput,
+  signal?: AbortSignal,
 ): Promise<ResourceApi> => {
-  return apiClient.get("/api/v1/resource", {
-    params: input,
-  });
+  return api.get<ResourceApi>("/resource", { params: input, signal });
 };
 
-// 4. Query Options (React Query configuration)
+// 3. Query Options (for prefetching and advanced usage)
 export const getResourceQueryOptions = (input: GetResourceInput) => {
   return queryOptions({
-    queryKey: ["resource", input.id],
-    queryFn: () => getResourceApi(input),
-    enabled: !!input.id,
+    queryKey: ["resource", input],
+    queryFn: ({ signal }) => getResourceApi(input, signal),
+    enabled: !!input.id,  // Optional: conditional fetching
   });
 };
 
-// 5. Hook (React component integration)
+// 4. Hook Options Type
 type UseResourceOptions = {
   input: GetResourceInput;
   queryConfig?: QueryConfig<typeof getResourceQueryOptions>;
 };
 
-export const useResource = ({
-  input,
-  queryConfig,
-}: UseResourceOptions) => {
+// 5. React Query Hook (component integration)
+export const useResource = ({ input, queryConfig }: UseResourceOptions) => {
   return useQuery({
     ...getResourceQueryOptions(input),
     ...queryConfig,
@@ -119,49 +113,106 @@ export const useResource = ({
 };
 ```
 
----
-
-## Standard Exports
-
-### For Query Operations (GET)
-
-```typescript
-// Always export these three
-export const getResourceApi       // Raw API function
-export const getResourceQueryOptions  // Query config
-export const useResource          // React hook
-```
-
 ### For Mutation Operations (POST/PATCH/DELETE)
 
 ```typescript
-// Always export these two
-export const mutateResourceApi    // Raw API function
-export const useMutateResource    // React mutation hook
+// 1. Imports
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api-client";
+import type { MutationConfig } from "@/lib/react-query";
+
+// 2. Input Type
+export type CreateResourceInput = {
+  name: string;
+  description?: string;
+};
+
+// 3. API Function
+export const createResourceApi = (input: CreateResourceInput): Promise<ResourceApi> => {
+  return api.post<ResourceApi>("/resource", input);
+};
+
+// 4. React Mutation Hook
+export const useCreateResource = (
+  config?: MutationConfig<typeof createResourceApi>,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createResourceApi,
+    onSuccess: (data, variables) => {
+      // Update cache with new data
+      queryClient.setQueryData(["resource", data.id], data);
+      // Invalidate list queries to refetch
+      queryClient.invalidateQueries({ queryKey: ["resource", "list"] });
+    },
+    ...config,
+  });
+};
 ```
+
+---
+
+## Naming Convention Summary
+
+### Standard Pattern
+
+| Type | Function Name | QueryOptions Name | Hook Name |
+|------|--------------|-------------------|-----------|
+| **GET** | `getResourceApi` | `getResourceQueryOptions` | `useResource` |
+| **POST** | `createResourceApi` | N/A | `useCreateResource` |
+| **PATCH** | `updateResourceApi` | N/A | `useUpdateResource` |
+| **DELETE** | `deleteResourceApi` | N/A | `useDeleteResource` |
+| **Custom** | `generateBabyApi` | N/A | `useGenerateBaby` |
+
+### Key Rules
+
+1. **API Functions:** Always end with `Api` suffix
+   - `getBabyForMatchApi`, `getConnectionsApi`, `generateBabyApi`
+
+2. **QueryOptions:** Only for GET requests, end with `QueryOptions`
+   - `getBabyForMatchQueryOptions`, `getConnectionsQueryOptions`
+
+3. **Hooks:** Use natural naming without `Api` suffix
+   - `useBabyForMatch`, `useConnections`, `useGenerateBaby`
+
+4. **Parameters:** Use `input` (not `params`) for consistency
+   - Matches TanStack Query's mutation pattern
+
+5. **AbortSignal:** Always support cancellation in GET requests
+   - Pass `signal` parameter to API function
+   - Extract from `queryFn: ({ signal }) => ...`
 
 ---
 
 ## API Function Guidelines
 
-### 1. Use Proper HTTP Methods
+### 1. Use Proper HTTP Methods with New `api` Client
 
 ```typescript
+import api from "@/lib/api-client";
+
 // GET - Fetch data
-apiClient.get("/api/v1/resource", { params });
+return api.get<ResourceType>("/resource", { params });
 
 // POST - Create new resource
-apiClient.post("/api/v1/resource", body);
+return api.post<ResourceType>("/resource", body);
 
 // PATCH - Partial update
-apiClient.patch(`/api/v1/resource/${id}`, updates);
+return api.patch<ResourceType>(`/resource/${id}`, updates);
 
 // PUT - Full replacement (rare)
-apiClient.put(`/api/v1/resource/${id}`, newData);
+return api.put<ResourceType>(`/resource/${id}`, newData);
 
 // DELETE - Remove resource
-apiClient.delete(`/api/v1/resource/${id}`);
+return api.delete<void>(`/resource/${id}`);
 ```
+
+**Key Points:**
+- ✅ Use TypeScript generics `<T>` for type safety
+- ✅ Return type is `Promise<T>` (no `.data` extraction needed)
+- ✅ Pass query params via `{ params }` option
+- ✅ Built-in error handling with toast notifications
 
 ---
 
@@ -375,127 +426,197 @@ src/features/matching/api/
 
 ### Example 1: Simple GET Request
 
-**File:** `get-user.ts`
+**File:** `get-baby.ts` (Actual codebase example)
 
 ```typescript
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
-import type { UserApi } from "@/types/api";
+import type { BabyApi } from "@/types/api";
 
-export const getUserApi = (userId: string): Promise<UserApi> => {
-  return apiClient.get(`/api/v1/users/${userId}`);
+// API Function
+export const getBabyForMatchApi = async (
+  matchId: string,
+  signal?: AbortSignal,
+): Promise<BabyApi | null> => {
+  const response = await api.get<{ baby: BabyApi | null }>("/baby", {
+    params: { match_id: matchId },
+    signal,
+  });
+  return response.baby;
 };
 
-export const getUserQueryOptions = (userId: string) => {
+// Query Options
+export const getBabyForMatchQueryOptions = (matchId: string) => {
   return queryOptions({
-    queryKey: ["user", userId],
-    queryFn: () => getUserApi(userId),
-    enabled: !!userId,
+    queryKey: ["baby", "match", matchId],
+    queryFn: ({ signal }) => getBabyForMatchApi(matchId, signal),
+    enabled: !!matchId,
   });
 };
 
-type UseUserOptions = {
-  userId: string;
-  queryConfig?: QueryConfig<typeof getUserQueryOptions>;
+// Hook Options Type
+type UseBabyForMatchOptions = {
+  matchId?: string;
+  queryConfig?: QueryConfig<typeof getBabyForMatchQueryOptions>;
 };
 
-export const useUser = ({ userId, queryConfig }: UseUserOptions) => {
+// React Query Hook
+export const useBabyForMatch = ({
+  matchId,
+  queryConfig,
+}: UseBabyForMatchOptions = {}) => {
   return useQuery({
-    ...getUserQueryOptions(userId),
+    ...getBabyForMatchQueryOptions(matchId || ""),
     ...queryConfig,
   });
 };
+```
+
+**Usage in component:**
+```typescript
+const { data: baby, isLoading } = useBabyForMatch({
+  matchId: "match-123",
+  queryConfig: {
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  },
+});
 ```
 
 ---
 
 ### Example 2: GET with Query Parameters
 
-**File:** `get-baby-list.ts`
+**File:** `get-notifications.ts` (Actual codebase example)
 
 ```typescript
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
+import type { GetNotificationsParams, NotificationsResponse } from "../types";
 
-export type GetBabyListInput = {
-  userId?: string;
-  skip?: number;
-  limit?: number;
+// API Function
+export const getNotificationsApi = async (
+  input: GetNotificationsParams = {},
+  signal?: AbortSignal,
+): Promise<NotificationsResponse> => {
+  const searchParams = new URLSearchParams();
+
+  if (input.unread_only !== undefined) {
+    searchParams.append("unread_only", String(input.unread_only));
+  }
+  if (input.limit !== undefined) {
+    searchParams.append("limit", String(input.limit));
+  }
+  if (input.offset !== undefined) {
+    searchParams.append("offset", String(input.offset));
+  }
+
+  return api.get<NotificationsResponse>(
+    `/notifications?${searchParams.toString()}`,
+    { signal },
+  );
 };
 
-export type BabyListItem = {
-  id: string;
-  created_at: string;
-  images: Array<{ id: string; image_url: string }>;
-};
-
-export const getBabyListApi = (
-  input: GetBabyListInput = {},
-): Promise<BabyListItem[]> => {
-  const params = new URLSearchParams();
-  if (input.userId) params.append("user_id", input.userId);
-  if (input.skip !== undefined) params.append("skip", String(input.skip));
-  if (input.limit !== undefined) params.append("limit", String(input.limit));
-
-  const queryString = params.toString();
-  const url = queryString
-    ? `/api/v1/me/babies?${queryString}`
-    : "/api/v1/me/babies";
-
-  return apiClient.get(url);
-};
-
-export const getBabyListQueryOptions = (input: GetBabyListInput = {}) => {
+// Query Options
+export const getNotificationsQueryOptions = (
+  input: GetNotificationsParams = {},
+) => {
   return queryOptions({
-    queryKey: ["baby", "list", input],
-    queryFn: () => getBabyListApi(input),
+    queryKey: ["notifications", input],
+    queryFn: ({ signal }) => getNotificationsApi(input, signal),
+    staleTime: 1000 * 30, // 30 seconds
   });
 };
 
-type UseBabyListOptions = {
-  input?: GetBabyListInput;
-  queryConfig?: QueryConfig<typeof getBabyListQueryOptions>;
+// Hook Options Type
+type UseNotificationsOptions = {
+  input?: GetNotificationsParams;
+  queryConfig?: QueryConfig<typeof getNotificationsQueryOptions>;
 };
 
-export const useBabyList = ({
+// React Query Hook
+export const useNotifications = ({
   input = {},
   queryConfig,
-}: UseBabyListOptions = {}) => {
+}: UseNotificationsOptions = {}) => {
   return useQuery({
-    ...getBabyListQueryOptions(input),
+    ...getNotificationsQueryOptions(input),
     ...queryConfig,
   });
 };
+
+// Specialized Hook
+export const useUnreadNotifications = ({
+  queryConfig,
+}: Omit<UseNotificationsOptions, "input"> = {}) => {
+  return useNotifications({ input: { unread_only: true }, queryConfig });
+};
+```
+
+**Usage:**
+```typescript
+// Fetch all notifications
+const { data } = useNotifications();
+
+// Fetch only unread with pagination
+const { data } = useNotifications({
+  input: {
+    unread_only: true,
+    limit: 20,
+    offset: 0,
+  },
+});
+
+// Use specialized hook
+const { data: unread } = useUnreadNotifications();
 ```
 
 ---
 
 ### Example 3: POST Mutation
 
-**File:** `generate-baby.ts`
+**File:** `generate-baby.ts` (Actual codebase example)
 
 ```typescript
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import type { BabyApi } from "@/types/api";
 
+// API Function
 export const generateBabyApi = (matchId: string): Promise<BabyApi> => {
-  return apiClient.post(`/api/v1/baby`, { match_id: matchId });
+  return api.post<BabyApi>("/baby", { match_id: matchId });
 };
 
+// React Mutation Hook
 export const useGenerateBaby = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: generateBabyApi,
     onSuccess: (data, matchId) => {
-      // Update specific match baby cache
+      // Set query data for immediate display
       queryClient.setQueryData(["baby", "match", matchId], data);
-
-      // Invalidate baby list to refetch with new baby
+      // Invalidate list queries to refetch
       queryClient.invalidateQueries({ queryKey: ["baby", "list"] });
+    },
+  });
+};
+```
+
+**Usage:**
+```typescript
+const { mutate: generateBaby, isPending } = useGenerateBaby();
+
+const handleGenerate = () => {
+  generateBaby("match-123", {
+    onSuccess: (data) => {
+      toast.success("Baby generated!");
+      console.log("New baby:", data);
+    },
+    onError: (error) => {
+      toast.error("Failed to generate baby");
+      console.error(error);
     },
   });
 };
@@ -503,9 +624,105 @@ export const useGenerateBaby = () => {
 
 ---
 
-### Example 4: Infinite Query
+### Example 4: Complex Mutation with Optimistic Updates
 
-**File:** `get-live-match.ts`
+**File:** `react-to-match.ts` (Actual codebase example)
+
+```typescript
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api-client";
+import type { MutationConfig } from "@/lib/react-query";
+
+export type ReactToMatchInput = {
+  matchId: string;
+  favorite: boolean;
+};
+
+// API Function
+export const reactToMatchApi = (input: ReactToMatchInput) => {
+  if (input.favorite) {
+    // POST to add favorite reaction
+    return api.post(`/matches/${input.matchId}/react`, {
+      reaction_type: "like",
+    });
+  } else {
+    // DELETE to remove reaction
+    return api.delete(`/matches/${input.matchId}/react`);
+  }
+};
+
+// React Mutation Hook with Optimistic Updates
+export const useReactToMatch = (
+  config?: MutationConfig<typeof reactToMatchApi>,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: reactToMatchApi,
+    onMutate: async ({ matchId, favorite }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries(
+        { queryKey: ["matching", "top", "infinite"] },
+        { silent: true },
+      );
+
+      // Optimistically update user matches
+      queryClient.setQueriesData(
+        { queryKey: ["matching", "user"] },
+        (old: unknown) => {
+          if (!Array.isArray(old)) return old;
+          return old.map((m: Record<string, unknown>) =>
+            m?.id === matchId ? { ...m, isFavorited: favorite } : m,
+          );
+        },
+      );
+
+      // Optimistically update live matches infinite cache
+      queryClient.setQueriesData(
+        { queryKey: ["matching", "top", "infinite"] },
+        (old: unknown) => {
+          if (!old || typeof old !== "object" || !("pages" in old)) return old;
+          const oldData = old as { pages: Record<string, unknown>[][] };
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: Record<string, unknown>[]) =>
+              page.map((m: Record<string, unknown>) =>
+                m?.id === matchId
+                  ? { ...m, my_reaction: favorite ? ["favorite"] : [] }
+                  : m,
+              ),
+            ),
+          };
+        },
+      );
+    },
+    onSettled: () => {
+      // Always refetch after mutation settles
+      queryClient.invalidateQueries({
+        queryKey: ["matching", "top", "infinite"],
+        exact: false,
+      });
+    },
+    ...config,
+  });
+};
+```
+
+**Usage:**
+```typescript
+const { mutate: reactToMatch } = useReactToMatch();
+
+const handleFavorite = (matchId: string, isFavorited: boolean) => {
+  reactToMatch({ matchId, favorite: !isFavorited });
+};
+```
+
+---
+
+### Example 5: Infinite Query with Pagination
+
+**File:** `get-live-match.ts` (Actual codebase example)
 
 ```typescript
 import {
@@ -513,24 +730,31 @@ import {
   useInfiniteQuery,
   useQuery,
 } from "@tanstack/react-query";
-import apiClient from "@/lib/api-client";
+import api from "@/lib/api-client";
 import { PAGINATION } from "@/lib/constants/constant";
 import type { QueryConfig } from "@/lib/react-query";
 import type { LiveMatchApi } from "@/types/api";
+import { transformApiMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type LiveMatchInput = {
   limit: number;
-  offset: number;
+  skip: number;
+  signal?: AbortSignal;
 };
 
-export const getLiveMatchApi = (
+// API Function
+export const getLiveMatchApi = async (
   input: LiveMatchInput,
 ): Promise<LiveMatchApi[]> => {
-  return apiClient.get("/api/v1/matches/top", {
-    params: { ...input, filter: "user" },
-  });
+  const { signal, ...query } = input;
+  const response = await api.get<{ matches: LiveMatchApi[]; total: number }>(
+    "/matches/top",
+    { params: query, signal },
+  );
+  return response.matches;
 };
 
+// Query Options
 export const getLiveMatchQueryOptions = (input: LiveMatchInput) => {
   return queryOptions({
     queryKey: ["matching", "top", input],
@@ -538,6 +762,26 @@ export const getLiveMatchQueryOptions = (input: LiveMatchInput) => {
   });
 };
 
+// Standard Query Hook
+type UseLiveMatchOptions = {
+  queryConfig?: QueryConfig<typeof getLiveMatchQueryOptions>;
+  input?: LiveMatchInput;
+};
+
+export const useLiveMatch = ({
+  input = {
+    skip: PAGINATION.DEFAULT_OFFSET,
+    limit: PAGINATION.DEFAULT_LIMIT,
+  },
+  queryConfig,
+}: UseLiveMatchOptions = {}) => {
+  return useQuery({
+    ...getLiveMatchQueryOptions(input),
+    ...queryConfig,
+  });
+};
+
+// Infinite Query Hook
 type UseLiveMatchInfiniteOptions = {
   input?: LiveMatchInput;
   queryConfig?: QueryConfig<typeof getLiveMatchApi>;
@@ -545,17 +789,18 @@ type UseLiveMatchInfiniteOptions = {
 
 export const useLiveMatchInfinite = ({
   input = {
-    offset: PAGINATION.DEFAULT_OFFSET,
+    skip: PAGINATION.DEFAULT_OFFSET,
     limit: PAGINATION.DEFAULT_LIMIT,
   },
   queryConfig,
 }: UseLiveMatchInfiniteOptions = {}) => {
   return useInfiniteQuery({
     queryKey: ["matching", "top", "infinite"],
-    queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET }) =>
+    queryFn: ({ pageParam = PAGINATION.DEFAULT_OFFSET, signal }) =>
       getLiveMatchApi({
         ...input,
-        offset: pageParam,
+        skip: pageParam,
+        signal,
       }),
     getNextPageParam: (lastPage, _, lastPageParam) => {
       if (lastPage.length === 0) {
@@ -564,10 +809,27 @@ export const useLiveMatchInfinite = ({
       return lastPageParam + input.limit;
     },
     initialPageParam: PAGINATION.DEFAULT_OFFSET,
-    refetchInterval: 30000,
+    select: (data) => {
+      return data.pages.flatMap((page) => {
+        return transformApiMatchesToDisplayData(page);
+      });
+    },
     ...queryConfig,
   });
 };
+```
+
+**Usage:**
+```typescript
+// Standard paginated query
+const { data: matches } = useLiveMatch({
+  input: { skip: 0, limit: 20 },
+});
+
+// Infinite scroll
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useLiveMatchInfinite({
+  input: { limit: 20 },
+});
 ```
 
 ---
@@ -577,7 +839,8 @@ export const useLiveMatchInfinite = ({
 ### Query Hook Usage
 
 ```typescript
-// In component
+"use client";
+
 import { useBabyForMatch } from "@/features/matching/api/get-baby";
 
 function BabyDisplay({ matchId }: { matchId: string }) {
@@ -602,8 +865,10 @@ function BabyDisplay({ matchId }: { matchId: string }) {
 ### Mutation Hook Usage
 
 ```typescript
-// In component
+"use client";
+
 import { useGenerateBaby } from "@/features/matching/api/generate-baby";
+import { toast } from "sonner";
 
 function BabyGenerator({ matchId }: { matchId: string }) {
   const { mutate: generateBaby, isPending } = useGenerateBaby();
@@ -625,6 +890,31 @@ function BabyGenerator({ matchId }: { matchId: string }) {
     <button onClick={handleGenerate} disabled={isPending}>
       {isPending ? "Generating..." : "Generate Baby"}
     </button>
+  );
+}
+```
+
+---
+
+### Prefetching for Better UX
+
+```typescript
+"use client";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { getBabyForMatchQueryOptions } from "@/features/matching/api/get-baby";
+
+function MatchCard({ matchId }: { matchId: string }) {
+  const queryClient = useQueryClient();
+
+  const prefetchBaby = () => {
+    queryClient.prefetchQuery(getBabyForMatchQueryOptions(matchId));
+  };
+
+  return (
+    <div onMouseEnter={prefetchBaby}>
+      Match Card (hover to prefetch baby)
+    </div>
   );
 }
 ```
@@ -664,20 +954,50 @@ const { data: matches } = useMatches({
 
 ---
 
-### 3. Prefetching
+### 3. Prefetching Data
 
 ```typescript
 import { useQueryClient } from "@tanstack/react-query";
-import { getBabyForMatchQueryOptions } from "./api/get-baby";
+import { getBabyForMatchQueryOptions } from "@/features/matching/api/get-baby";
 
 function MatchCard({ matchId }: { matchId: string }) {
   const queryClient = useQueryClient();
 
   const prefetchBaby = () => {
+    // Prefetch baby data on hover for instant display
     queryClient.prefetchQuery(getBabyForMatchQueryOptions(matchId));
   };
 
   return <div onMouseEnter={prefetchBaby}>Match Card</div>;
+}
+```
+
+---
+
+### 4. Query Invalidation Patterns
+
+```typescript
+import { useQueryClient } from "@tanstack/react-query";
+
+function useMatchActions() {
+  const queryClient = useQueryClient();
+
+  const invalidateMatch = (matchId: string) => {
+    // Invalidate specific match
+    queryClient.invalidateQueries({ queryKey: ["matching", "user", matchId] });
+  };
+
+  const invalidateAllMatches = () => {
+    // Invalidate all matching queries
+    queryClient.invalidateQueries({ queryKey: ["matching"] });
+  };
+
+  const invalidateMatchList = () => {
+    // Invalidate only list queries
+    queryClient.invalidateQueries({ queryKey: ["matching", "top"], exact: false });
+  };
+
+  return { invalidateMatch, invalidateAllMatches, invalidateMatchList };
 }
 ```
 
@@ -766,14 +1086,36 @@ Improves maintainability and follows API organization SOP
 
 ## Quick Reference
 
+### Naming Convention Cheat Sheet
+
+| Component | Pattern | Example |
+|-----------|---------|---------|
+| **File Name** | `[action]-[resource].ts` | `get-baby.ts`, `generate-baby.ts` |
+| **API Function** | `[action][Resource]Api` | `getBabyForMatchApi`, `generateBabyApi` |
+| **Query Options** | `[action][Resource]QueryOptions` | `getBabyForMatchQueryOptions` |
+| **Hook** | `use[Action][Resource]` | `useBabyForMatch`, `useGenerateBaby` |
+| **Input Type** | `[Action][Resource]Input` | `GetBabyListInput`, `ReactToMatchInput` |
+| **Hook Options** | `Use[Action][Resource]Options` | `UseBabyForMatchOptions` |
+
 ### File Template Checklist
 
-- [ ] Named as `[action]-[resource].ts`
-- [ ] Query options exported for queries
-- [ ] Custom hook exported
-- [ ] Types exported if used by consumers
+**For GET Requests:**
+- [ ] Named as `get-[resource].ts`
+- [ ] API function ends with `Api` suffix
+- [ ] Query options exported (for prefetching)
+- [ ] Hook uses object destructuring `{ input, queryConfig }`
+- [ ] AbortSignal support in API function
 - [ ] Query key is hierarchical
-- [ ] Mutations update cache appropriately
+- [ ] Types exported if used by consumers
+
+**For Mutations (POST/PATCH/DELETE):**
+- [ ] Named as `[action]-[resource].ts`
+- [ ] API function ends with `Api` suffix
+- [ ] Hook uses `useMutation` from TanStack Query
+- [ ] Cache invalidation in `onSuccess`
+- [ ] Optimistic updates if needed (in `onMutate`)
+- [ ] Input type exported
+- [ ] MutationConfig support for consumer overrides
 
 ### Common Mistakes to Avoid
 
@@ -781,13 +1123,53 @@ Improves maintainability and follows API organization SOP
 ✅ **Do:** One operation per file
 
 ❌ **Don't:** Use flat query keys like `["data"]`
-✅ **Do:** Use hierarchical keys like `["resource", "list", params]`
+✅ **Do:** Use hierarchical keys like `["resource", "list", input]`
+
+❌ **Don't:** Forget `Api` suffix on API functions
+✅ **Do:** `getBabyForMatchApi`, not `getBabyForMatch`
+
+❌ **Don't:** Use `params` for function parameters
+✅ **Do:** Use `input` for consistency with TanStack Query
+
+❌ **Don't:** Forget AbortSignal support in GET requests
+✅ **Do:** Add `signal?: AbortSignal` parameter
 
 ❌ **Don't:** Define types inline
 ✅ **Do:** Export types at top of file or import from `@/types`
 
 ❌ **Don't:** Forget cache invalidation in mutations
 ✅ **Do:** Update or invalidate relevant caches in `onSuccess`
+
+❌ **Don't:** Skip queryOptions export for GET requests
+✅ **Do:** Export for prefetching and advanced usage
+
+### Standard Imports
+
+```typescript
+// For GET requests
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import api from "@/lib/api-client";
+import type { QueryConfig } from "@/lib/react-query";
+
+// For mutations
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api-client";
+import type { MutationConfig } from "@/lib/react-query";
+```
+
+### Standard Structure Summary
+
+**GET Request (5 exports):**
+1. `[action][Resource]Api` - API function
+2. `[action][Resource]QueryOptions` - Query options
+3. `Use[Action][Resource]Options` - Hook options type
+4. `use[Action][Resource]` - React Query hook
+5. Input/Output types (if needed)
+
+**Mutation (3 exports):**
+1. `[Action][Resource]Input` - Input type
+2. `[action][Resource]Api` - API function
+3. `use[Action][Resource]` - React Mutation hook
 
 ---
 
@@ -799,4 +1181,4 @@ Improves maintainability and follows API organization SOP
 
 ---
 
-**Last Updated:** 2025-10-17
+**Last Updated:** 2025-10-29

@@ -136,6 +136,12 @@ export type BabyApi = {
 		school: string | null;
 	};
 	created_at: string | null; // null when no baby generated yet
+	// Optional: returned when mutual connection is created
+	mutual_connection?: {
+		id: string;
+		created_at: string;
+		icebreaker: string;
+	};
 };
 
 // Supabase database types
