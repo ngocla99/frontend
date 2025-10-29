@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import Stepper, { Step } from "@/components/stepper";
 import {
 	Form,
@@ -24,7 +25,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
-import { getMeQueryOptions } from "../api/get-me";
+import type { UserApi } from "@/types/api";
+import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
 
 const onboardingSchema = z.object({
@@ -43,17 +45,50 @@ export function OnboardingForm() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const [currentStep, setCurrentStep] = React.useState(1);
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const currentUser = useUser();
 
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
+			onMutate: async (newUserData) => {
+				// Cancel any outgoing refetches to prevent optimistic updates being overwritten
+				await queryClient.cancelQueries({
+					queryKey: getMeQueryOptions().queryKey,
+				});
+
+				// Snapshot the previous value
+				const previousUser = queryClient.getQueryData<UserApi>(
+					getMeQueryOptions().queryKey,
+				);
+
+				// Optimistically update to the new value
+				if (currentUser) {
+					queryClient.setQueryData<UserApi>(getMeQueryOptions().queryKey, {
+						...currentUser,
+						...newUserData,
+					});
+				}
+
+				// Return a context object with the snapshotted value
+				return { previousUser };
+			},
+			onError: (_err, _newUserData, context: any) => {
+				// If the mutation fails, use the context returned from onMutate to roll back
+				if (context?.previousUser) {
+					queryClient.setQueryData(
+						getMeQueryOptions().queryKey,
+						context.previousUser,
+					);
+				}
+			},
 			onSuccess: () => {
 				router.push("/");
+			},
+			onSettled: () => {
+				// Always refetch after error or success to ensure we have the correct data
 				queryClient.invalidateQueries({
 					queryKey: getMeQueryOptions().queryKey,
 				});
-			},
-			onError: (error) => {
-				console.error("Onboarding failed:", error);
 			},
 		},
 	});
@@ -70,6 +105,7 @@ export function OnboardingForm() {
 
 	const onSubmit = (values: UpdateMeInput) => {
 		if (updateMeMutation.isPending) return;
+		setIsSubmitting(true);
 		updateMeMutation.mutate(values);
 	};
 
@@ -102,6 +138,16 @@ export function OnboardingForm() {
 				return [];
 		}
 	};
+
+	if (isSubmitting) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<AITextLoading
+					texts={["Matching...", "Loading...", "Please wait..."]}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen flex flex-col gap-4 items-stretch justify-center bg-transparent sm:bg-gradient-subtle px-4">

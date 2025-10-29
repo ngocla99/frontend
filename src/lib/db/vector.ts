@@ -127,31 +127,6 @@ export async function upsertFaceEmbedding(
 }
 
 /**
- * Get migration progress statistics
- *
- * @returns Migration statistics including total faces and embedding count
- */
-export async function getMigrationProgress() {
-	const supabase = await createClient();
-
-	const { data, error } = await supabase.rpc("verify_migration_progress");
-
-	if (error) {
-		console.error("Migration verification error:", error);
-		throw new Error(`Failed to verify migration: ${error.message}`);
-	}
-
-	return (
-		data?.[0] || {
-			total_faces: 0,
-			faces_with_embedding: 0,
-			faces_with_qdrant_id: 0,
-			migration_progress_pct: 0,
-		}
-	);
-}
-
-/**
  * Distance metrics used in pgvector
  *
  * - Cosine Distance (<=>): 1 - cosine_similarity (0 = identical, 2 = opposite)

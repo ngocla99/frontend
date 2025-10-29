@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 import { createClient } from "@/lib/supabase/server";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
-import { env } from "@/config/env";
 
 /**
  * GET /api/auth/me - Get current authenticated user profile

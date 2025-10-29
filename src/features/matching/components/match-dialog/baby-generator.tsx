@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { Baby, Download, Heart, Share2, Sparkles, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
