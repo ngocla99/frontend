@@ -56,6 +56,16 @@ export interface Message {
 	message_type: MessageType;
 	read_at: string | null;
 	created_at: string;
+	/**
+	 * Flag to indicate if message is pending (not yet sent to server)
+	 * Used for optimistic UI updates
+	 */
+	pending?: boolean;
+	/**
+	 * Temporary local ID for pending messages
+	 * Gets replaced with server ID once message is sent
+	 */
+	local_id?: string;
 }
 
 /**

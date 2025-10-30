@@ -19,7 +19,8 @@ export const getMessagesApi = async (
 
 export const getMessagesQueryOptions = (input: GetMessagesParams) => {
 	return queryOptions({
-		queryKey: ["messages", input.connectionId, input],
+		// Use only connectionId as key for consistency with optimistic updates and realtime
+		queryKey: ["messages", input.connectionId],
 		queryFn: ({ signal }) => getMessagesApi(input, signal),
 		enabled: !!input.connectionId,
 		staleTime: 1000 * 10, // 10 seconds

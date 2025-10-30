@@ -103,15 +103,32 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 			.single();
 
 		// Broadcast message via Realtime
+		// IMPORTANT: Must subscribe to channel before sending broadcast
 		const channel = supabase.channel(`connection:${connection_id}`);
-		await channel.send({
-			type: "broadcast",
-			event: "message",
-			payload: {
-				...message,
-				sender_name: senderProfile?.name || "Unknown",
-			},
-		});
+
+		try {
+			// Subscribe to channel (required for broadcast to work)
+			await channel.subscribe();
+
+			// Send broadcast message
+			await channel.send({
+				type: "broadcast",
+				event: "message",
+				payload: {
+					...message,
+					sender_name: senderProfile?.name || "Unknown",
+				},
+			});
+
+			console.log(`[Messages API] ✅ Broadcast sent to connection: ${connection_id}`);
+		} catch (broadcastError) {
+			console.error("[Messages API] ❌ Broadcast failed:", broadcastError);
+			// Don't fail the entire request if broadcast fails
+			// Message is still saved in database
+		} finally {
+			// Cleanup channel after sending
+			await supabase.removeChannel(channel);
+		}
 
 		// Send notification to the other user
 		const otherUserId = getOtherUserId(connection, session.user.id);

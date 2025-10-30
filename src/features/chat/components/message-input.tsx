@@ -7,15 +7,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface MessageInputProps {
+	/**
+	 * Callback when user sends a message
+	 */
 	onSend: (content: string) => void;
+	/**
+	 * Whether the input is disabled (e.g., during message sending)
+	 */
 	disabled?: boolean;
+	/**
+	 * Placeholder text for the input
+	 */
 	placeholder?: string;
+	/**
+	 * Custom class name for the container
+	 */
+	className?: string;
 }
 
+/**
+ * MessageInput component for sending messages
+ * Follows Supabase UI pattern with clean composition
+ * Features: auto-resize, keyboard shortcuts, disabled state
+ */
 export function MessageInput({
 	onSend,
 	disabled = false,
 	placeholder = "Type a message...",
+	className,
 }: MessageInputProps) {
 	const [message, setMessage] = useState("");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -27,10 +46,13 @@ export function MessageInput({
 		onSend(trimmed);
 		setMessage("");
 
-		// Reset textarea height
+		// Reset textarea height after sending
 		if (textareaRef.current) {
 			textareaRef.current.style.height = "auto";
 		}
+
+		// Focus back to textarea for better UX
+		textareaRef.current?.focus();
 	};
 
 	const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -44,7 +66,7 @@ export function MessageInput({
 	const handleChange = (value: string) => {
 		setMessage(value);
 
-		// Auto-resize textarea
+		// Auto-resize textarea based on content
 		if (textareaRef.current) {
 			textareaRef.current.style.height = "auto";
 			textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -52,7 +74,12 @@ export function MessageInput({
 	};
 
 	return (
-		<div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-4">
+		<div
+			className={cn(
+				"border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-4",
+				className,
+			)}
+		>
 			<div className="flex items-end gap-2">
 				<Textarea
 					ref={textareaRef}
@@ -64,14 +91,16 @@ export function MessageInput({
 					rows={1}
 					className={cn(
 						"resize-none min-h-[44px] max-h-[120px]",
-						"focus-visible:ring-blue-500",
+						"focus-visible:ring-blue-500 transition-all",
 					)}
+					aria-label="Message input"
 				/>
 				<Button
 					onClick={handleSend}
 					disabled={disabled || !message.trim()}
 					size="icon"
-					className="shrink-0 h-[44px] w-[44px] bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+					className="shrink-0 h-[44px] w-[44px] bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all"
+					aria-label="Send message"
 				>
 					<Send className="h-5 w-5" />
 				</Button>

@@ -1,72 +1,128 @@
-import { useEffect, useCallback } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Message } from "../types";
 
 interface UseChatRealtimeOptions {
 	connectionId: string;
 	enabled?: boolean;
+	/**
+	 * Optional callback when a new message is received
+	 */
+	onMessage?: (message: Message) => void;
 }
 
 /**
  * Hook for subscribing to real-time message updates for a connection
- * Uses Supabase Realtime to listen for new messages
+ * Uses Supabase Realtime with postgres_changes pattern
+ * Based on Supabase UI best practices with optimistic updates
  */
 export function useChatRealtime({
 	connectionId,
 	enabled = true,
+	onMessage,
 }: UseChatRealtimeOptions) {
 	const queryClient = useQueryClient();
 	const supabase = createClient();
 
 	const handleNewMessage = useCallback(
-		(payload: { new: Message }) => {
+		(message: Message) => {
 			// Optimistically update the messages cache
-			queryClient.setQueryData<{ messages: Message[] }>(
+			queryClient.setQueryData<{ messages: Message[]; has_more: boolean }>(
 				["messages", connectionId],
 				(old) => {
-					if (!old) return { messages: [payload.new] };
-					// Avoid duplicates
-					const exists = old.messages.some((msg) => msg.id === payload.new.id);
-					if (exists) return old;
-					return {
+					if (!old) {
+						const newCache = {
+							messages: [message],
+							has_more: false,
+						};
+						return newCache;
+					}
+
+					// Avoid duplicates (check by ID, ignore temp IDs)
+					const exists = old.messages.some(
+						(msg) => msg.id === message.id && !msg.id.startsWith("temp-"),
+					);
+
+					if (exists) {
+						console.log("[Chat Realtime] Message already exists, skipping");
+						return old;
+					}
+
+					// Remove any pending messages from the same sender with similar content
+					const filteredMessages = old.messages.filter(
+						(msg) =>
+							!(
+								msg.pending &&
+								msg.sender_id === message.sender_id &&
+								msg.content === message.content
+							),
+					);
+
+					const updatedCache = {
 						...old,
-						messages: [payload.new, ...old.messages],
+						messages: [message, ...filteredMessages],
 					};
+
+					return updatedCache;
 				},
 			);
 
-			// Invalidate connections to update last message
+			// Invalidate connections to update last message preview
 			queryClient.invalidateQueries({ queryKey: ["connections"] });
+
+			// Call optional callback
+			onMessage?.(message);
 		},
-		[connectionId, queryClient],
+		[connectionId, queryClient, onMessage],
 	);
 
 	useEffect(() => {
 		if (!enabled || !connectionId) return;
 
-		// Subscribe to new messages for this connection
-		const channel = supabase
-			.channel(`connection:${connectionId}`)
-			.on(
-				"postgres_changes",
-				{
-					event: "INSERT",
-					schema: "public",
-					table: "messages",
-					filter: `connection_id=eq.${connectionId}`,
-				},
-				(payload) => {
-					// Safely handle the payload
-					if (payload.new) {
-						handleNewMessage({ new: payload.new as unknown as Message });
-					}
-				},
-			)
-			.subscribe();
+		let channel: RealtimeChannel | null = null;
 
+		// Subscribe to new messages for this connection using broadcast pattern
+		// This matches how notifications work and ensures real-time delivery
+		const subscribeToMessages = async () => {
+			channel = supabase
+				.channel(`connection:${connectionId}`)
+				.on("broadcast", { event: "message" }, ({ payload }) => {
+					// Handle incoming broadcast message
+					handleNewMessage(payload as Message);
+				})
+				.subscribe((status) => {
+					if (status === "SUBSCRIBED") {
+						console.log(
+							`[Chat Realtime] ✅ Subscribed to connection: ${connectionId}`,
+						);
+					} else if (status === "CHANNEL_ERROR") {
+						console.error(
+							`[Chat Realtime] ❌ Error subscribing to connection: ${connectionId}`,
+						);
+					} else if (status === "TIMED_OUT") {
+						console.error(
+							`[Chat Realtime] ⏱️ Subscription timed out for connection: ${connectionId}`,
+						);
+					} else {
+						console.log(
+							`[Chat Realtime] Status: ${status} for connection: ${connectionId}`,
+						);
+					}
+				});
+		};
+
+		subscribeToMessages();
+
+		// Cleanup function
 		return () => {
-			supabase.removeChannel(channel);
+			if (channel) {
+				console.log(
+					`[Chat Realtime] 🔌 Unsubscribing from connection: ${connectionId}`,
+				);
+				supabase.removeChannel(channel);
+			}
 		};
 	}, [connectionId, enabled, supabase, handleNewMessage]);
 }

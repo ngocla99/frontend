@@ -1,14 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { MessageCircle, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
+import { Loader2, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { useConnections } from "../hooks";
 import type { MutualConnection } from "../types";
-import { cn } from "@/lib/utils";
 
 export function ChatList() {
 	const router = useRouter();
@@ -51,7 +52,8 @@ export function ChatList() {
 						Messages
 					</h1>
 					<p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-						{connections.length} conversation{connections.length !== 1 ? "s" : ""}
+						{connections.length} conversation
+						{connections.length !== 1 ? "s" : ""}
 					</p>
 				</div>
 
@@ -111,7 +113,7 @@ function ConnectionItem({ connection, onClick, index }: ConnectionItemProps) {
 				</Avatar>
 				{baby_image && (
 					<div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-2 border-white dark:border-gray-950 overflow-hidden">
-						<img
+						<Image
 							src={baby_image}
 							alt="Baby"
 							className="w-full h-full object-cover"
