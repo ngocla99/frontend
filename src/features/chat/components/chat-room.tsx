@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUser } from "@/features/auth/api/get-me";
+import { cn } from "@/lib/utils";
 import { useChatRealtime, useMessages, useSendMessage } from "../hooks";
 import { ChatHeader } from "./chat-header";
 import { MessageInput } from "./message-input";
@@ -20,9 +21,27 @@ interface ChatRoomProps {
 		};
 		baby_image: string | null;
 	};
+	/**
+	 * Whether the component is embedded in a two-column layout
+	 */
+	embedded?: boolean;
+	/**
+	 * Custom onBack handler (optional)
+	 */
+	onBack?: () => void;
+	/**
+	 * Custom class name for the container
+	 */
+	className?: string;
 }
 
-export function ChatRoom({ connectionId, connection }: ChatRoomProps) {
+export function ChatRoom({
+	connectionId,
+	connection,
+	embedded = false,
+	onBack,
+	className,
+}: ChatRoomProps) {
 	const router = useRouter();
 	const user = useUser();
 	const [isSending, setIsSending] = useState(false);
@@ -60,7 +79,11 @@ export function ChatRoom({ connectionId, connection }: ChatRoomProps) {
 	};
 
 	const handleBack = () => {
-		router.push("/chat");
+		if (onBack) {
+			onBack();
+		} else {
+			router.push("/chat");
+		}
 	};
 
 	const handleArchive = () => {
@@ -72,11 +95,16 @@ export function ChatRoom({ connectionId, connection }: ChatRoomProps) {
 	};
 
 	return (
-		<div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+		<div
+			className={cn(
+				"flex flex-col h-screen bg-gray-50 dark:bg-gray-900",
+				className,
+			)}
+		>
 			<ChatHeader
 				otherUser={connection.other_user}
 				babyImage={connection.baby_image}
-				onBack={handleBack}
+				onBack={embedded ? undefined : handleBack}
 				onArchive={handleArchive}
 				onBlock={handleBlock}
 			/>

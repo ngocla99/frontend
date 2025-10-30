@@ -1,7 +1,7 @@
 "use client";
 
-import { ChatList } from "@/features/chat/components";
+import { ChatContainer } from "@/features/chat/components/chat-container";
 
 export default function ChatPage() {
-	return <ChatList />;
+	return <ChatContainer />;
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical, Phone, Video } from "lucide-react";
+import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -8,7 +10,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ChatHeaderProps {
 	otherUser: {
@@ -36,18 +37,20 @@ export function ChatHeader({
 		.slice(0, 2);
 
 	return (
-		<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+		<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg">
 			{/* Baby Image Header */}
-			{babyImage && (
+			{/* {babyImage && (
 				<div className="relative h-48 w-full bg-gradient-to-b from-purple-100 to-white dark:from-purple-900/20 dark:to-gray-950">
-					<img
+					<Image
+						width={400}
+						height={192}
 						src={babyImage}
 						alt="Generated baby"
 						className="w-full h-full object-cover"
 					/>
 					<div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-gray-950/80 to-transparent" />
 				</div>
-			)}
+			)} */}
 
 			{/* User Info Header */}
 			<div className="flex items-center gap-3 px-4 py-3">
@@ -76,27 +79,33 @@ export function ChatHeader({
 					<p className="text-sm text-gray-500 dark:text-gray-400">Online</p>
 				</div>
 
-				{(onArchive || onBlock) && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="shrink-0">
-								<MoreVertical className="h-5 w-5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							{onArchive && (
-								<DropdownMenuItem onClick={onArchive}>
-									Archive conversation
-								</DropdownMenuItem>
-							)}
-							{onBlock && (
-								<DropdownMenuItem onClick={onBlock} className="text-red-600">
-									Block user
-								</DropdownMenuItem>
-							)}
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)}
+				{/* <div className="flex items-center gap-1 lg:gap-2">
+					{(onArchive || onBlock) && (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="shrink-0 h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6"
+								>
+									<MoreVertical className="h-5 w-5 sm:size-5 stroke-muted-foreground" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{onArchive && (
+									<DropdownMenuItem onClick={onArchive}>
+										Archive conversation
+									</DropdownMenuItem>
+								)}
+								{onBlock && (
+									<DropdownMenuItem onClick={onBlock} className="text-red-600">
+										Block user
+									</DropdownMenuItem>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
+				</div> */}
 			</div>
 		</div>
 	);

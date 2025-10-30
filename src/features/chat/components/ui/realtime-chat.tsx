@@ -1,10 +1,11 @@
 /** biome-ignore-all lint/a11y/noSvgWithoutTitle: no need check */
 "use client";
 
-import { type ReactNode, useMemo } from "react";
+import { Fragment, type ReactNode, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useChatScroll } from "../../hooks/use-chat-scroll";
 import type { Message } from "../../types";
+import { groupMessagesByDate } from "../../utils/date-grouping";
 import { ChatMessage } from "./chat-message";
 
 export interface RealtimeChatProps {
@@ -69,13 +70,18 @@ export function RealtimeChat({
 		smooth: true,
 	});
 
-	// Sort messages by creation time (newest first for display purposes)
+	// Sort messages by creation time (oldest first)
 	const sortedMessages = useMemo(() => {
 		return [...messages].sort(
 			(a, b) =>
 				new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
 		);
 	}, [messages]);
+
+	// Group messages by date
+	const groupedMessages = useMemo(() => {
+		return groupMessagesByDate(sortedMessages);
+	}, [sortedMessages]);
 
 	// Loading state
 	if (isLoading && messages.length === 0) {
@@ -142,24 +148,37 @@ export function RealtimeChat({
 				</div>
 			)}
 
-			{/* Messages */}
-			{sortedMessages.map((message, index) => {
-				const prevMessage = index > 0 ? sortedMessages[index - 1] : null;
-				const showHeader =
-					!prevMessage || prevMessage.sender_id !== message.sender_id;
+			{/* Messages grouped by date */}
+			{groupedMessages.map((group) => (
+				<Fragment key={group.dateLabel}>
+					{/* Date divider */}
+					<div className="text-center text-xs my-4">
+						<span className="bg-background px-3 py-1 rounded-full text-muted-foreground border">
+							{group.dateLabel}
+						</span>
+					</div>
 
-				return (
-					<ChatMessage
-						key={message.local_id || message.id}
-						content={message.content}
-						createdAt={message.created_at}
-						isOwn={message.sender_id === currentUserId}
-						messageType={message.message_type}
-						showHeader={showHeader}
-						pending={message.pending}
-					/>
-				);
-			})}
+					{/* Messages for this date */}
+					{group.messages.map((message, index) => {
+						const prevMessage = index > 0 ? group.messages[index - 1] : null;
+						const showHeader =
+							!prevMessage || prevMessage.sender_id !== message.sender_id;
+
+						return (
+							<ChatMessage
+								key={message.local_id || message.id}
+								content={message.content}
+								createdAt={message.created_at}
+								isOwn={message.sender_id === currentUserId}
+								messageType={message.message_type}
+								showHeader={showHeader}
+								pending={message.pending}
+								readAt={message.read_at}
+							/>
+						);
+					})}
+				</Fragment>
+			))}
 		</div>
 	);
 }

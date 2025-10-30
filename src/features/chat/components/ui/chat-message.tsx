@@ -34,6 +34,11 @@ export interface ChatMessageProps {
 	 * Used for optimistic UI updates - shows reduced opacity
 	 */
 	pending?: boolean;
+	/**
+	 * When the message was read by the recipient (if applicable)
+	 * Only shown for own messages
+	 */
+	readAt?: string | null;
 }
 
 /**
@@ -48,6 +53,7 @@ export function ChatMessage({
 	className,
 	showHeader = true,
 	pending = false,
+	readAt,
 }: ChatMessageProps) {
 	// Special rendering for icebreaker messages
 	if (messageType === "icebreaker") {
@@ -67,6 +73,12 @@ export function ChatMessage({
 		);
 	}
 
+	const formattedTime = new Date(createdAt).toLocaleTimeString("en-US", {
+		hour: "numeric",
+		minute: "2-digit",
+		hour12: true,
+	});
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
@@ -80,36 +92,23 @@ export function ChatMessage({
 			)}
 		>
 			<div
-				className={cn("flex flex-col max-w-[70%] gap-1", isOwn && "items-end")}
-			>
-				{showHeader && (
-					<div
-						className={cn("flex items-center gap-2 text-xs px-3", {
-							"justify-end flex-row-reverse": isOwn,
-						})}
-					>
-						{" "}
-						{/* <span className={"font-medium"}>{sender_name}</span> */}
-						<span className="text-foreground/50 text-xs">
-							{" "}
-							{new Date(createdAt).toLocaleTimeString("en-US", {
-								hour: "2-digit",
-								minute: "2-digit",
-								hour12: true,
-							})}
-						</span>
-					</div>
+				className={cn(
+					"chat-box max-w-72 px-3 py-2 break-words shadow-lg",
+					isOwn
+						? "bg-foreground text-background self-end rounded-[16px_16px_0_16px]"
+						: "bg-muted self-start rounded-[16px_16px_16px_0]",
 				)}
-				<div
+			>
+				<p className="text-sm whitespace-pre-wrap">{content}</p>
+				<span
 					className={cn(
-						"rounded-2xl px-4 py-2.5 break-words transition-opacity duration-200",
-						isOwn
-							? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-							: "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100",
+						"text-foreground/75 mt-1 block text-xs font-light italic",
+						isOwn && "text-primary-foreground/85 text-end",
 					)}
 				>
-					<p className="text-sm whitespace-pre-wrap">{content}</p>
-				</div>
+					{formattedTime}
+					{isOwn && readAt && <span className="ml-1 text-[10px]">· Read</span>}
+				</span>
 			</div>
 		</motion.div>
 	);

@@ -90,8 +90,8 @@ export function MessageInput({
 					disabled={disabled}
 					rows={1}
 					className={cn(
-						"resize-none min-h-[44px] max-h-[120px]",
-						"focus-visible:ring-blue-500 transition-all",
+						"resize-none min-h-[44px] max-h-[120px] focus-visible:border-none focus-visible:ring-1",
+						"transition-all",
 					)}
 					aria-label="Message input"
 				/>
@@ -99,15 +99,12 @@ export function MessageInput({
 					onClick={handleSend}
 					disabled={disabled || !message.trim()}
 					size="icon"
-					className="shrink-0 h-[44px] w-[44px] bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all"
+					className="shrink-0 h-[44px] w-[44px] bg-gradient-to-br disabled:opacity-50 transition-all"
 					aria-label="Send message"
 				>
 					<Send className="h-5 w-5" />
 				</Button>
 			</div>
-			<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-				Press Enter to send, Shift+Enter for new line
-			</p>
 		</div>
 	);
 }
