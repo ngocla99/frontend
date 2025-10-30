@@ -1,7 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Baby, Download, Heart, MessageCircle, Share2, Sparkles, Zap } from "lucide-react";
+import {
+	Baby,
+	Download,
+	Heart,
+	MessageCircle,
+	Share2,
+	Sparkles,
+	Zap,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -47,38 +55,8 @@ export const BabyGenerator = ({
 	const [showMutualDialog, setShowMutualDialog] = useState(false);
 	const isLiveMatch = mode === "live-match";
 
-	const { mutate: generateBaby, isPending: isGenerating } = useGenerateBaby();
-
-	// Fetch existing baby for this match
-	const {
-		data: existingBaby,
-		error,
-		isLoading: loadingExisting,
-	} = useBabyForMatch({
-		matchId,
-		queryConfig: {
-			enabled: !!matchId,
-			staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-		},
-	});
-	console.log("🚀 ~ BabyGenerator ~ error:", error);
-
-	// Load existing baby image when available
-	useEffect(() => {
-		if (existingBaby?.image_url) {
-			setBabyImage(existingBaby.image_url);
-		}
-	}, [existingBaby]);
-
-	const handleGenerate = async () => {
-		if (!matchId) {
-			toast.error("Match ID is required to generate baby! 📸");
-			return;
-		}
-
-		setBabyImage("");
-
-		generateBaby(matchId, {
+	const generateBabyMutation = useGenerateBaby({
+		mutationConfig: {
 			onSuccess: (data) => {
 				if (!data?.image_url) {
 					toast.error("Failed to generate baby image. Please try again! 😔");
@@ -95,15 +73,33 @@ export const BabyGenerator = ({
 					toast.success("Baby generated! Notification sent. 👶");
 				}
 			},
-			// biome-ignore lint/suspicious/noExplicitAny: <no need check>
-			onError: (error: any) => {
-				console.error("Generation failed:", error);
-				const errorMessage =
-					error?.response?.data?.error ||
-					"Failed to generate baby. Please try again! 😔";
-				toast.error(errorMessage);
-			},
-		});
+		},
+	});
+
+	// Fetch existing baby for this match
+	const { data: existingBaby, isLoading: loadingExisting } = useBabyForMatch({
+		matchId,
+		queryConfig: {
+			enabled: !!matchId,
+		},
+	});
+
+	// Load existing baby image when available
+	useEffect(() => {
+		if (existingBaby?.image_url) {
+			setBabyImage(existingBaby.image_url);
+		}
+	}, [existingBaby]);
+
+	const handleGenerate = async () => {
+		if (generateBabyMutation.isPending) return;
+		if (!matchId) {
+			toast.error("Match ID is required to generate baby! 📸");
+			return;
+		}
+
+		setBabyImage("");
+		generateBabyMutation.mutate(matchId);
 	};
 
 	const shareBaby = async () => {
@@ -157,10 +153,10 @@ export const BabyGenerator = ({
 		}
 	};
 
-	const retryGeneration = () => {
-		setBabyImage("");
-		handleGenerate();
-	};
+	// const retryGeneration = () => {
+	// 	setBabyImage("");
+	// 	handleGenerate();
+	// };
 
 	const canGenerate = userPhoto && matchPhoto && matchId;
 
@@ -234,7 +230,7 @@ export const BabyGenerator = ({
 										</p>
 									</div>
 								</motion.div>
-							) : isGenerating || loadingExisting ? (
+							) : generateBabyMutation.isPending || loadingExisting ? (
 								<motion.div className="relative w-24 h-24 md:w-28 md:h-28">
 									{/* Simple gradient glow */}
 									<motion.div
@@ -362,7 +358,7 @@ export const BabyGenerator = ({
 				</div>
 
 				{/* Primary Action Button - Centered & Prominent */}
-				{!babyImage && !isGenerating && !isLiveMatch && (
+				{!babyImage && !generateBabyMutation.isPending && !isLiveMatch && (
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
@@ -370,7 +366,7 @@ export const BabyGenerator = ({
 					>
 						<Button
 							onClick={handleGenerate}
-							disabled={!canGenerate || isGenerating}
+							disabled={!canGenerate || generateBabyMutation.isPending}
 							size="lg"
 							className="bg-white text-primary hover:bg-white/95 font-bold py-4 px-6 md:px-8 gap-2 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105 relative group text-sm md:text-base"
 						>
@@ -402,7 +398,7 @@ export const BabyGenerator = ({
 				)}
 
 				{/* Secondary Actions - Grouped Pills */}
-				{babyImage && !isGenerating && (
+				{babyImage && !generateBabyMutation.isPending && (
 					<motion.div
 						initial={{ opacity: 0, y: 10 }}
 						animate={{ opacity: 1, y: 0 }}
@@ -431,7 +427,7 @@ export const BabyGenerator = ({
 								<span className="font-medium">Save</span>
 							</Button>
 
-							{!isLiveMatch && (
+							{/* {!isLiveMatch && (
 								<>
 									<div className="w-px h-6 bg-white/30" />
 
@@ -445,23 +441,25 @@ export const BabyGenerator = ({
 										<span className="font-medium">Retry</span>
 									</Button>
 								</>
-							)}
+							)} */}
 						</div>
 					</motion.div>
 				)}
 
 				{/* Helper Text */}
-				{!canGenerate && !isGenerating && !loadingExisting && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						className="text-center text-white/70 text-sm"
-					>
-						{!matchId
-							? "💡 Match information required to generate baby"
-							: "💡 Upload both photos to generate your baby"}
-					</motion.div>
-				)}
+				{!canGenerate &&
+					!generateBabyMutation.isPending &&
+					!loadingExisting && (
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							className="text-center text-white/70 text-sm"
+						>
+							{!matchId
+								? "💡 Match information required to generate baby"
+								: "💡 Upload both photos to generate your baby"}
+						</motion.div>
+					)}
 
 				{/* Back Button - Visually Separated */}
 				{onBack && (

@@ -1,13 +1,13 @@
 "use client";
 
 import { Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "../api/get-notifications";
 import { useNotificationsRealtime } from "../hooks/use-notifications-realtime";
 import { NotificationList } from "./notification-list";

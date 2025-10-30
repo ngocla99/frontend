@@ -1,8 +1,8 @@
 "use client";
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "../types";
 

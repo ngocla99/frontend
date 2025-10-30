@@ -8,10 +8,7 @@ import {
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import { createAndBroadcastNotification } from "@/lib/notifications";
-
-// FAL.AI Configuration
-const FAL_API_KEY = env.FAL_AI_API_KEY;
-const FAL_MODEL_ID = env.FAL_BABY_MODEL_ID;
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * POST /api/baby - Generate baby image from match
@@ -101,29 +98,33 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 	}
 
 	// Generate baby image with FAL.AI
-	const falResponse = await fetch(`https://fal.run/${FAL_MODEL_ID}`, {
-		method: "POST",
-		headers: {
-			Authorization: `Key ${FAL_API_KEY}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			prompt: `A cute baby face that combines features from both parents. Natural lighting, high quality photo, adorable infant.`,
-			image_urls: [urlA.data.signedUrl, urlB.data.signedUrl], // Use first parent's face as base
-			num_images: 1,
-			guidance_scale: 7.5,
-			num_inference_steps: 50,
-		}),
-	});
+	// const falResponse = await fetch(`https://fal.run/${FAL_MODEL_ID}`, {
+	// 	method: "POST",
+	// 	headers: {
+	// 		Authorization: `Key ${FAL_API_KEY}`,
+	// 		"Content-Type": "application/json",
+	// 	},
+	// 	body: JSON.stringify({
+	// 		prompt: `A cute baby face that combines features from both parents. Natural lighting, high quality photo, adorable infant.`,
+	// 		image_urls: [urlA.data.signedUrl, urlB.data.signedUrl], // Use first parent's face as base
+	// 		num_images: 1,
+	// 		guidance_scale: 7.5,
+	// 		num_inference_steps: 50,
+	// 	}),
+	// });
 
-	if (!falResponse.ok) {
-		const error = await falResponse.text();
-		console.error("FAL.AI error:", error);
-		throw new Error("Failed to generate baby image");
-	}
+	// if (!falResponse.ok) {
+	// 	const error = await falResponse.text();
+	// 	console.error("FAL.AI error:", error);
+	// 	throw new Error("Failed to generate baby image");
+	// }
 
-	const falData = await falResponse.json();
-	const babyImageUrl = falData.images?.[0]?.url;
+	// const falData = await falResponse.json();
+	// const babyImageUrl = falData.images?.[0]?.url;
+
+	// Mocked baby image URL for development/testing reduce costs
+	const babyImageUrl =
+		"https://v3b.fal.media/files/b/lion/BJbQU_oqQZ2bl7M9XuK6g.jpg";
 
 	if (!babyImageUrl) {
 		throw new Error("No image URL returned from FAL.AI");
@@ -142,8 +143,6 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 		.insert({
 			match_id: matchData.id,
 			image_url: babyImageUrl,
-			parent_a_id: profileA.id,
-			parent_b_id: profileB.id,
 			generated_by_profile_id: session.user.id, // Track who generated this baby
 		})
 		.select()
@@ -159,7 +158,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 		session.user.id === profileA.id ? profileB.id : profileA.id;
 
 	// Create notification for the other user
-	await createAndBroadcastNotification(supabase, {
+	await createAndBroadcastNotification(supabaseAdmin, {
 		user_id: otherUserId,
 		type: "baby_generated",
 		title: "Someone generated a Fuze with you! 👶",
@@ -186,7 +185,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 		if (bothGenerated) {
 			// Create mutual connection!
 			const { connection, icebreaker } = await createMutualConnection(
-				supabase,
+				supabaseAdmin,
 				{
 					profile_a_id: profileA.id,
 					profile_b_id: profileB.id,
@@ -250,15 +249,22 @@ export const GET = withSession(async ({ searchParams, supabase }) => {
         match_id,
         image_url,
         created_at,
-        parent_a:profiles!babies_parent_a_id_fkey (
-          id,
-          name,
-          gender
-        ),
-        parent_b:profiles!babies_parent_b_id_fkey (
-          id,
-          name,
-          gender
+		generated_by_profile_id,
+        match:matches!babies_match_id_fkey (
+          face_a:faces!matches_face_a_id_fkey (
+            profile:profiles!faces_profile_id_fkey (
+              id,
+              name,
+              gender
+            )
+          ),
+          face_b:faces!matches_face_b_id_fkey (
+            profile:profiles!faces_profile_id_fkey (
+              id,
+              name,
+              gender
+            )
+          )
         )
       `)
 		.eq("match_id", match_id)
@@ -274,15 +280,31 @@ export const GET = withSession(async ({ searchParams, supabase }) => {
 		throw babyError;
 	}
 
+	// Extract parent profiles from nested match structure
+	const matchData: any = baby.match;
+	const faceA = Array.isArray(matchData.face_a)
+		? matchData.face_a[0]
+		: matchData.face_a;
+	const faceB = Array.isArray(matchData.face_b)
+		? matchData.face_b[0]
+		: matchData.face_b;
+	const profileA = Array.isArray(faceA.profile)
+		? faceA.profile[0]
+		: faceA.profile;
+	const profileB = Array.isArray(faceB.profile)
+		? faceB.profile[0]
+		: faceB.profile;
+
 	return NextResponse.json({
 		baby: {
 			id: baby.id,
 			match_id: baby.match_id,
 			image_url: baby.image_url,
 			created_at: baby.created_at,
+			generated_by_profile_id: baby.generated_by_profile_id,
 			parents: {
-				a: baby.parent_a,
-				b: baby.parent_b,
+				a: profileA,
+				b: profileB,
 			},
 		},
 	});

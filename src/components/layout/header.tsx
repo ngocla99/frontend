@@ -173,18 +173,21 @@ export function Header({ loading = false }: { loading?: boolean }) {
 								)}
 							</motion.div>
 						)}
-						<motion.button
-							className="text-foreground hover:bg-muted rounded-lg p-2 transition-colors duration-200 lg:hidden"
-							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							variants={itemVariants}
-							whileTap={{ scale: 0.95 }}
-						>
-							{isMobileMenuOpen ? (
-								<X className="h-6 w-6" />
-							) : (
-								<Menu className="h-6 w-6" />
-							)}
-						</motion.button>
+						<div className="flex items-center space-x-2 lg:hidden">
+							{user && <NotificationCenter userId={user.id} />}
+							<motion.button
+								className="text-foreground hover:bg-muted rounded-lg p-2 transition-colors duration-200"
+								onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+								variants={itemVariants}
+								whileTap={{ scale: 0.95 }}
+							>
+								{isMobileMenuOpen ? (
+									<X className="h-6 w-6" />
+								) : (
+									<Menu className="h-6 w-6" />
+								)}
+							</motion.button>
+						</div>
 					</div>
 				</div>
 			</motion.header>

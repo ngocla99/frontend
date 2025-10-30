@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChatHeader } from "./chat-header";
-import { MessageList } from "./message-list";
-import { MessageInput } from "./message-input";
-import { useMessages, useSendMessage, useChatRealtime } from "../hooks";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useUser } from "@/features/auth/api/get-me";
+import { useChatRealtime, useMessages, useSendMessage } from "../hooks";
+import { ChatHeader } from "./chat-header";
+import { MessageInput } from "./message-input";
+import { MessageList } from "./message-list";
 
 interface ChatRoomProps {
 	connectionId: string;

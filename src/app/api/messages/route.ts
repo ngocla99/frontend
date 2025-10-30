@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { withSession } from "@/lib/middleware/with-session";
-import { handleApiError } from "@/lib/middleware/error-handler";
-import { createAndBroadcastNotification } from "@/lib/notifications";
 import { getOtherUserId } from "@/lib/connections";
+import { handleApiError } from "@/lib/middleware/error-handler";
+import { withSession } from "@/lib/middleware/with-session";
+import { createAndBroadcastNotification } from "@/lib/notifications";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * POST /api/messages
@@ -114,7 +115,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 
 		// Send notification to the other user
 		const otherUserId = getOtherUserId(connection, session.user.id);
-		await createAndBroadcastNotification(supabase, {
+		await createAndBroadcastNotification(supabaseAdmin, {
 			user_id: otherUserId,
 			type: "new_message",
 			title: `New message from ${senderProfile?.name || "Unknown"}`,

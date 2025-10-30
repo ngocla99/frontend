@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Baby, Heart, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import type { Notification } from "../types";
 import { useMarkNotificationRead } from "../api/mark-notification-read";
+import type { Notification } from "../types";
 
 interface NotificationItemProps {
 	notification: Notification;
@@ -33,10 +33,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 		} else if (notification.type === "baby_generated") {
 			// Navigate to your matches page
 			router.push("/your-matches");
-		} else if (
-			notification.type === "new_message" &&
-			notification.related_id
-		) {
+		} else if (notification.type === "new_message" && notification.related_id) {
 			// Navigate to chat (need to get connection_id from message)
 			// For now, just go to chat list
 			router.push("/chat");
@@ -72,10 +69,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 				<div className="flex-1 min-w-0">
 					<div className="flex items-start justify-between gap-2">
 						<p
-							className={cn(
-								"text-sm font-medium",
-								isUnread && "font-semibold",
-							)}
+							className={cn("text-sm font-medium", isUnread && "font-semibold")}
 						>
 							{notification.title}
 						</p>

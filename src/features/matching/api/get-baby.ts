@@ -1,7 +1,8 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useUser } from "@/features/auth/api/get-me";
 import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
-import type { BabyApi } from "@/types/api";
+import type { BabyApi } from "../types";
 
 export const getBabyForMatchApi = async (
 	matchId: string,
@@ -29,8 +30,16 @@ export const useBabyForMatch = ({
 	matchId,
 	queryConfig,
 }: UseBabyForMatchOptions = {}) => {
+	const user = useUser();
+
 	return useQuery({
 		...getBabyForMatchQueryOptions(matchId || ""),
 		...queryConfig,
+		staleTime: 0,
+		select: (baby) => {
+			// TODO: can remove the filter by user id later
+			if (user?.id === baby?.generated_by_profile_id) return baby;
+			return null;
+		},
 	});
 };
