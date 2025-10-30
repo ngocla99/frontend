@@ -2,7 +2,6 @@
 
 import { MessagesSquare } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGetConnection } from "../api/get-connection";
 import type { MutualConnection } from "../types";
@@ -60,12 +59,11 @@ export function ChatContainer({ defaultConnectionId }: ChatContainerProps) {
 			{selectedConnection ? (
 				<div
 					className={cn(
-						"bg-background absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col border shadow-xs overflow-hidden sm:static sm:z-auto sm:flex sm:rounded-md",
+						"bg-white absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col border shadow-xs overflow-hidden sm:static sm:z-auto sm:flex sm:rounded-md",
 						mobileSelectedConnection && "start-0 flex",
 					)}
 				>
 					<ChatRoom
-						embedded
 						connectionId={selectedConnection.id}
 						connection={{
 							id: selectedConnection.id,
@@ -89,10 +87,9 @@ export function ChatContainer({ defaultConnectionId }: ChatContainerProps) {
 						<div className="space-y-2 text-center">
 							<h1 className="text-xl font-semibold">Your messages</h1>
 							<p className="text-muted-foreground text-sm">
-								Send a message to start a chat.
+								Select a conversation to start a chat.
 							</p>
 						</div>
-						<Button disabled>Send message</Button>
 					</div>
 				</div>
 			)}

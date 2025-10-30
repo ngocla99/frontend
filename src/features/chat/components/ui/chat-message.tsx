@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { MessageType } from "../../types";
 
@@ -17,6 +18,14 @@ export interface ChatMessageProps {
 	 * Whether this message is from the current user
 	 */
 	isOwn: boolean;
+	/**
+	 * Sender's avatar URL (only shown for non-own messages)
+	 */
+	senderAvatar?: string | null;
+	/**
+	 * Sender's name (for avatar fallback)
+	 */
+	senderName?: string;
 	/**
 	 * Optional message type for special rendering
 	 */
@@ -49,6 +58,8 @@ export function ChatMessage({
 	content,
 	createdAt,
 	isOwn,
+	senderAvatar,
+	senderName,
 	messageType = "text",
 	className,
 	showHeader = true,
@@ -64,10 +75,8 @@ export function ChatMessage({
 				transition={{ duration: 0.3 }}
 				className={cn("flex justify-center my-6", className)}
 			>
-				<div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl px-6 py-3 max-w-md text-center">
-					<p className="text-sm text-purple-900 dark:text-purple-100">
-						🤖 {content}
-					</p>
+				<div className="bg-gradient-to-r from-pink-400 to-red-400 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl px-6 py-3 max-w-md text-center">
+					<p className="text-sm text-white dark:text-purple-100">{content}</p>
 				</div>
 			</motion.div>
 		);
@@ -91,24 +100,44 @@ export function ChatMessage({
 				pending && "opacity-30", // Reduced opacity for pending messages
 			)}
 		>
-			<div
-				className={cn(
-					"chat-box max-w-72 px-3 py-2 break-words shadow-lg",
-					isOwn
-						? "bg-foreground text-background self-end rounded-[16px_16px_0_16px]"
-						: "bg-muted self-start rounded-[16px_16px_16px_0]",
+			<div>
+				{showHeader && (
+					<div
+						className={cn("flex gap-2 text-xs px-3 mb-1", {
+							"justify-end": isOwn,
+						})}
+					>
+						{" "}
+						{/* <span className={"font-medium"}>{sender_name}</span> */}
+						<span className="text-foreground/50 text-xs">
+							{" "}
+							{new Date(createdAt).toLocaleTimeString("en-US", {
+								hour: "2-digit",
+								minute: "2-digit",
+								hour12: true,
+							})}
+						</span>
+					</div>
 				)}
-			>
-				<p className="text-sm whitespace-pre-wrap">{content}</p>
-				<span
+				<div
+					className={cn(
+						"chat-box max-w-72 px-3 py-2 break-words shadow-lg",
+						isOwn
+							? "bg-foreground text-background self-end rounded-[16px_16px_0_16px]"
+							: "bg-muted self-start rounded-[16px_16px_16px_0]",
+					)}
+				>
+					<p className="text-sm whitespace-pre-wrap">{content}</p>
+					{/* <span
 					className={cn(
 						"text-foreground/75 mt-1 block text-xs font-light italic",
 						isOwn && "text-primary-foreground/85 text-end",
-					)}
-				>
-					{formattedTime}
-					{isOwn && readAt && <span className="ml-1 text-[10px]">· Read</span>}
-				</span>
+						)}
+						>
+						{formattedTime}
+						{isOwn && readAt && <span className="ml-1 text-[10px]">· Read</span>}
+						</span> */}
+				</div>
 			</div>
 		</motion.div>
 	);

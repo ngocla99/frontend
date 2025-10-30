@@ -22,10 +22,6 @@ interface ChatRoomProps {
 		baby_image: string | null;
 	};
 	/**
-	 * Whether the component is embedded in a two-column layout
-	 */
-	embedded?: boolean;
-	/**
 	 * Custom onBack handler (optional)
 	 */
 	onBack?: () => void;
@@ -38,7 +34,6 @@ interface ChatRoomProps {
 export function ChatRoom({
 	connectionId,
 	connection,
-	embedded = false,
 	onBack,
 	className,
 }: ChatRoomProps) {
@@ -86,22 +81,12 @@ export function ChatRoom({
 		}
 	};
 
-	const handleArchive = () => {
-		toast.info("Archive feature coming soon!");
-	};
-
-	const handleBlock = () => {
-		toast.info("Block feature coming soon!");
-	};
-
 	return (
-		<div className={cn("flex flex-col h-screen dark:bg-gray-900", className)}>
+		<div className={cn("flex flex-col h-full dark:bg-gray-900", className)}>
 			<ChatHeader
 				otherUser={connection.other_user}
 				babyImage={connection.baby_image}
-				onBack={embedded ? undefined : handleBack}
-				onArchive={handleArchive}
-				onBlock={handleBlock}
+				onBack={handleBack}
 			/>
 
 			<MessageList

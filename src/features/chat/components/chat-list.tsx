@@ -1,13 +1,14 @@
 "use client";
 
 import {
-	Loader2,
 	MessageCircle,
 	MessagesSquare,
 	Search as SearchIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BlurImage } from "@/components/blur-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -40,7 +41,7 @@ export function ChatList({
 	className,
 }: ChatListProps) {
 	const router = useRouter();
-	const { data, isLoading } = useConnections({});
+	const { data } = useConnections();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const connections = data?.connections || [];
@@ -60,21 +61,11 @@ export function ChatList({
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div
-				className={cn("flex items-center justify-center h-screen", className)}
-			>
-				<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-			</div>
-		);
-	}
-
 	if (connections.length === 0) {
 		return (
 			<div
 				className={cn(
-					"flex flex-col items-center justify-center h-screen px-4",
+					"grid place-content-center place-items-center w-full gap-2 sm:w-56 lg:w-72 2xl:w-80",
 					className,
 				)}
 			>
@@ -138,13 +129,13 @@ export function ChatList({
 							onClick={() => handleConnectionClick(connection)}
 						>
 							<div className="flex gap-2">
-								<Avatar>
-									<AvatarImage
-										src={connection.other_user.profile_image || undefined}
-										alt={connection.other_user.name}
-									/>
-									<AvatarFallback>{connection.other_user.name}</AvatarFallback>
-								</Avatar>
+								<BlurImage
+									src={connection.other_user.profile_image || ""}
+									alt={connection.other_user.name}
+									width={32}
+									height={32}
+									className="rounded-full object-cover size-8"
+								/>
 								<div>
 									<span className="col-start-2 row-span-2 font-medium">
 										{connection.other_user.name}

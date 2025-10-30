@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import api from "@/lib/api-client";
 import type { QueryConfig } from "@/lib/react-query";
 import type { ConnectionsResponse, GetConnectionsParams } from "../types";
@@ -32,7 +32,7 @@ export const useConnections = ({
 	input = {},
 	queryConfig,
 }: UseConnectionsOptions = {}) => {
-	return useQuery({
+	return useSuspenseQuery({
 		...getConnectionsQueryOptions(input),
 		...queryConfig,
 	});

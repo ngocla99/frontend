@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { withSession } from "@/lib/middleware/with-session";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
+import { withSession } from "@/lib/middleware/with-session";
 
 /**
  * GET /api/connections
@@ -29,7 +31,11 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 		}
 
 		// Get connections where user is either profile_a or profile_b
-		const { data: connections, error, count } = await supabase
+		const {
+			data: connections,
+			error,
+			count,
+		} = await supabase
 			.from("mutual_connections")
 			.select(
 				`
@@ -50,7 +56,9 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
       `,
 				{ count: "exact" },
 			)
-			.or(`profile_a_id.eq.${session.user.id},profile_b_id.eq.${session.user.id}`)
+			.or(
+				`profile_a_id.eq.${session.user.id},profile_b_id.eq.${session.user.id}`,
+			)
 			.eq("status", status)
 			.order("updated_at", { ascending: false })
 			.range(offset, offset + limit - 1);
@@ -67,6 +75,7 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 					conn.profile_a_id === session.user.id
 						? conn.profile_b
 						: conn.profile_a;
+				console.log("🚀 ~ otherUser:", otherUser);
 
 				// Get other user's profile image
 				let profileImage = null;
@@ -79,8 +88,8 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 
 					if (face) {
 						const { data: signedUrl } = await supabase.storage
-							.from("user_images")
-							.createSignedUrl(face.image_path, 3600);
+							.from(STORAGE_BUCKETS.USER_IMAGES)
+							.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 						profileImage = signedUrl?.signedUrl || null;
 					}
 				}

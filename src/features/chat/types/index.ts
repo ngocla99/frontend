@@ -52,6 +52,7 @@ export interface Message {
 	id: string;
 	sender_id: string;
 	sender_name: string;
+	sender_avatar?: string | null;
 	content: string;
 	message_type: MessageType;
 	read_at: string | null;
