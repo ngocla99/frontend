@@ -95,12 +95,7 @@ export function ChatRoom({
 	};
 
 	return (
-		<div
-			className={cn(
-				"flex flex-col h-screen bg-gray-50 dark:bg-gray-900",
-				className,
-			)}
-		>
+		<div className={cn("flex flex-col h-screen dark:bg-gray-900", className)}>
 			<ChatHeader
 				otherUser={connection.other_user}
 				babyImage={connection.baby_image}

@@ -52,7 +52,6 @@ export function ChatContainer({ defaultConnectionId }: ChatContainerProps) {
 		<section className="flex h-screen gap-6 pt-24 max-w-6xl mx-auto px-4 lg:px-8 py-6">
 			{/* Left Side - Conversation List */}
 			<ChatList
-				embedded
 				onConnectionSelect={handleConnectionSelect}
 				selectedConnectionId={selectedConnection?.id}
 			/>
