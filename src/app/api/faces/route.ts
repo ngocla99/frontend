@@ -107,9 +107,15 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		.single();
 
 	if (dbError) {
-		console.error("Database error:", dbError);
-		// Cleanup uploaded file if DB insert fails
 		await supabase.storage.from(STORAGE_BUCKETS.USER_IMAGES).remove([fileName]);
+		console.error("Database error:", dbError);
+		if (dbError.code === "23505") {
+			return NextResponse.json(
+				{ error: "This photo has already been uploaded." },
+				{ status: 400 },
+			);
+		}
+		// Cleanup uploaded file if DB insert fails
 		throw new Error(`Failed to save face record: ${dbError.message}`);
 	}
 

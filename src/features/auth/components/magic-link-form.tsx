@@ -12,9 +12,10 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useConfig } from "@/lib/hooks/use-config";
 import {
+	createMagicLinkSchema,
 	type MagicLinkInput,
-	magicLinkSchema,
 	useSendMagicLink,
 } from "../api/magic-link-auth";
 
@@ -24,6 +25,8 @@ interface MagicLinkFormProps {
 
 export function MagicLinkForm({ mode }: MagicLinkFormProps) {
 	const [emailSent, setEmailSent] = useState(false);
+	const { data: config } = useConfig();
+
 	const sendMagicLink = useSendMagicLink({
 		mutationConfig: {
 			onSuccess: () => {
@@ -32,8 +35,11 @@ export function MagicLinkForm({ mode }: MagicLinkFormProps) {
 		},
 	});
 
+	// Use dynamic schema based on server config
+	const schema = createMagicLinkSchema(config?.allowNonEduEmails ?? false);
+
 	const form = useForm<MagicLinkInput>({
-		resolver: zodResolver(magicLinkSchema),
+		resolver: zodResolver(schema),
 		defaultValues: {
 			email: "",
 		},

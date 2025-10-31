@@ -1,15 +1,19 @@
 import { redirect } from "next/navigation";
 import { RootLayout } from "@/components/layout/root-layout";
-import { checkLoggedIn } from "@/lib/utils/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AuthenticatedLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const isLoggedIn = await checkLoggedIn();
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: authError,
+	} = await supabase.auth.getUser();
 
-	if (!isLoggedIn) {
+	if (authError || !user) {
 		redirect("/auth/sign-in");
 	}
 

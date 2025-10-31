@@ -4,25 +4,31 @@ import { z } from "zod";
 import type { MutationConfig } from "@/lib/react-query";
 import { createClient } from "@/lib/supabase/client";
 
-export const magicLinkSchema = z.object({
-	email: z
-		.string()
-		.email("Please enter a valid email address")
-		.refine((email) => {
-			// In development mode, allow all emails if DEV_ALLOW_NON_EDU_EMAILS is true
-			// Note: This runs on client-side, so we check NODE_ENV
-			// Server-side validation happens in API routes
-			if (process.env.NODE_ENV === "development") {
-				return true;
-			}
+/**
+ * Create magic link schema with dynamic validation
+ * @param allowNonEduEmails - Whether to allow non-.edu emails (from server config)
+ */
+export const createMagicLinkSchema = (allowNonEduEmails: boolean) =>
+	z.object({
+		email: z
+			.string()
+			.email("Please enter a valid email address")
+			.refine((email) => {
+				// If DEV_ALLOW_NON_EDU_EMAILS is enabled, allow all emails
+				if (allowNonEduEmails) {
+					return true;
+				}
 
-			// In production, require .edu domains
-			const domain = email.toLowerCase().split("@")[1];
-			if (!domain) return false;
+				// Otherwise, require .edu domains only
+				const domain = email.toLowerCase().split("@")[1];
+				if (!domain) return false;
 
-			return domain.includes(".edu");
-		}, "Please use a valid school email (.edu)"),
-});
+				return domain.includes(".edu");
+			}, "Please use a valid school email (.edu)"),
+	});
+
+// Default schema for production (only .edu)
+export const magicLinkSchema = createMagicLinkSchema(false);
 
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;
 

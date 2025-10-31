@@ -95,6 +95,9 @@ export const PATCH = withSession(async ({ request, session, supabase }) => {
 		if (detectedSchool) {
 			updates.school = detectedSchool;
 		}
+		if (env.DEV_ALLOW_NON_EDU_EMAILS) {
+			updates.school = "DEV";
+		}
 	}
 
 	// Update profile
