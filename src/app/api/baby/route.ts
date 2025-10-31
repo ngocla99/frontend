@@ -231,7 +231,7 @@ export const POST = withSession(async ({ request, supabase, session }) => {
  *
  * Returns the baby if one exists for the given match.
  */
-export const GET = withSession(async ({ searchParams, supabase }) => {
+export const GET = withSession(async ({ session, searchParams, supabase }) => {
 	const match_id = searchParams.match_id;
 
 	if (!match_id) {
@@ -268,6 +268,7 @@ export const GET = withSession(async ({ searchParams, supabase }) => {
         )
       `)
 		.eq("match_id", match_id)
+		.eq("generated_by_profile_id", session.user.id)
 		.order("created_at", { ascending: false })
 		.limit(1)
 		.single();

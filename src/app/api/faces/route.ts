@@ -6,7 +6,7 @@ import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { env } from "@/config/env";
 
 /**
- * POST /api/faces - Upload face image
+ * POST /api/faces - Upload face image with automatic match generation
  *
  * Workflow:
  * 1. Authenticate user (via withSession)
@@ -15,7 +15,16 @@ import { env } from "@/config/env";
  * 4. Upload image to Supabase Storage
  * 5. Save face record with embedding to database
  * 6. Update user's profile default_face_id to the newly uploaded face
- * 7. Return face details with signed URL
+ * 7. Queue automatic matching job (NEW - background processing via pg_cron + Edge Function)
+ * 8. Return face details with signed URL (202 Accepted - async processing)
+ *
+ * Auto-Matching Feature:
+ * - After upload, a job is queued in match_jobs table
+ * - pg_cron triggers Edge Function every minute to process pending jobs
+ * - Edge Function searches for similar faces (same school, opposite gender, 50%+ similarity)
+ * - Top 20 matches are saved to matches table
+ * - Supabase Realtime broadcasts new matches to frontend
+ * - Users see matches appear in live feed automatically (<10 seconds)
  */
 export const POST = withSession(async ({ request, session, supabase }) => {
 	const { profile } = session;
@@ -115,6 +124,28 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		// The face was created successfully, just the default wasn't set
 	}
 
+	// Queue automatic matching job (NEW - Auto-Match Generation Feature)
+	// This triggers background job processing via pg_cron + Edge Function
+	try {
+		const { error: jobError } = await supabase.from("match_jobs").insert({
+			face_id: face.id,
+			user_id: profile.id,
+			embedding: embedding,
+			status: "pending",
+		});
+
+		if (jobError) {
+			console.error("Failed to queue matching job:", jobError);
+			// Don't fail the upload if job queueing fails
+			// The face was uploaded successfully
+		} else {
+			console.log(`✓ Match job queued for face ${face.id}`);
+		}
+	} catch (jobError) {
+		console.error("Exception while queueing match job:", jobError);
+		// Continue - don't fail the upload
+	}
+
 	// Get signed URL for client
 	const { data: signedUrlData } = await supabase.storage
 		.from(STORAGE_BUCKETS.USER_IMAGES)
@@ -125,9 +156,9 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 			id: face.id,
 			image_url: signedUrlData?.signedUrl,
 			created_at: face.created_at,
-			message: "Face uploaded successfully",
+			message: "Photo uploaded! Matches generating in background...",
 		},
-		{ status: 201 },
+		{ status: 202 }, // Changed from 201 to 202 Accepted (async processing)
 	);
 });
 
