@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
 		// Find similar faces (filtered by school and gender)
 		console.log("Searching for similar faces...");
 		console.log(
-			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=0.5, limit=20`,
+			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=2.0, limit=20`,
 		);
 
 		const { data: matches, error: searchError } = await supabase.rpc(
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
 				user_school: typedProfile.school,
 				user_gender: typedProfile.gender,
 				exclude_profile_id: typedProfile.id,
-				match_threshold: 0.5,
+				match_threshold: 2.0,
 				match_count: 20,
 			},
 		);

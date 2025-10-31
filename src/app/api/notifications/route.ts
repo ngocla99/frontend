@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noImplicitAnyLet: no neec check */
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
@@ -103,19 +104,72 @@ export const POST = withSession(async ({ request, supabase }) => {
 			}
 		}
 
-		// Insert notification
-		const { data: notification, error } = await supabase
-			.from("notifications")
-			.insert({
-				user_id,
-				type,
-				title,
-				message: message || null,
-				related_id: related_id || null,
-				related_type: related_type || null,
-			})
-			.select()
-			.single();
+		let notification;
+		let error;
+
+		// For new_message type, update existing notification from same sender instead of creating new one
+		if (type === "new_message" && related_id) {
+			// Check if there's an existing unread notification from this sender
+			const { data: existing } = await supabase
+				.from("notifications")
+				.select("id")
+				.eq("user_id", user_id)
+				.eq("type", "new_message")
+				.eq("related_id", related_id)
+				.is("read_at", null)
+				.single();
+
+			if (existing) {
+				// Update existing notification
+				const result = await supabase
+					.from("notifications")
+					.update({
+						title,
+						message: message || null,
+						created_at: new Date().toISOString(), // Update timestamp to keep it fresh
+					})
+					.eq("id", existing.id)
+					.select()
+					.single();
+
+				notification = result.data;
+				error = result.error;
+			} else {
+				// Insert new notification
+				const result = await supabase
+					.from("notifications")
+					.insert({
+						user_id,
+						type,
+						title,
+						message: message || null,
+						related_id: related_id || null,
+						related_type: related_type || null,
+					})
+					.select()
+					.single();
+
+				notification = result.data;
+				error = result.error;
+			}
+		} else {
+			// Insert notification for other types
+			const result = await supabase
+				.from("notifications")
+				.insert({
+					user_id,
+					type,
+					title,
+					message: message || null,
+					related_id: related_id || null,
+					related_type: related_type || null,
+				})
+				.select()
+				.single();
+
+			notification = result.data;
+			error = result.error;
+		}
 
 		if (error) {
 			throw error;

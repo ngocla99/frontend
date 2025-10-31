@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
+import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
 
 /**
  * GET /api/matches/for-image - Get all saved matches for a specific user face
@@ -212,7 +213,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			my_image: myMatchImageUrl?.signedUrl || "",
 			other_image: otherMatchImageUrl?.signedUrl || "",
 			similarity_score: match.similarity_score, // Distance value (for backward compatibility)
-			similarity_percentage: Math.round((1 - match.similarity_score) * 100), // Convert to percentage
+			similarity_percentage: calculateMatchPercentage(match.similarity_score), // Engaging exponential formula
 			reactions: {}, // TODO: Join reactions table when implemented
 		});
 	}

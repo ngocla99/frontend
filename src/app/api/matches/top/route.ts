@@ -3,6 +3,7 @@ import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { createClient } from "@/lib/supabase/server";
+import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
 
 /**
  * GET /api/matches/top - Get all user-user matches (live feed)
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
 				return {
 					id: match.id,
 					similarity_score: match.similarity_score, // Distance value (for backward compatibility)
-					similarity_percentage: Math.round((1 - match.similarity_score) * 100), // Convert to percentage
+					similarity_percentage: calculateMatchPercentage(match.similarity_score), // Engaging exponential formula
 					created_at: match.created_at,
 					users: {
 						a: {

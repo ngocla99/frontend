@@ -98,33 +98,33 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 	}
 
 	// Generate baby image with FAL.AI
-	// const falResponse = await fetch(`https://fal.run/${FAL_MODEL_ID}`, {
-	// 	method: "POST",
-	// 	headers: {
-	// 		Authorization: `Key ${FAL_API_KEY}`,
-	// 		"Content-Type": "application/json",
-	// 	},
-	// 	body: JSON.stringify({
-	// 		prompt: `A cute baby face that combines features from both parents. Natural lighting, high quality photo, adorable infant.`,
-	// 		image_urls: [urlA.data.signedUrl, urlB.data.signedUrl], // Use first parent's face as base
-	// 		num_images: 1,
-	// 		guidance_scale: 7.5,
-	// 		num_inference_steps: 50,
-	// 	}),
-	// });
+	const falResponse = await fetch(`https://fal.run/${env.FAL_BABY_MODEL_ID}`, {
+		method: "POST",
+		headers: {
+			Authorization: `Key ${env.FAL_AI_API_KEY}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			prompt: `A cute baby face that combines features from both parents. Natural lighting, high quality photo, adorable infant.`,
+			image_urls: [urlA.data.signedUrl, urlB.data.signedUrl], // Use first parent's face as base
+			num_images: 1,
+			guidance_scale: 7.5,
+			num_inference_steps: 50,
+		}),
+	});
 
-	// if (!falResponse.ok) {
-	// 	const error = await falResponse.text();
-	// 	console.error("FAL.AI error:", error);
-	// 	throw new Error("Failed to generate baby image");
-	// }
+	if (!falResponse.ok) {
+		const error = await falResponse.text();
+		console.error("FAL.AI error:", error);
+		throw new Error("Failed to generate baby image");
+	}
 
-	// const falData = await falResponse.json();
-	// const babyImageUrl = falData.images?.[0]?.url;
+	const falData = await falResponse.json();
+	const babyImageUrl = falData.images?.[0]?.url;
 
-	// Mocked baby image URL for development/testing reduce costs
-	const babyImageUrl =
-		"https://v3b.fal.media/files/b/lion/BJbQU_oqQZ2bl7M9XuK6g.jpg";
+	// // Mocked baby image URL for development/testing reduce costs
+	// const babyImageUrl =
+	// 	"https://v3b.fal.media/files/b/lion/BJbQU_oqQZ2bl7M9XuK6g.jpg";
 
 	if (!babyImageUrl) {
 		throw new Error("No image URL returned from FAL.AI");
