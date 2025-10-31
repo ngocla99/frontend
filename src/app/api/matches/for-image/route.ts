@@ -64,8 +64,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		);
 	}
 
-	// Query matches where face_a_id = faceId OR face_b_id = faceId
-	const { data: matchRecords, error: matchError } = await supabase
+	// Build query with match_type filter
+	let query = supabase
 		.from("matches")
 		.select(
 			`
@@ -74,6 +74,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
       created_at,
       face_a_id,
       face_b_id,
+      match_type,
       face_a:faces!matches_face_a_id_fkey (
         id,
         image_path,
@@ -100,8 +101,20 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
       )
     `,
 		)
-		.or(`face_a_id.eq.${faceId},face_b_id.eq.${faceId}`)
-		.order("created_at", { ascending: false });
+		.or(`face_a_id.eq.${faceId},face_b_id.eq.${faceId}`);
+
+	// Apply match_type filter for better performance (uses index)
+	if (matchType === "user") {
+		query = query.eq("match_type", "user_to_user");
+	} else if (matchType === "celebrity") {
+		query = query.eq("match_type", "user_to_celebrity");
+	}
+	// If matchType === "all", don't add filter (fetch all types)
+
+	const { data: matchRecords, error: matchError } = await query.order(
+		"created_at",
+		{ ascending: false },
+	);
 
 	if (matchError) {
 		console.error("Error querying matches:", matchError);
@@ -135,10 +148,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			continue;
 		}
 
-		// Filter by match_type
-		if (matchType === "user" && otherProfile.profile_type !== "user") continue;
-		if (matchType === "celebrity" && otherProfile.profile_type !== "celebrity")
-			continue;
+		// Note: match_type filtering is now done at database level for better performance
+		// No need to filter again here
 
 		// Group by other user's profile_id
 		const key = otherProfile.id;
@@ -200,7 +211,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			created_at: match.created_at,
 			my_image: myMatchImageUrl?.signedUrl || "",
 			other_image: otherMatchImageUrl?.signedUrl || "",
-			similarity_score: match.similarity_score,
+			similarity_score: match.similarity_score, // Distance value (for backward compatibility)
+			similarity_percentage: Math.round((1 - match.similarity_score) * 100), // Convert to percentage
 			reactions: {}, // TODO: Join reactions table when implemented
 		});
 	}
@@ -233,7 +245,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 				},
 				my_reaction: [],
 				reactions: match.reactions,
-				similarity_score: match.similarity_score,
+				similarity_score: match.similarity_score, // Distance value (for backward compatibility)
+				similarity_percentage: match.similarity_percentage, // Percentage value
 				type: "user-celebrity" as const,
 			})),
 		);

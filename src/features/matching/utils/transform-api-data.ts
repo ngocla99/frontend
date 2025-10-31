@@ -1,12 +1,7 @@
 import type { MatchCardProps } from "@/features/matching/components/live-match/match-card";
 import type { UniversityMatch } from "@/features/matching/components/user-match/university-match/university-match-tab";
 import { getTimeAgo } from "@/lib/utils/date";
-import type {
-	CelebMatchApi,
-	LiveMatchApi,
-	SupabaseMatch,
-	UserMatchApi,
-} from "@/types/api";
+import type { CelebMatchApi, LiveMatchApi, UserMatchApi } from "@/types/api";
 
 export const transformApiMatchToDisplayData = (
 	apiMatch: LiveMatchApi,
@@ -21,7 +16,7 @@ export const transformApiMatchToDisplayData = (
 			name: apiMatch.users.b.name,
 			image: apiMatch.users.b.image,
 		},
-		matchPercentage: Math.round(apiMatch.similarity_score),
+		matchPercentage: Math.round(apiMatch.similarity_percentage),
 		timestamp: getTimeAgo(apiMatch.created_at),
 		isNew: true, // All matches from API are considered new initially
 		isViewed: false, // All matches from API are unviewed initially
@@ -63,7 +58,7 @@ export const transformApiUserMatchToDisplayData = (
 		image: match.other_image,
 		school: userMatch.other.school,
 		reactions: match.reactions,
-		matchPercentage: Math.round(match.similarity_score),
+		matchPercentage: Math.round(match.similarity_percentage),
 		isNew: true,
 	}));
 
@@ -81,7 +76,7 @@ export const transformApiUserMatchToDisplayData = (
 			age: 22,
 			school: userMatch.other.school,
 		},
-		matchPercentage: Math.round(recentMatch.similarity_score),
+		matchPercentage: Math.round(recentMatch.similarity_percentage),
 		numberOfMatches: userMatch.number_of_matches,
 		timestamp: getTimeAgo(recentMatch.created_at),
 		isNew: true,
@@ -96,61 +91,6 @@ export const transformApiUserMatchesToDisplayData = (
 	return userMatches.map((userMatch) =>
 		transformApiUserMatchToDisplayData(userMatch),
 	);
-};
-
-// Transform raw Supabase match data to LiveMatchApi format
-// Note: This requires additional API calls to get user data
-export const transformSupabaseMatchToApiFormat = async (
-	supabaseMatch: SupabaseMatch,
-	getUserById: (id: string) => Promise<{ name: string; image: string }>,
-): Promise<LiveMatchApi> => {
-	// This would need to fetch user data based on face_a_id and face_b_id
-	// For now, we'll create a placeholder structure
-	const userA = await getUserById(supabaseMatch.face_a_id);
-	const userB = await getUserById(supabaseMatch.face_b_id);
-
-	return {
-		id: supabaseMatch.id,
-		created_at: supabaseMatch.created_at,
-		similarity_score: supabaseMatch.similarity_score,
-		my_reaction: [], // Default empty
-		reactions: {}, // Default empty
-		users: {
-			a: {
-				id: supabaseMatch.face_a_id,
-				name: userA.name,
-				image: userA.image,
-			},
-			b: {
-				id: supabaseMatch.face_b_id,
-				name: userB.name,
-				image: userB.image,
-			},
-		},
-	};
-};
-
-// Simplified approach: Transform Supabase match directly to display format
-// This avoids the need for additional API calls in realtime updates
-export const transformSupabaseMatchToDisplayData = (
-	supabaseMatch: SupabaseMatch,
-): MatchCardProps["data"] => {
-	return {
-		id: supabaseMatch.id,
-		user1: {
-			name: "User A", // Placeholder - would need user lookup
-			image: "/placeholder-avatar.png", // Placeholder
-		},
-		user2: {
-			name: "User B", // Placeholder - would need user lookup
-			image: "/placeholder-avatar.png", // Placeholder
-		},
-		matchPercentage: Math.round(supabaseMatch.similarity_score),
-		timestamp: getTimeAgo(supabaseMatch.created_at),
-		isNew: true,
-		isViewed: false,
-		isFavorited: false,
-	};
 };
 
 // Transform celebrity match data to display format

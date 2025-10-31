@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { createClient } from "@/lib/supabase/server";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
-import { env } from "@/config/env";
 
 /**
  * GET /api/matches/top - Get all user-user matches (live feed)
@@ -29,37 +29,37 @@ export async function GET(request: NextRequest) {
 		// Filter for matches where both profiles are users (not celebrities)
 		const { data: matches, error } = await supabase
 			.from("matches")
-			.select(
-				`
-        id,
-        similarity_score,
-        created_at,
-        face_a:faces!matches_face_a_id_fkey (
-          id,
-          image_path,
-          profile:profiles!faces_profile_id_fkey (
-            id,
-            name,
-            profile_type,
-            gender,
-            school
-          )
-        ),
-        face_b:faces!matches_face_b_id_fkey (
-          id,
-          image_path,
-          profile:profiles!faces_profile_id_fkey (
-            id,
-            name,
-            profile_type,
-            gender,
-            school
-          )
-        )
-      `,
-			)
+			.select(`
+				id,
+				similarity_score,
+				created_at,
+				face_a:faces!matches_face_a_id_fkey (
+				id,
+				image_path,
+				profile:profiles!faces_profile_id_fkey (
+					id,
+					name,
+					profile_type,
+					gender,
+					school
+				)
+				),
+				face_b:faces!matches_face_b_id_fkey (
+					id,
+					image_path,
+					profile:profiles!faces_profile_id_fkey (
+						id,
+						name,
+						profile_type,
+						gender,
+						school
+					)
+				)
+			`)
 			.not("face_a.profile_id", "is", null)
 			.not("face_b.profile_id", "is", null)
+			.eq("face_a.profile.profile_type", "user")
+			.eq("face_b.profile.profile_type", "user")
 			.order("created_at", { ascending: false })
 			.range(skip, skip + limit - 1);
 
@@ -112,16 +112,19 @@ export async function GET(request: NextRequest) {
 				// Get public URLs as fallback if signed URLs fail
 				const imageUrlA =
 					urlA.data?.signedUrl ||
-					supabase.storage.from(STORAGE_BUCKETS.USER_IMAGES).getPublicUrl(faceA.image_path)
-						.data.publicUrl;
+					supabase.storage
+						.from(STORAGE_BUCKETS.USER_IMAGES)
+						.getPublicUrl(faceA.image_path).data.publicUrl;
 				const imageUrlB =
 					urlB.data?.signedUrl ||
-					supabase.storage.from(STORAGE_BUCKETS.USER_IMAGES).getPublicUrl(faceB.image_path)
-						.data.publicUrl;
+					supabase.storage
+						.from(STORAGE_BUCKETS.USER_IMAGES)
+						.getPublicUrl(faceB.image_path).data.publicUrl;
 
 				return {
 					id: match.id,
-					similarity_score: match.similarity_score,
+					similarity_score: match.similarity_score, // Distance value (for backward compatibility)
+					similarity_percentage: Math.round((1 - match.similarity_score) * 100), // Convert to percentage
 					created_at: match.created_at,
 					users: {
 						a: {

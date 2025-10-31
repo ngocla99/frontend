@@ -22,6 +22,7 @@ export type LiveMatchApi = {
 	id: string;
 	my_reaction: Reaction[];
 	reactions: Record<string, unknown>;
+	similarity_percentage: number;
 	similarity_score: number;
 	users: {
 		a: {
@@ -45,6 +46,7 @@ export type UserMatchApi = {
 		other_image: string;
 		reactions: Record<string, number>;
 		similarity_score: number;
+		similarity_percentage: number;
 	}>;
 	me: {
 		gender: string;
@@ -84,6 +86,7 @@ export type CelebMatchApi = {
 	my_reaction: Reaction[];
 	reactions: Record<string, unknown>;
 	similarity_score: number;
+	similarity_percentage: number;
 	type: "user-celebrity";
 };
 export type MatchFoundEvent = {
@@ -104,6 +107,7 @@ export type MatchFoundEvent = {
 		gender: Gender | string;
 	};
 	similarity_score: number;
+	similarity_percentage: number;
 	created_at: string;
 	reactions: Record<Reaction, unknown>;
 };

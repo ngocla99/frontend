@@ -1,9 +1,10 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import { extractEmbedding } from "@/lib/services/ai-service";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
-import { env } from "@/config/env";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * POST /api/faces - Upload face image with automatic match generation
@@ -127,7 +128,7 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 	// Queue automatic matching job (NEW - Auto-Match Generation Feature)
 	// This triggers background job processing via pg_cron + Edge Function
 	try {
-		const { error: jobError } = await supabase.from("match_jobs").insert({
+		const { error: jobError } = await supabaseAdmin.from("match_jobs").insert({
 			face_id: face.id,
 			user_id: profile.id,
 			embedding: embedding,
