@@ -163,8 +163,11 @@ Create a `.env.local` file with:
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS=
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+DEV_ALLOW_NON_EDU_EMAILS=true  # Set false in production
 ```
+
+See `.env.example` for complete list of required environment variables.
 
 # Learn More
 

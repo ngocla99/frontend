@@ -64,7 +64,6 @@ export const env = createEnv({
 | `NEXT_PUBLIC_BASE_API_URL` | string | `/api` | Base URL for API routes |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL | Required | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | string | Required | Supabase anonymous (public) key |
-| `NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS` | string | `""` | Comma-separated allowed email domains |
 
 #### Server-Only
 
@@ -72,10 +71,12 @@ export const env = createEnv({
 |----------|------|---------|-------------|
 | `NODE_ENV` | enum | `development` | Environment: development/test/production |
 | `SUPABASE_SIGNED_URL_TTL` | number | `86400` | Signed URL TTL in seconds (24 hours) |
+| `SUPABASE_SERVICE_ROLE_KEY` | string | Required | Supabase service role key for admin operations |
 | `PYTHON_AI_SERVICE_URL` | URL | Required | Python AI microservice endpoint |
 | `PYTHON_AI_SERVICE_API_KEY` | string | Required | API key for AI service authentication |
 | `FAL_AI_API_KEY` | string | Required | FAL.AI API key for baby generation |
 | `FAL_BABY_MODEL_ID` | string | `fal-ai/nano-banana/edit` | FAL.AI model ID |
+| `DEV_ALLOW_NON_EDU_EMAILS` | boolean | `false` | Allow non-.edu emails in development for testing |
 
 ---
 
@@ -368,17 +369,40 @@ export async function extractEmbedding(imageBuffer: Buffer) {
 }
 ```
 
-### Email Domain Validation
+### Email Domain Validation & School Lookup
 
 ```typescript
 // src/features/auth/api/magic-link-auth.ts
-import { env } from "@/config/env";
+// Email validation now uses NODE_ENV for dev mode
+export const magicLinkSchema = z.object({
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .refine((email) => {
+      // In development mode, allow all emails
+      if (process.env.NODE_ENV === "development") {
+        return true;
+      }
 
-const whitelist = env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS;
-const whitelistDomains = whitelist
-  .split(",")
-  .map((d) => d.trim().toLowerCase())
-  .filter(Boolean);
+      // In production, require .edu domains
+      const domain = email.toLowerCase().split("@")[1];
+      return domain?.includes(".edu");
+    }, "Please use a valid school email (.edu)"),
+});
+```
+
+**University Auto-Lookup:**
+```typescript
+// src/app/api/auth/me/route.ts
+import { lookupUniversityByEmail } from "@/lib/services/university-lookup";
+
+// Auto-fill school when updating profile
+if (body.school === undefined && !currentProfile?.school && session.user.email) {
+  const detectedSchool = await lookupUniversityByEmail(session.user.email);
+  if (detectedSchool) {
+    updates.school = detectedSchool;
+  }
+}
 ```
 
 ---

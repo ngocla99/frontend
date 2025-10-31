@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { MessageType } from "../../types";
 
@@ -82,7 +81,7 @@ export function ChatMessage({
 		);
 	}
 
-	const formattedTime = new Date(createdAt).toLocaleTimeString("en-US", {
+	const _formattedTime = new Date(createdAt).toLocaleTimeString("en-US", {
 		hour: "numeric",
 		minute: "2-digit",
 		hour12: true,

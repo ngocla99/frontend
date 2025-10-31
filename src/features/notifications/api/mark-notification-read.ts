@@ -13,9 +13,7 @@ interface MarkReadResponse {
 export async function markNotificationRead(
 	notificationId: string,
 ): Promise<MarkReadResponse> {
-	return api.patch<MarkReadResponse>(
-		`/notifications/${notificationId}/read`,
-	);
+	return api.patch<MarkReadResponse>(`/notifications/${notificationId}/read`);
 }
 
 /**
@@ -32,9 +30,10 @@ export function useMarkNotificationRead() {
 			await queryClient.cancelQueries({ queryKey: ["notifications"] });
 
 			// Snapshot the previous values for rollback
-			const previousNotifications = queryClient.getQueriesData<NotificationsResponse>({
-				queryKey: ["notifications"],
-			});
+			const previousNotifications =
+				queryClient.getQueriesData<NotificationsResponse>({
+					queryKey: ["notifications"],
+				});
 
 			// Optimistically update all notification queries
 			queryClient.setQueriesData<NotificationsResponse>(

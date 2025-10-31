@@ -1,4 +1,4 @@
-import { format, isToday, isYesterday, isThisYear } from "date-fns";
+import { format, isThisYear, isToday, isYesterday } from "date-fns";
 import type { Message } from "../types";
 
 export interface GroupedMessages {
@@ -13,21 +13,18 @@ export interface GroupedMessages {
  */
 export function groupMessagesByDate(messages: Message[]): GroupedMessages[] {
 	// Create a map to group messages by date
-	const grouped = messages.reduce(
-		(acc: Record<string, Message[]>, message) => {
-			const date = new Date(message.created_at);
-			const key = format(date, "yyyy-MM-dd");
+	const grouped = messages.reduce((acc: Record<string, Message[]>, message) => {
+		const date = new Date(message.created_at);
+		const key = format(date, "yyyy-MM-dd");
 
-			if (!acc[key]) {
-				acc[key] = [];
-			}
+		if (!acc[key]) {
+			acc[key] = [];
+		}
 
-			acc[key].push(message);
+		acc[key].push(message);
 
-			return acc;
-		},
-		{},
-	);
+		return acc;
+	}, {});
 
 	// Convert to array and add formatted date labels
 	return Object.entries(grouped).map(([dateKey, msgs]) => {

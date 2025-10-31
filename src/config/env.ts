@@ -18,6 +18,8 @@ export const env = createEnv({
 		PYTHON_AI_SERVICE_API_KEY: z.string().min(1),
 		FAL_AI_API_KEY: z.string().min(1),
 		FAL_BABY_MODEL_ID: z.string().min(1).default("fal-ai/nano-banana/edit"),
+		// Email validation
+		DEV_ALLOW_NON_EDU_EMAILS: z.coerce.boolean().default(false),
 	},
 
 	/**
@@ -29,7 +31,6 @@ export const env = createEnv({
 		NEXT_PUBLIC_BASE_API_URL: z.string().default("/api"),
 		NEXT_PUBLIC_SUPABASE_URL: z.url(),
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-		NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS: z.string().default(""),
 	},
 
 	/**
@@ -46,13 +47,12 @@ export const env = createEnv({
 		PYTHON_AI_SERVICE_API_KEY: process.env.PYTHON_AI_SERVICE_API_KEY,
 		FAL_AI_API_KEY: process.env.FAL_AI_API_KEY,
 		FAL_BABY_MODEL_ID: process.env.FAL_BABY_MODEL_ID,
+		DEV_ALLOW_NON_EDU_EMAILS: process.env.DEV_ALLOW_NON_EDU_EMAILS,
 
 		// Client-side
 		NEXT_PUBLIC_BASE_API_URL: process.env.NEXT_PUBLIC_BASE_API_URL,
 		NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-		NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS:
-			process.env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS,
 	},
 
 	/**

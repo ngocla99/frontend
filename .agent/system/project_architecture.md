@@ -721,14 +721,15 @@ NODE_ENV=development
 NEXT_PUBLIC_BASE_API_URL=/api
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS=example.com,another.edu
 
 # Server-only variables (never exposed to browser)
 SUPABASE_SIGNED_URL_TTL=86400  # Default: 24 hours (configurable)
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 PYTHON_AI_SERVICE_URL=http://localhost:5000
 PYTHON_AI_SERVICE_API_KEY=<ai-service-key>
 FAL_AI_API_KEY=<fal-api-key>
 FAL_BABY_MODEL_ID=fal-ai/nano-banana/edit  # Optional, has default
+DEV_ALLOW_NON_EDU_EMAILS=false  # Set true in dev to allow non-.edu emails
 ```
 
 **Key Features:**

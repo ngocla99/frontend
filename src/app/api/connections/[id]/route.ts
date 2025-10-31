@@ -70,7 +70,7 @@ export const GET = withSession(async ({ params, supabase, session }) => {
 
 		// Get profile images for both users
 		const getProfileImage = async (
-			profileId: string,
+			_profileId: string,
 			faceId: string | null,
 		) => {
 			if (!faceId) return null;

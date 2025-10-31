@@ -3,7 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 /**
  * Notification types
  */
-export type NotificationType = "baby_generated" | "mutual_match" | "new_message";
+export type NotificationType =
+	| "baby_generated"
+	| "mutual_match"
+	| "new_message";
 
 /**
  * Related entity types

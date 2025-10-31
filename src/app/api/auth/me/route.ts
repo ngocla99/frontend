@@ -3,13 +3,13 @@ import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
+import { lookupUniversityByEmail } from "@/lib/services/university-lookup";
 import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/auth/me - Get current authenticated user profile
  *
- * This endpoint handles profile creation if the profile doesn't exist yet.
- * This is typically called during onboarding or first login.
+ * Profile is automatically created via database trigger when user signs up.
  */
 export async function GET(_request: NextRequest) {
 	try {
@@ -26,32 +26,15 @@ export async function GET(_request: NextRequest) {
 		}
 
 		// Get user profile
-		let { data: profile, error: profileError } = await supabase
+		const { data: profile, error: profileError } = await supabase
 			.from("profiles")
 			.select("*")
 			.eq("id", user.id)
 			.single();
 
-		// If profile doesn't exist, create it
+		// Profile should exist due to trigger, but handle edge case
 		if (profileError || !profile) {
-			const { data: newProfile, error: createError } = await supabase
-				.from("profiles")
-				.insert({
-					id: user.id,
-					email: user.email,
-					profile_type: "user",
-				})
-				.select()
-				.single();
-
-			if (createError || !newProfile) {
-				return NextResponse.json(
-					{ error: "Failed to create profile" },
-					{ status: 500 },
-				);
-			}
-
-			profile = newProfile;
+			return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 		}
 
 		// Get default face image if exists
@@ -100,6 +83,19 @@ export const PATCH = withSession(async ({ request, session, supabase }) => {
 	if (body.school !== undefined) updates.school = body.school;
 	if (body.default_face_id !== undefined)
 		updates.default_face_id = body.default_face_id;
+
+	// Auto-fill school if not provided in request body
+	// session.profile is already fetched by withSession middleware
+	if (
+		body.school === undefined &&
+		!session.profile.school &&
+		session.user.email
+	) {
+		const detectedSchool = await lookupUniversityByEmail(session.user.email);
+		if (detectedSchool) {
+			updates.school = detectedSchool;
+		}
+	}
 
 	// Update profile
 	const { data, error } = await supabase

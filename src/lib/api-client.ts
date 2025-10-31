@@ -43,7 +43,10 @@ async function fetchApi<T>(
 		signal,
 	} = options;
 
-	const fullUrl = buildUrlWithParams(`${env.NEXT_PUBLIC_BASE_API_URL}${url}`, params);
+	const fullUrl = buildUrlWithParams(
+		`${env.NEXT_PUBLIC_BASE_API_URL}${url}`,
+		params,
+	);
 
 	// Detect if body is FormData for file uploads
 	const isFormData = body instanceof FormData;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { withSession } from "@/lib/middleware/with-session";
 import { handleApiError } from "@/lib/middleware/error-handler";
+import { withSession } from "@/lib/middleware/with-session";
 
 /**
  * GET /api/notifications

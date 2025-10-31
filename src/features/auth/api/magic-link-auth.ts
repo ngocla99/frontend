@@ -3,30 +3,25 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { MutationConfig } from "@/lib/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { env } from "@/config/env";
 
 export const magicLinkSchema = z.object({
 	email: z
 		.string()
 		.email("Please enter a valid email address")
 		.refine((email) => {
+			// In development mode, allow all emails if DEV_ALLOW_NON_EDU_EMAILS is true
+			// Note: This runs on client-side, so we check NODE_ENV
+			// Server-side validation happens in API routes
+			if (process.env.NODE_ENV === "development") {
+				return true;
+			}
+
+			// In production, require .edu domains
 			const domain = email.toLowerCase().split("@")[1];
 			if (!domain) return false;
 
-			// Check if domain contains .edu
-			if (domain.includes(".edu")) return true;
-
-			// Check whitelist domains from env
-			const whitelist = env.NEXT_PUBLIC_WHITELIST_EMAIL_DOMAINS;
-			const whitelistDomains = whitelist
-				.split(",")
-				.map((d: string) => d.trim().toLowerCase())
-				.filter(Boolean);
-
-			return whitelistDomains.some(
-				(whitelistDomain: string) => domain === whitelistDomain,
-			);
-		}, "Please use a valid school email"),
+			return domain.includes(".edu");
+		}, "Please use a valid school email (.edu)"),
 });
 
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>;

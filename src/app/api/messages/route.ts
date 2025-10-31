@@ -120,7 +120,9 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 				},
 			});
 
-			console.log(`[Messages API] ✅ Broadcast sent to connection: ${connection_id}`);
+			console.log(
+				`[Messages API] ✅ Broadcast sent to connection: ${connection_id}`,
+			);
 		} catch (broadcastError) {
 			console.error("[Messages API] ❌ Broadcast failed:", broadcastError);
 			// Don't fail the entire request if broadcast fails

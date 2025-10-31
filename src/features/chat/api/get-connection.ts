@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ApiFnReturnType, QueryConfig } from "@/lib/react-query";
 import api from "@/lib/api-client";
+import type { ApiFnReturnType, QueryConfig } from "@/lib/react-query";
 
 export interface GetConnectionInput {
 	id: string;
@@ -25,9 +25,7 @@ interface ConnectionResponse {
 export const getConnection = async ({
 	id,
 }: GetConnectionInput): Promise<ConnectionResponse> => {
-	const response = await api.get<ConnectionResponse>(
-		`/api/connections/${id}`,
-	);
+	const response = await api.get<ConnectionResponse>(`/api/connections/${id}`);
 	return response;
 };
 
