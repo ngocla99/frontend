@@ -7,16 +7,14 @@ export interface GetConnectionInput {
 }
 
 interface ConnectionResponse {
-	connection: {
+	id: string;
+	other_user: {
 		id: string;
-		other_user: {
-			id: string;
-			name: string;
-			profile_image: string | null;
-		};
-		baby_image: string | null;
-		created_at: string;
+		name: string;
+		profile_image: string | null;
 	};
+	baby_image: string | null;
+	created_at: string;
 }
 
 /**
@@ -25,7 +23,7 @@ interface ConnectionResponse {
 export const getConnection = async ({
 	id,
 }: GetConnectionInput): Promise<ConnectionResponse> => {
-	const response = await api.get<ConnectionResponse>(`/api/connections/${id}`);
+	const response = await api.get<ConnectionResponse>(`/connections/${id}`);
 	return response;
 };
 

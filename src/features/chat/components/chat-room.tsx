@@ -5,7 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useUser } from "@/features/auth/api/get-me";
 import { cn } from "@/lib/utils";
-import { useChatRealtime, useMessages, useSendMessage } from "../hooks";
+import { useMessages } from "../api/get-messages";
+import { useSendMessage } from "../api/send-message";
+import { useChatRealtime } from "../hooks/use-chat-realtime";
 import { ChatHeader } from "./chat-header";
 import { MessageInput } from "./message-input";
 import { MessageList } from "./message-list";
@@ -21,13 +23,7 @@ interface ChatRoomProps {
 		};
 		baby_image: string | null;
 	};
-	/**
-	 * Custom onBack handler (optional)
-	 */
 	onBack?: () => void;
-	/**
-	 * Custom class name for the container
-	 */
 	className?: string;
 }
 

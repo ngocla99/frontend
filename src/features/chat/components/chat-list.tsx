@@ -11,38 +11,23 @@ import { BlurImage } from "@/components/blur-image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { useConnections } from "../hooks";
 import type { MutualConnection } from "../types";
 
 export interface ChatListProps {
-	/**
-	 * Whether the component is embedded in a two-column layout
-	 */
-	embedded?: boolean;
-	/**
-	 * Callback when a connection is selected (for embedded mode)
-	 */
-	onConnectionSelect?: (connection: MutualConnection) => void;
-	/**
-	 * Currently selected connection ID (for highlighting in embedded mode)
-	 */
+	connections: MutualConnection[];
 	selectedConnectionId?: string;
-	/**
-	 * Custom class name for the container
-	 */
 	className?: string;
+	onConnectionSelect?: (connection: MutualConnection) => void;
 }
 
 export function ChatList({
+	connections,
 	onConnectionSelect,
 	selectedConnectionId,
 	className,
 }: ChatListProps) {
 	const router = useRouter();
-	const { data } = useConnections();
 	const [searchQuery, setSearchQuery] = useState("");
-
-	const connections = data?.connections || [];
 
 	// Filter connections by search query
 	const filteredConnections = connections.filter((conn) =>
@@ -90,7 +75,6 @@ export function ChatList({
 				<div className="flex items-center justify-between py-2">
 					<div className="flex gap-2">
 						<h1 className="text-2xl font-bold">Inbox</h1>
-						<MessagesSquare size={20} />
 					</div>
 				</div>
 
