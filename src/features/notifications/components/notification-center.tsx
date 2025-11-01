@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotifications } from "../api/get-notifications";
 import { useNotificationsRealtime } from "../hooks/use-notifications-realtime";
+import { BellIcon } from "../icons/bell-icon";
 import { NotificationList } from "./notification-list";
 
 interface NotificationCenterProps {
@@ -38,14 +39,18 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
 	const hasUnread = unreadCount > 0;
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" className="relative">
-					<Bell className="h-5 w-5" />
+				<Button
+					variant="ghost"
+					size="icon"
+					className="relative [&_svg:not([class*='size-'])]:size-5"
+				>
+					<BellIcon />
 					{hasUnread && (
 						<Badge
 							variant="destructive"
-							className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+							className="absolute top-[1px] right-[1px] size-4 rounded-full p-0 text-xs flex items-center justify-center"
 						>
 							{unreadCount > 9 ? "9+" : unreadCount}
 						</Badge>

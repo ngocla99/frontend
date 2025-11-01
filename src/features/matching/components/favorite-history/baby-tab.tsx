@@ -77,7 +77,7 @@ export function BabyTab() {
 						>
 							<Card
 								className="p-4 group hover:shadow-md transition-shadow cursor-pointer"
-								onClick={() => handleBabyClick(baby)}
+								// onClick={() => handleBabyClick(baby)}
 							>
 								<div className="space-y-3">
 									{/* Header */}

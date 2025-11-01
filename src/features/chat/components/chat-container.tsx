@@ -3,7 +3,7 @@
 import { MessagesSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useGetConnection } from "../api/get-connection";
+import { useConnections } from "../api/get-connections";
 import type { MutualConnection } from "../types";
 import { ChatList } from "./chat-list";
 import { ChatRoom } from "./chat-room";
@@ -21,26 +21,21 @@ export function ChatContainer({ defaultConnectionId }: ChatContainerProps) {
 	const [mobileSelectedConnection, setMobileSelectedConnection] =
 		useState<MutualConnection | null>(null);
 
-	// Fetch the default connection if provided
-	const { data: defaultConnectionData } = useGetConnection({
-		input: defaultConnectionId ? { id: defaultConnectionId } : undefined,
-	});
+	const { data } = useConnections();
+	const connections = data?.connections || [];
 
 	// Set the default connection when data is loaded
 	useEffect(() => {
-		if (defaultConnectionData?.connection && !selectedConnection) {
-			const transformedConnection: MutualConnection = {
-				id: defaultConnectionData.connection.id,
-				other_user: defaultConnectionData.connection.other_user,
-				baby_image: defaultConnectionData.connection.baby_image,
-				last_message: null, // Not available from single connection endpoint
-				unread_count: 0, // Not available from single connection endpoint
-				created_at: defaultConnectionData.connection.created_at,
-			};
-			setSelectedConnection(transformedConnection);
-			setMobileSelectedConnection(transformedConnection);
+		if (defaultConnectionId && !selectedConnection && connections.length > 0) {
+			const defaultConnection = connections.find(
+				(conn) => conn.id === defaultConnectionId,
+			);
+			if (defaultConnection) {
+				setSelectedConnection(defaultConnection);
+				setMobileSelectedConnection(defaultConnection);
+			}
 		}
-	}, [defaultConnectionData, selectedConnection]);
+	}, [connections, defaultConnectionId, selectedConnection]);
 
 	const handleConnectionSelect = (connection: MutualConnection) => {
 		setSelectedConnection(connection);
@@ -51,8 +46,9 @@ export function ChatContainer({ defaultConnectionId }: ChatContainerProps) {
 		<section className="flex h-screen gap-6 pt-24 max-w-6xl mx-auto px-4 lg:px-8 py-6">
 			{/* Left Side - Conversation List */}
 			<ChatList
-				onConnectionSelect={handleConnectionSelect}
+				connections={connections}
 				selectedConnectionId={selectedConnection?.id}
+				onConnectionSelect={handleConnectionSelect}
 			/>
 
 			{/* Right Side - Chat Room or Empty State */}

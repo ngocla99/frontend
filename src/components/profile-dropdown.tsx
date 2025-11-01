@@ -62,6 +62,9 @@ export function ProfileDropdown({ className }: { className?: string }) {
 					<DropdownMenuItem asChild>
 						<Link href="/profile">Profile</Link>
 					</DropdownMenuItem>
+					<DropdownMenuItem asChild>
+						<Link href="/chat">Messages</Link>
+					</DropdownMenuItem>
 
 					<DropdownMenuItem asChild disabled>
 						<div>Settings</div>
