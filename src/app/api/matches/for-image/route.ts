@@ -57,7 +57,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 	}
 
 	// Build query for user matches
-	let query = supabase
+	const query = supabase
 		.from("matches")
 		.select(
 			`

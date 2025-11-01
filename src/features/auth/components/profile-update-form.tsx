@@ -27,7 +27,10 @@ import type { UpdateMeInput } from "@/features/auth/api/update-me";
 import { useUpdateMe } from "../api/update-me";
 
 const profileUpdateSchema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
+	name: z
+		.string()
+		.min(1, { message: "Name is required" })
+		.max(15, { message: "Name must be 15 characters or less" }),
 	// school: z.string().min(1, { message: "School is required" }),
 	// age: z
 	// 	.number({
@@ -138,9 +141,13 @@ export function ProfileUpdateForm() {
 							name="name"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>First Name</FormLabel>
+									<FormLabel>First Name or Initials</FormLabel>
 									<FormControl>
-										<Input placeholder="Enter your first name" {...field} />
+										<Input
+											placeholder="e.g., John or J.D."
+											maxLength={15}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

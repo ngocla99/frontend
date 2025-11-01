@@ -30,7 +30,10 @@ import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
 
 const onboardingSchema = z.object({
-	name: z.string().min(1, { message: "Name is required" }),
+	name: z
+		.string()
+		.min(1, { message: "Name is required" })
+		.max(15, { message: "Name must be 15 characters or less" }),
 	//   school: z.string().min(1, { message: "School is required" }),
 	// age: z
 	// 	.number({
@@ -182,16 +185,20 @@ export function OnboardingForm() {
 						<Step className="pb-1">
 							<div className="space-y-4">
 								<h2 className="text-xl font-semibold text-center">
-									What's your name?
+									What should we call you?
 								</h2>
 								<FormField
 									control={form.control}
 									name="name"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>First Name</FormLabel>
+											<FormLabel>First Name or Initials</FormLabel>
 											<FormControl>
-												<Input placeholder="Enter your first name" {...field} />
+												<Input
+													placeholder="e.g., John or J.D."
+													maxLength={15}
+													{...field}
+												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>

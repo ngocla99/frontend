@@ -105,13 +105,17 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 					id: isProfileAMe ? profileA?.id || "" : profileB?.id || "",
 					name: isProfileAMe ? profileA?.name || "" : profileB?.name || "",
 					image: isProfileAMe ? imageA : imageB,
-					school: isProfileAMe ? profileA?.school || "" : profileB?.school || "",
+					school: isProfileAMe
+						? profileA?.school || ""
+						: profileB?.school || "",
 				},
 				other: {
 					id: isProfileAMe ? profileB?.id || "" : profileA?.id || "",
 					name: isProfileAMe ? profileB?.name || "" : profileA?.name || "",
 					image: isProfileAMe ? imageB : imageA,
-					school: isProfileAMe ? profileB?.school || "" : profileA?.school || "",
+					school: isProfileAMe
+						? profileB?.school || ""
+						: profileA?.school || "",
 				},
 				created_at: firstBaby.created_at,
 				images: babyImages.map((b: any) => ({

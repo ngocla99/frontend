@@ -125,7 +125,9 @@ export async function GET(request: NextRequest) {
 				return {
 					id: match.id,
 					similarity_score: match.similarity_score, // Distance value (for backward compatibility)
-					similarity_percentage: calculateMatchPercentage(match.similarity_score), // Engaging exponential formula
+					similarity_percentage: calculateMatchPercentage(
+						match.similarity_score,
+					), // Engaging exponential formula
 					created_at: match.created_at,
 					users: {
 						a: {

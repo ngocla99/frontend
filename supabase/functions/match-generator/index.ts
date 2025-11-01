@@ -272,7 +272,9 @@ Deno.serve(async (req) => {
 				// Check if it's a duplicate error (constraint violation)
 				if (insertError.code === "23505") {
 					// Duplicate key - skip silently
-					console.log(`Skipped duplicate match ${i + 1}/${matchRecords.length}`);
+					console.log(
+						`Skipped duplicate match ${i + 1}/${matchRecords.length}`,
+					);
 					continue;
 				}
 				// Log other errors but don't fail the entire job
