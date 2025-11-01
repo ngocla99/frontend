@@ -37,10 +37,14 @@ interface SimilarFace {
 
 interface MatchRecord {
 	face_a_id: string;
-	face_b_id: string | null;
+	face_b_id: string;
 	similarity_score: number;
-	match_type: string;
-	celebrity_id?: string | null;
+}
+
+interface CelebrityMatchRecord {
+	face_id: string;
+	celebrity_id: string;
+	similarity_score: number;
 }
 
 interface CelebrityMatch {
@@ -188,7 +192,7 @@ Deno.serve(async (req) => {
 		// Find similar faces (filtered by school and gender)
 		console.log("Searching for similar faces...");
 		console.log(
-			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=2.0, limit=20`,
+			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=-1, limit=20`,
 		);
 
 		const { data: matches, error: searchError } = await supabase.rpc(
@@ -198,7 +202,7 @@ Deno.serve(async (req) => {
 				user_school: typedProfile.school,
 				user_gender: typedProfile.gender,
 				exclude_profile_id: typedProfile.id,
-				match_threshold: 2.0,
+				match_threshold: -1,
 				match_count: 20,
 			},
 		);
@@ -240,33 +244,6 @@ Deno.serve(async (req) => {
 		const typedMatches = (matches || []) as SimilarFace[];
 		console.log(`Found ${typedMatches.length} similar faces`);
 
-		// If no matches found, mark job as completed (not an error)
-		if (typedMatches.length === 0) {
-			await supabase
-				.from("match_jobs")
-				.update({
-					status: "completed",
-					completed_at: new Date().toISOString(),
-				})
-				.eq("id", typedJob.id);
-
-			console.log("Job completed with 0 matches");
-
-			return new Response(
-				JSON.stringify({
-					success: true,
-					message: "No similar faces found",
-					jobId: typedJob.id,
-					matchCount: 0,
-					processed: true,
-				}),
-				{
-					headers: { ...corsHeaders, "Content-Type": "application/json" },
-					status: 200,
-				},
-			);
-		}
-
 		// Prepare match records for batch insert
 		// Ensure face_a_id < face_b_id to prevent duplicates (enforced by CHECK constraint)
 		const matchRecords: MatchRecord[] = typedMatches.map((match) => ({
@@ -275,16 +252,17 @@ Deno.serve(async (req) => {
 			face_b_id:
 				typedJob.face_id < match.face_id ? match.face_id : typedJob.face_id,
 			similarity_score: match.similarity,
-			match_type: "user_to_user",
-			celebrity_id: null,
 		}));
 
 		console.log(`Inserting ${matchRecords.length} user match records...`);
 
 		// Insert user matches individually to handle duplicates gracefully
 		// (upsert doesn't work well with partial unique indexes using LEAST/GREATEST)
+		// Add 10-second delay between each insert
 		let userInsertedCount = 0;
-		for (const userMatch of matchRecords) {
+		for (let i = 0; i < matchRecords.length; i++) {
+			const userMatch = matchRecords[i];
+
 			const { error: insertError } = await supabase
 				.from("matches")
 				.insert(userMatch)
@@ -294,14 +272,20 @@ Deno.serve(async (req) => {
 				// Check if it's a duplicate error (constraint violation)
 				if (insertError.code === "23505") {
 					// Duplicate key - skip silently
+					console.log(`Skipped duplicate match ${i + 1}/${matchRecords.length}`);
 					continue;
 				}
 				// Log other errors but don't fail the entire job
-				console.error(
-					`Error inserting user match: ${insertError.message}`,
-				);
+				console.error(`Error inserting user match: ${insertError.message}`);
 			} else {
 				userInsertedCount++;
+				console.log(`✅ Inserted match ${i + 1}/${matchRecords.length}`);
+			}
+
+			// Wait 10 seconds before next insert (except for the last one)
+			if (i < matchRecords.length - 1) {
+				console.log(`Waiting 10 seconds before next insert...`);
+				await new Promise((resolve) => setTimeout(resolve, 10000));
 			}
 		}
 
@@ -317,8 +301,7 @@ Deno.serve(async (req) => {
 			console.log("Generating celebrity matches...");
 
 			// Determine opposite gender for filtering
-			const oppositeGender =
-				typedProfile.gender === "male" ? "female" : "male";
+			const oppositeGender = typedProfile.gender === "male" ? "female" : "male";
 
 			// Find celebrity matches using the vector search function
 			const { data: celebrityMatches, error: celebError } = await supabase.rpc(
@@ -338,23 +321,20 @@ Deno.serve(async (req) => {
 				const typedCelebMatches = celebrityMatches as CelebrityMatch[];
 				console.log(`Found ${typedCelebMatches.length} celebrity matches`);
 
-				// Prepare celebrity match records
-				const celebMatchRecords: MatchRecord[] = typedCelebMatches.map(
+				// Prepare celebrity match records for new celebrity_matches table
+				const celebMatchRecords: CelebrityMatchRecord[] = typedCelebMatches.map(
 					(celeb) => ({
-						face_a_id: typedJob.face_id,
-						face_b_id: null, // No face_b for celebrity matches
+						face_id: typedJob.face_id,
 						celebrity_id: celeb.celebrity_id,
 						similarity_score: celeb.similarity,
-						match_type: "user_to_celebrity",
 					}),
 				);
 
 				// Insert celebrity matches one by one to handle duplicates gracefully
-				// (upsert doesn't work well with partial unique indexes)
 				let insertedCount = 0;
 				for (const celebMatch of celebMatchRecords) {
 					const { error: celebInsertError } = await supabase
-						.from("matches")
+						.from("celebrity_matches")
 						.insert(celebMatch)
 						.select();
 

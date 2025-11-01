@@ -59,15 +59,15 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 		);
 	}
 
-	// Build query for celebrity matches
-	let query = supabase
-		.from("matches")
+	// Build query for celebrity matches from new celebrity_matches table
+	const query = supabase
+		.from("celebrity_matches")
 		.select(
 			`
       id,
       similarity_score,
       created_at,
-      celebrity:celebrities!matches_celebrity_id_fkey (
+      celebrity:celebrities!celebrity_matches_celebrity_id_fkey (
         id,
         name,
         bio,
@@ -77,9 +77,7 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
       )
     `,
 		)
-		.eq("match_type", "user_to_celebrity")
-		.eq("face_a_id", targetFaceId)
-		.not("celebrity_id", "is", null)
+		.eq("face_id", targetFaceId)
 		.order("similarity_score", { ascending: false })
 		.limit(limit);
 
@@ -105,39 +103,37 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 		);
 	}
 
-	// Sign celebrity image URLs
-	const matchesWithSignedUrls = await Promise.all(
-		filteredMatches.map(async (match: any) => {
-			const celebrity = match.celebrity;
+	// Get public URLs for celebrity images (bucket is public)
+	const matchesWithSignedUrls = filteredMatches.map((match: any) => {
+		const celebrity = match.celebrity;
 
-			if (!celebrity || !celebrity.image_path) {
-				return {
-					id: match.id,
-					similarity_score: match.similarity_score,
-					created_at: match.created_at,
-					celebrity: null,
-				};
-			}
-
-			const { data: signedUrl } = await supabase.storage
-				.from(STORAGE_BUCKETS.CELEBRITY_IMAGES)
-				.createSignedUrl(celebrity.image_path, env.SUPABASE_SIGNED_URL_TTL);
-
+		if (!celebrity || !celebrity.image_path) {
 			return {
 				id: match.id,
 				similarity_score: match.similarity_score,
 				created_at: match.created_at,
-				celebrity: {
-					id: celebrity.id,
-					name: celebrity.name,
-					bio: celebrity.bio,
-					category: celebrity.category,
-					gender: celebrity.gender,
-					image_url: signedUrl?.signedUrl || "",
-				},
+				celebrity: null,
 			};
-		}),
-	);
+		}
+
+		const { data: publicUrlData } = supabase.storage
+			.from(STORAGE_BUCKETS.CELEBRITY_IMAGES)
+			.getPublicUrl(celebrity.image_path);
+
+		return {
+			id: match.id,
+			similarity_score: match.similarity_score,
+			created_at: match.created_at,
+			celebrity: {
+				id: celebrity.id,
+				name: celebrity.name,
+				bio: celebrity.bio,
+				category: celebrity.category,
+				gender: celebrity.gender,
+				image_url: publicUrlData.publicUrl,
+			},
+		};
+	});
 
 	return NextResponse.json({
 		matches: matchesWithSignedUrls,

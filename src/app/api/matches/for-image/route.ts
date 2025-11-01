@@ -5,33 +5,24 @@ import { withSession } from "@/lib/middleware/with-session";
 import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
 
 /**
- * GET /api/matches/for-image - Get all saved matches for a specific user face
+ * GET /api/matches/for-image - Get all saved user matches for a specific user face
  *
  * Queries the matches table directly (NOT vector search) to get historical match data.
- * Supports filtering by match type (user/celebrity) and groups matches by unique user pairs.
+ * Groups matches by unique user pairs.
  *
  * Query params:
  *   - face_id (required): UUID of the user's face to fetch matches for
- *   - match_type (optional): Filter by "user" (university), "celebrity", or "all" (default: "all")
  *   - limit (optional): Number of matches to return (default: 50)
  *   - skip (optional): Pagination offset (default: 0)
  */
 export const GET = withSession(async ({ searchParams, supabase, session }) => {
 	const faceId = searchParams.face_id;
-	const matchType = searchParams.match_type || "all";
 	const limit = parseInt(searchParams.limit || "50", 10);
 	const skip = parseInt(searchParams.skip || "0", 10);
 
 	// Validate required parameters
 	if (!faceId) {
 		return NextResponse.json({ error: "face_id is required" }, { status: 400 });
-	}
-
-	if (!["user", "celebrity", "all"].includes(matchType)) {
-		return NextResponse.json(
-			{ error: 'match_type must be "user", "celebrity", or "all"' },
-			{ status: 400 },
-		);
 	}
 
 	// Get the face and its profile
@@ -65,7 +56,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		);
 	}
 
-	// Build query with match_type filter
+	// Build query for user matches
 	let query = supabase
 		.from("matches")
 		.select(
@@ -75,7 +66,6 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
       created_at,
       face_a_id,
       face_b_id,
-      match_type,
       face_a:faces!matches_face_a_id_fkey (
         id,
         image_path,
@@ -84,8 +74,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
           id,
           name,
           gender,
-          school,
-          profile_type
+          school
         )
       ),
       face_b:faces!matches_face_b_id_fkey (
@@ -96,21 +85,12 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
           id,
           name,
           gender,
-          school,
-          profile_type
+          school
         )
       )
     `,
 		)
 		.or(`face_a_id.eq.${faceId},face_b_id.eq.${faceId}`);
-
-	// Apply match_type filter for better performance (uses index)
-	if (matchType === "user") {
-		query = query.eq("match_type", "user_to_user");
-	} else if (matchType === "celebrity") {
-		query = query.eq("match_type", "user_to_celebrity");
-	}
-	// If matchType === "all", don't add filter (fetch all types)
 
 	const { data: matchRecords, error: matchError } = await query.order(
 		"created_at",
@@ -149,8 +129,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			continue;
 		}
 
-		// Note: match_type filtering is now done at database level for better performance
-		// No need to filter again here
+		// Note: All matches in this table are user-to-user matches now
 
 		// Group by other user's profile_id
 		const key = otherProfile.id;
@@ -187,10 +166,7 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 					school: otherProfile.school,
 				},
 				number_of_matches: 0,
-				type:
-					otherProfile.profile_type === "celebrity"
-						? "user-celebrity"
-						: "user-user",
+				type: "user-user",
 				matches: [],
 			});
 		}
@@ -218,43 +194,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		});
 	}
 
-	// Convert Map to Array
-	const allMatches = Array.from(groupedMatches.values());
-
-	// For celebrity matches, flatten to individual matches (no grouping)
-	// For user matches, keep grouped format
-	let finalMatches;
-	if (matchType === "celebrity") {
-		// Flatten: each individual match becomes a separate entry
-		finalMatches = allMatches.flatMap((group) =>
-			group.matches.map((match: any) => ({
-				id: match.id,
-				created_at: match.created_at,
-				celeb: {
-					id: group.other.id,
-					name: group.other.name,
-					image_url: match.other_image,
-					gender: group.other.gender,
-					school: group.other.school,
-				},
-				me: {
-					id: group.me.id,
-					name: group.me.name,
-					image: match.my_image,
-					gender: group.me.gender,
-					school: group.me.school,
-				},
-				my_reaction: [],
-				reactions: match.reactions,
-				similarity_score: match.similarity_score, // Distance value (for backward compatibility)
-				similarity_percentage: match.similarity_percentage, // Percentage value
-				type: "user-celebrity" as const,
-			})),
-		);
-	} else {
-		// Keep grouped format for user matches
-		finalMatches = allMatches;
-	}
+	// Convert Map to Array and keep grouped format for user matches
+	const finalMatches = Array.from(groupedMatches.values());
 
 	// Apply pagination
 	const paginatedMatches = finalMatches.slice(skip, skip + limit);

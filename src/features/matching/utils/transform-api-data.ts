@@ -96,16 +96,13 @@ export const transformApiUserMatchesToDisplayData = (
 // Transform celebrity match data to display format
 export interface CelebMatch {
 	id: string;
-	me: {
-		name: string;
-		image: string;
-		school: string;
-	};
 	celeb: {
 		id: string;
 		name: string;
 		image: string;
 		school: string | null;
+		bio?: string | null;
+		category?: string | null;
 	};
 	matchPercentage: number;
 	timestamp: string;
@@ -116,27 +113,30 @@ export interface CelebMatch {
 export const transformApiCelebMatchToDisplayData = (
 	celebMatch: CelebMatchApi,
 ): CelebMatch => {
-	const isFavorited =
-		Array.isArray(celebMatch.my_reaction) &&
-		celebMatch.my_reaction.includes("favorite");
+	const celebrity = celebMatch.celebrity;
+
+	if (!celebrity) {
+		throw new Error("Celebrity data is missing");
+	}
+
+	// Convert similarity_score to percentage
+	// Assuming similarity_score is already a percentage (0-100) or needs conversion
+	const matchPercentage = Math.round(celebMatch.similarity_score * 100);
 
 	return {
 		id: celebMatch.id,
-		me: {
-			name: celebMatch.me.name,
-			image: celebMatch.me.image,
-			school: celebMatch.me.school,
-		},
 		celeb: {
-			id: celebMatch.celeb.id,
-			name: celebMatch.celeb.name,
-			image: celebMatch.celeb.image_url,
-			school: celebMatch.celeb.school,
+			id: celebrity.id,
+			name: celebrity.name,
+			image: celebrity.image_url,
+			school: null, // Celebrity doesn't have school
+			bio: celebrity.bio,
+			category: celebrity.category,
 		},
-		matchPercentage: Math.round(celebMatch.similarity_score),
+		matchPercentage,
 		timestamp: getTimeAgo(celebMatch.created_at),
 		isNew: true,
-		isFavorited,
+		isFavorited: false, // TODO: Add reaction support later
 	};
 };
 

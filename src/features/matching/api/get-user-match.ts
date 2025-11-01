@@ -6,9 +6,8 @@ import { transformApiUserMatchesToDisplayData } from "../utils/transform-api-dat
 
 export type UserMatchInput = {
 	faceId: string;
-	matchType?: "user" | "celebrity" | "all";
 	limit: number;
-	offset: number;
+	skip: number;
 	reaction?: Reaction;
 	signal?: AbortSignal;
 };
@@ -16,17 +15,15 @@ export type UserMatchInput = {
 export const getUserMatchApi = async (
 	input: UserMatchInput,
 ): Promise<UserMatchApi[]> => {
-	const { signal, offset, faceId, matchType = "all", ...query } = input;
+	const { signal, skip, faceId, limit } = input;
 
 	const response = await api.get<{ matches: UserMatchApi[]; total: number }>(
 		"/matches/for-image",
 		{
 			params: {
-				...query,
 				face_id: faceId,
-				match_type: matchType,
-				skip: offset,
-				limit: input.limit,
+				skip: skip,
+				limit: limit,
 			},
 			signal,
 		},

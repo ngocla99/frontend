@@ -5,9 +5,9 @@ import type { CelebMatchApi, Reaction } from "@/types/api";
 import { transformApiCelebMatchesToDisplayData } from "../utils/transform-api-data";
 
 export type CelebMatchInput = {
-	faceId: string;
-	limit: number;
-	offset: number;
+	faceId?: string; // Optional - defaults to user's default_face_id
+	limit?: number;
+	category?: string; // Filter by category: 'actor', 'musician', 'athlete', 'influencer'
 	reaction?: Reaction;
 	signal?: AbortSignal;
 };
@@ -15,17 +15,18 @@ export type CelebMatchInput = {
 export const getCelebMatchApi = async (
 	input: CelebMatchInput,
 ): Promise<CelebMatchApi[]> => {
-	const { signal, faceId, limit, offset } = input;
+	const { signal, faceId, limit, category } = input;
+	const params: Record<string, string | number> = {};
+
+	if (faceId) params.face_id = faceId;
+	if (limit) params.limit = limit;
+	if (category) params.category = category;
+
 	const response = await api.get<{
 		matches: CelebMatchApi[];
 		total: number;
-	}>("/matches/for-image", {
-		params: {
-			face_id: faceId,
-			match_type: "celebrity",
-			limit,
-			skip: offset,
-		},
+	}>("/matches/celebrity", {
+		params,
 		signal,
 	});
 	return response.matches;

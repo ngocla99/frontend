@@ -52,9 +52,8 @@ export const UniversityMatchTab = ({
 	const { data: userMatches, isLoading } = useUserMatch({
 		input: {
 			faceId: activePhotoId!,
-			matchType: "user",
 			limit: 50,
-			offset: 0,
+			skip: 0,
 		},
 		queryConfig: {
 			enabled: !!activePhotoId,

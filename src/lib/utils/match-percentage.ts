@@ -1,35 +1,36 @@
 /**
- * Transform cosine distance to engaging match percentage
+ * Convert similarity score to match percentage
  *
- * Uses exponential decay formula to convert raw distance values into
- * attractive percentages that keep students engaged with the app.
+ * UPDATED (2025-11-01): Now accepts similarity score (-1 to 1) instead of distance
+ * Both user matching and celebrity matching now return normalized similarity values
  *
- * Formula: 100 * exp(-distance * 0.5)
+ * Formula: similarity * 100
  *
- * Distance to Percentage mapping:
- * - 0.0 → 100% (perfect match)
- * - 0.5 → 78% (very good)
- * - 1.0 → 61% (good/decent)
- * - 1.5 → 47% (moderate)
- * - 2.0 → 37% (lower but still visible)
+ * Similarity to Percentage mapping:
+ * - 1.0 → 100% (perfect match)
+ * - 0.85 → 85% (very good match)
+ * - 0.70 → 70% (good match)
+ * - 0.50 → 50% (moderate match)
+ * - 0.30 → 30% (weak match)
+ * - 0.0 → 0% (no similarity)
+ * - -0.50 → -50% (very dissimilar)
+ * - -1.0 → -100% (opposite/completely different)
  *
- * Why exponential decay?
- * - More generous than linear (1 - distance) which gives negative values
- * - Creates engaging percentages in the 50-80% range for typical matches
- * - Psychologically appealing to users (feels like good matches)
- * - Still distinguishes between better and worse matches
+ * Note: Negative values indicate faces that are very dissimilar
  *
- * @param distance - Cosine distance value (0 = identical, 2 = opposite)
- * @returns Match percentage (0-100)
+ * @param similarity - Similarity score (-1 to 1) where 1 is perfect match, negative is dissimilar
+ * @returns Match percentage (-100 to 100)
  */
-export function calculateMatchPercentage(distance: number): number {
-	return Math.round(100 * Math.exp(-distance * 0.5));
+export function calculateMatchPercentage(similarity: number): number {
+	// No clamping - allow negative values to show dissimilarity
+	return Math.round(similarity * 100);
 }
 
 /**
- * Legacy formula: Simple linear transformation
- * Kept for reference but NOT recommended (produces negative values)
+ * Legacy formula for distance-based matching (DEPRECATED)
+ * DO NOT USE - kept for reference only
+ * Old formula used exponential decay on raw distance values
  */
 export function calculateMatchPercentageLegacy(distance: number): number {
-	return Math.round((1 - distance) * 100);
+	return Math.round(100 * Math.exp(-distance * 0.5));
 }

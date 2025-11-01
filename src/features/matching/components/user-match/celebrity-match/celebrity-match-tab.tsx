@@ -20,7 +20,10 @@ export const CelebrityMatchTab = ({
 }: CelebrityMatchTabProps) => {
 	const isMobile = useIsMobile();
 	const { data: celebMatches, isLoading } = useCelebMatch({
-		input: { faceId: activePhotoId!, limit: 50, offset: 0 },
+		input: {
+			faceId: activePhotoId || undefined,
+			limit: 50,
+		},
 		queryConfig: {
 			enabled: !!activePhotoId,
 		},
