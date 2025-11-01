@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getOtherUserId } from "@/lib/connections";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
-import { createAndBroadcastNotification } from "@/lib/notifications";
+import { updateOrCreateMessageNotification } from "@/lib/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
@@ -132,16 +132,22 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 			await supabase.removeChannel(channel);
 		}
 
-		// Send notification to the other user
+		// Update or create notification for the other user
+		// If an existing unread notification exists for this connection, update it
+		// Otherwise, create a new one
 		const otherUserId = getOtherUserId(connection, session.user.id);
-		await createAndBroadcastNotification(supabaseAdmin, {
-			user_id: otherUserId,
-			type: "new_message",
-			title: `New message from ${senderProfile?.name || "Unknown"}`,
-			message: content.substring(0, 100), // Preview first 100 chars
-			related_id: message.id,
-			related_type: "message",
-		});
+		await updateOrCreateMessageNotification(
+			supabaseAdmin,
+			{
+				user_id: otherUserId,
+				type: "new_message",
+				title: `New message from ${senderProfile?.name || "Unknown"}`,
+				message: content.substring(0, 100), // Preview first 100 chars
+				related_id: message.id,
+				related_type: "message",
+			},
+			connection_id,
+		);
 
 		return NextResponse.json(
 			{
