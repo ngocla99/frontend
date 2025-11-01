@@ -1,0 +1,130 @@
+{
+	"celebrities": [
+		{
+			"filename": "tom-cruise.webp",
+			"name": "Tom Cruise",
+			"bio": "American actor and producer known for Mission Impossible series",
+			"category": "actors",
+			"gender": "male"
+		},
+		{
+			"filename": "jennifer-lawrence.webp",
+			"name": "Jennifer Lawrence",
+			"bio": "Academy Award-winning actress known for The Hunger Games",
+			"category": "actors",
+			"gender": "female"
+		},
+		{
+			"filename": "brad-pitt.jpg",
+			"name": "Brad Pitt",
+			"bio": "American actor and film producer",
+			"category": "actors",
+			"gender": "male"
+		},
+		{
+			"filename": "scarlett-johansson.jpg",
+			"name": "Scarlett Johansson",
+			"bio": "Actress known for Marvel's Black Widow",
+			"category": "actors",
+			"gender": "female"
+		},
+		{
+			"filename": "taylor-swift.jpg",
+			"name": "Taylor Swift",
+			"bio": "Grammy-winning singer-songwriter",
+			"category": "musicians",
+			"gender": "female"
+		},
+		{
+			"filename": "bruno-mars.webp",
+			"name": "Bruno Mars",
+			"bio": "Multi-platinum recording artist and producer",
+			"category": "musicians",
+			"gender": "male"
+		},
+		{
+			"filename": "ariana-grande.webp",
+			"name": "Ariana Grande",
+			"bio": "Pop singer and actress",
+			"category": "musicians",
+			"gender": "female"
+		},
+		{
+			"filename": "ed-sheeran.jpg",
+			"name": "Ed Sheeran",
+			"bio": "British singer-songwriter",
+			"category": "musicians",
+			"gender": "male"
+		},
+		{
+			"filename": "lebron-james.jpg",
+			"name": "LeBron James",
+			"bio": "NBA superstar and 4-time champion",
+			"category": "athletes",
+			"gender": "male"
+		},
+		{
+			"filename": "simone-biles.jpg",
+			"name": "Simone Biles",
+			"bio": "Olympic gymnast with 7 medals",
+			"category": "athletes",
+			"gender": "female"
+		},
+		{
+			"filename": "cristiano-ronaldo.jpg",
+			"name": "Cristiano Ronaldo",
+			"bio": "Professional footballer and 5-time Ballon d'Or winner",
+			"category": "athletes",
+			"gender": "male"
+		},
+		{
+			"filename": "mr-beast.jpg",
+			"name": "MrBeast",
+			"bio": "YouTube content creator and philanthropist",
+			"category": "influencers",
+			"gender": "male"
+		},
+		{
+			"filename": "zendaya.jpg",
+			"name": "Zendaya",
+			"bio": "Actress and singer known for Euphoria and Spider-Man",
+			"category": "actors",
+			"gender": "female"
+		},
+		{
+			"filename": "chris-hemsworth.webp",
+			"name": "Chris Hemsworth",
+			"bio": "Australian actor known for Thor in Marvel films",
+			"category": "actors",
+			"gender": "male"
+		},
+		{
+			"filename": "billie-eilish.jpg",
+			"name": "Billie Eilish",
+			"bio": "Grammy-winning singer-songwriter",
+			"category": "musicians",
+			"gender": "female"
+		},
+		{
+			"filename": "the-weeknd.jpg",
+			"name": "The Weeknd",
+			"bio": "R&B singer and songwriter",
+			"category": "musicians",
+			"gender": "male"
+		},
+		{
+			"filename": "emma-watson.jpg",
+			"name": "Emma Watson",
+			"bio": "Actress known for Harry Potter series",
+			"category": "actors",
+			"gender": "female"
+		},
+		{
+			"filename": "dwayne-johnson.webp",
+			"name": "Dwayne Johnson",
+			"bio": "Actor and former WWE wrestler known as The Rock",
+			"category": "actors",
+			"gender": "male"
+		}
+	]
+}

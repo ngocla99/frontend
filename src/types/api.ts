@@ -148,6 +148,24 @@ export type BabyApi = {
 	};
 };
 
+// Celebrity types
+export type Celebrity = {
+	id: string;
+	name: string;
+	bio?: string;
+	category?: string; // 'actor', 'musician', 'athlete', 'influencer'
+	gender?: string;
+	image_path: string;
+	image_url?: string; // Signed URL
+};
+
+export type CelebrityMatch = {
+	id: string;
+	similarity_score: number;
+	created_at: string;
+	celebrity: Celebrity;
+};
+
 // Supabase database types
 export type SupabaseMatch = {
 	id: string;

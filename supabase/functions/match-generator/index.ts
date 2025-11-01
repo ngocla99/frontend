@@ -15,6 +15,7 @@ interface MatchJob {
 	attempts: number;
 	max_attempts: number;
 	created_at: string;
+	job_type?: string; // 'user_match', 'celebrity_match', or 'both'
 }
 
 interface UserProfile {
@@ -36,9 +37,20 @@ interface SimilarFace {
 
 interface MatchRecord {
 	face_a_id: string;
-	face_b_id: string;
+	face_b_id: string | null;
 	similarity_score: number;
 	match_type: string;
+	celebrity_id?: string | null;
+}
+
+interface CelebrityMatch {
+	celebrity_id: string;
+	celebrity_name: string;
+	similarity: number;
+	image_path: string;
+	bio?: string;
+	category?: string;
+	gender?: string;
 }
 
 // CORS headers for API responses
@@ -264,48 +276,109 @@ Deno.serve(async (req) => {
 				typedJob.face_id < match.face_id ? match.face_id : typedJob.face_id,
 			similarity_score: match.similarity,
 			match_type: "user_to_user",
+			celebrity_id: null,
 		}));
 
-		console.log(`Inserting ${matchRecords.length} match records...`);
+		console.log(`Inserting ${matchRecords.length} user match records...`);
 
-		// Batch insert matches (upsert to handle duplicates gracefully)
-		const { error: insertError } = await supabase
-			.from("matches")
-			.upsert(matchRecords, {
-				onConflict: "face_a_id,face_b_id",
-				ignoreDuplicates: true,
-			});
+		// Insert user matches individually to handle duplicates gracefully
+		// (upsert doesn't work well with partial unique indexes using LEAST/GREATEST)
+		let userInsertedCount = 0;
+		for (const userMatch of matchRecords) {
+			const { error: insertError } = await supabase
+				.from("matches")
+				.insert(userMatch)
+				.select();
 
-		if (insertError) {
-			console.error("Error inserting matches:", insertError);
-
-			// Retry logic
-			if (typedJob.attempts + 1 < typedJob.max_attempts) {
-				await supabase
-					.from("match_jobs")
-					.update({
-						status: "pending",
-						error_message: insertError.message,
-					})
-					.eq("id", typedJob.id);
-
-				console.log(
-					`Job marked for retry (attempt ${typedJob.attempts + 1}/${typedJob.max_attempts})`,
+			if (insertError) {
+				// Check if it's a duplicate error (constraint violation)
+				if (insertError.code === "23505") {
+					// Duplicate key - skip silently
+					continue;
+				}
+				// Log other errors but don't fail the entire job
+				console.error(
+					`Error inserting user match: ${insertError.message}`,
 				);
 			} else {
-				await supabase
-					.from("match_jobs")
-					.update({
-						status: "failed",
-						completed_at: new Date().toISOString(),
-						error_message: `Max attempts reached: ${insertError.message}`,
-					})
-					.eq("id", typedJob.id);
-
-				console.error("Max retry attempts reached, job failed");
+				userInsertedCount++;
 			}
+		}
 
-			throw new Error(`Failed to insert matches: ${insertError.message}`);
+		console.log(
+			`✅ Inserted ${userInsertedCount} new user match records (${matchRecords.length - userInsertedCount} duplicates skipped)`,
+		);
+
+		// CELEBRITY MATCHING (if job_type allows)
+		let celebrityMatchCount = 0;
+		const jobType = typedJob.job_type || "both";
+
+		if (jobType === "celebrity_match" || jobType === "both") {
+			console.log("Generating celebrity matches...");
+
+			// Determine opposite gender for filtering
+			const oppositeGender =
+				typedProfile.gender === "male" ? "female" : "male";
+
+			// Find celebrity matches using the vector search function
+			const { data: celebrityMatches, error: celebError } = await supabase.rpc(
+				"find_celebrity_matches",
+				{
+					query_embedding: typedJob.embedding,
+					match_count: 20,
+					gender_filter: oppositeGender,
+					category_filter: null, // No category filter for now
+				},
+			);
+
+			if (celebError) {
+				console.error("Error finding celebrity matches:", celebError);
+				// Don't fail the entire job, just log the error
+			} else if (celebrityMatches && celebrityMatches.length > 0) {
+				const typedCelebMatches = celebrityMatches as CelebrityMatch[];
+				console.log(`Found ${typedCelebMatches.length} celebrity matches`);
+
+				// Prepare celebrity match records
+				const celebMatchRecords: MatchRecord[] = typedCelebMatches.map(
+					(celeb) => ({
+						face_a_id: typedJob.face_id,
+						face_b_id: null, // No face_b for celebrity matches
+						celebrity_id: celeb.celebrity_id,
+						similarity_score: celeb.similarity,
+						match_type: "user_to_celebrity",
+					}),
+				);
+
+				// Insert celebrity matches one by one to handle duplicates gracefully
+				// (upsert doesn't work well with partial unique indexes)
+				let insertedCount = 0;
+				for (const celebMatch of celebMatchRecords) {
+					const { error: celebInsertError } = await supabase
+						.from("matches")
+						.insert(celebMatch)
+						.select();
+
+					if (celebInsertError) {
+						// Check if it's a duplicate error (constraint violation)
+						if (celebInsertError.code === "23505") {
+							// Duplicate key - skip silently
+							continue;
+						}
+						console.error(
+							`Error inserting celebrity match: ${celebInsertError.message}`,
+						);
+					} else {
+						insertedCount++;
+					}
+				}
+
+				celebrityMatchCount = insertedCount;
+				console.log(
+					`✅ Inserted ${celebrityMatchCount} new celebrity match records (${celebMatchRecords.length - insertedCount} duplicates skipped)`,
+				);
+			} else {
+				console.log("No celebrity matches found");
+			}
 		}
 
 		// Mark job as completed
@@ -323,7 +396,7 @@ Deno.serve(async (req) => {
 		}
 
 		console.log(
-			`✅ Job ${typedJob.id} completed successfully with ${matchRecords.length} matches`,
+			`✅ Job ${typedJob.id} completed successfully with ${userInsertedCount} user matches and ${celebrityMatchCount} celebrity matches`,
 		);
 
 		// Return success response
@@ -333,7 +406,9 @@ Deno.serve(async (req) => {
 				message: "Matches generated successfully",
 				jobId: typedJob.id,
 				userId: typedJob.user_id,
-				matchCount: matchRecords.length,
+				userMatchCount: userInsertedCount,
+				celebrityMatchCount: celebrityMatchCount,
+				totalMatchCount: userInsertedCount + celebrityMatchCount,
 				processed: true,
 				matches: typedMatches.map((m) => ({
 					profile_name: m.profile_name,

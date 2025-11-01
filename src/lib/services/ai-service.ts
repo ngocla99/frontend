@@ -63,7 +63,6 @@ export async function extractEmbedding(imageBuffer: Buffer): Promise<number[]> {
 		},
 		body: formData,
 	});
-	console.log("🚀 ~ extractEmbedding ~ response:", response);
 
 	if (!response.ok) {
 		const error = await response.json();
