@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 
@@ -84,8 +86,8 @@ export const GET = withSession(async ({ params, supabase, session }) => {
 			if (!face) return null;
 
 			const { data: signedUrl } = await supabase.storage
-				.from("user_images")
-				.createSignedUrl(face.image_path, 3600);
+				.from(STORAGE_BUCKETS.USER_IMAGES)
+				.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
 
 			return signedUrl?.signedUrl || null;
 		};
