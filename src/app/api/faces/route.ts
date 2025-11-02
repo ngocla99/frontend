@@ -5,6 +5,10 @@ import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import { extractEmbedding } from "@/lib/services/ai-service";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import {
+	batchSignUrls,
+	getSignedUrl,
+} from "@/lib/utils/deduplicate-signed-urls";
 
 /**
  * POST /api/faces - Upload face image with automatic match generation
@@ -191,20 +195,22 @@ export const GET = withSession(async ({ session, supabase }) => {
 		throw facesError;
 	}
 
-	// Generate signed URLs for each face
-	const facesWithUrls = await Promise.all(
-		(faces || []).map(async (face) => {
-			const { data } = await supabase.storage
-				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
+	// OPTIMIZATION: Batch sign all unique URLs at once
+	const imagePaths = (faces || []).map((face) => face.image_path);
 
-			return {
-				id: face.id,
-				image_url: data?.signedUrl,
-				created_at: face.created_at,
-			};
-		}),
+	const signedUrlMap = await batchSignUrls(
+		supabase,
+		STORAGE_BUCKETS.USER_IMAGES,
+		imagePaths,
+		env.SUPABASE_SIGNED_URL_TTL,
 	);
+
+	// Map faces to response format using cached signed URLs
+	const facesWithUrls = (faces || []).map((face) => ({
+		id: face.id,
+		image_url: getSignedUrl(signedUrlMap, face.image_path),
+		created_at: face.created_at,
+	}));
 
 	return NextResponse.json({
 		faces: facesWithUrls,

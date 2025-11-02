@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
+import {
+	batchSignUrls,
+	getSignedUrl,
+} from "@/lib/utils/deduplicate-signed-urls";
 
 /**
  * GET /api/baby/list - List user's baby images
@@ -68,9 +72,31 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 		babyGroups.get(baby.match_id)!.push(baby);
 	});
 
-	// Format response to match frontend expectations
-	const formattedBabies = await Promise.all(
-		Array.from(babyGroups.entries()).map(async ([matchId, babyImages]) => {
+	// OPTIMIZATION: Collect all unique image paths first
+	const allImagePaths: string[] = [];
+
+	for (const [, babyImages] of babyGroups.entries()) {
+		const firstBaby = babyImages[0];
+		const match = firstBaby.match;
+
+		const imagePathA = match?.face_a?.image_path;
+		const imagePathB = match?.face_b?.image_path;
+
+		if (imagePathA) allImagePaths.push(imagePathA);
+		if (imagePathB) allImagePaths.push(imagePathB);
+	}
+
+	// Batch sign all unique URLs at once
+	const signedUrlMap = await batchSignUrls(
+		supabase,
+		STORAGE_BUCKETS.USER_IMAGES,
+		allImagePaths,
+		env.SUPABASE_SIGNED_URL_TTL,
+	);
+
+	// Format response using cached signed URLs
+	const formattedBabies = Array.from(babyGroups.entries()).map(
+		([matchId, babyImages]) => {
 			const firstBaby = babyImages[0];
 			const match = firstBaby.match;
 
@@ -82,22 +108,9 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 
 			const isProfileAMe = profileA?.id === userId;
 
-			// Create signed URLs for face images
-			const [signedUrlA, signedUrlB] = await Promise.all([
-				imagePathA
-					? supabase.storage
-							.from(STORAGE_BUCKETS.USER_IMAGES)
-							.createSignedUrl(imagePathA, env.SUPABASE_SIGNED_URL_TTL)
-					: Promise.resolve({ data: { signedUrl: "" } }),
-				imagePathB
-					? supabase.storage
-							.from(STORAGE_BUCKETS.USER_IMAGES)
-							.createSignedUrl(imagePathB, env.SUPABASE_SIGNED_URL_TTL)
-					: Promise.resolve({ data: { signedUrl: "" } }),
-			]);
-
-			const imageA = signedUrlA.data?.signedUrl || "";
-			const imageB = signedUrlB.data?.signedUrl || "";
+			// Get signed URLs from cache
+			const imageA = getSignedUrl(signedUrlMap, imagePathA) || "";
+			const imageB = getSignedUrl(signedUrlMap, imagePathB) || "";
 
 			return {
 				id: matchId,
@@ -123,7 +136,7 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 					image_url: b.image_url,
 				})),
 			};
-		}),
+		},
 	);
 
 	// Apply pagination to grouped results

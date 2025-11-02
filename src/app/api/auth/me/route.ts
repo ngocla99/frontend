@@ -25,12 +25,25 @@ export async function GET(_request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// Get user profile
-		const { data: profile, error: profileError } = await supabase
-			.from("profiles")
-			.select("*")
-			.eq("id", user.id)
-			.single();
+		// Fetch profile and face in parallel
+		const [profileResult, faceResult] = await Promise.all([
+			// Get user profile
+			supabase
+				.from("profiles")
+				.select("*")
+				.eq("id", user.id)
+				.single(),
+			// Get default face image (we'll filter later)
+			supabase
+				.from("faces")
+				.select("image_path, id")
+				.eq("profile_id", user.id)
+				.order("created_at", { ascending: false })
+				.limit(10), // Get multiple faces in case we need to find default
+		]);
+
+		const { data: profile, error: profileError } = profileResult;
+		const { data: faces } = faceResult;
 
 		// Profile should exist due to trigger, but handle edge case
 		if (profileError || !profile) {
@@ -39,12 +52,8 @@ export async function GET(_request: NextRequest) {
 
 		// Get default face image if exists
 		let defaultFaceImage = null;
-		if (profile.default_face_id) {
-			const { data: face } = await supabase
-				.from("faces")
-				.select("image_path")
-				.eq("id", profile.default_face_id)
-				.single();
+		if (profile.default_face_id && faces && faces.length > 0) {
+			const face = faces.find((f) => f.id === profile.default_face_id);
 
 			if (face) {
 				const { data: signedUrl } = await supabase.storage
