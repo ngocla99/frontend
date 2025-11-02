@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
+import {
+	batchSignUrls,
+	getSignedUrl,
+} from "@/lib/utils/deduplicate-signed-urls";
 import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
 
 /**
@@ -112,7 +116,27 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		});
 	}
 
-	// Group matches by unique user pairs
+	// OPTIMIZATION: Collect all unique image paths first
+	const allImagePaths: string[] = [];
+
+	for (const match of matchRecords) {
+		const isUserA = match.face_a_id === faceId;
+		const myFaceData = (isUserA ? match.face_a : match.face_b) as any;
+		const otherFaceData = (isUserA ? match.face_b : match.face_a) as any;
+
+		if (myFaceData?.image_path) allImagePaths.push(myFaceData.image_path);
+		if (otherFaceData?.image_path) allImagePaths.push(otherFaceData.image_path);
+	}
+
+	// Batch sign all unique URLs at once
+	const signedUrlMap = await batchSignUrls(
+		supabase,
+		STORAGE_BUCKETS.USER_IMAGES,
+		allImagePaths,
+		env.SUPABASE_SIGNED_URL_TTL,
+	);
+
+	// Group matches by unique user pairs (now using cached signed URLs)
 	const groupedMatches = new Map();
 
 	for (const match of matchRecords) {
@@ -140,29 +164,26 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 				? myFaceData.profile[0]
 				: myFaceData.profile;
 
-			// Get signed URL for other user's image (use their default face or first match face)
-			const { data: otherImageUrl } = await supabase.storage
-				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(otherFaceData.image_path, env.SUPABASE_SIGNED_URL_TTL);
-
-			// Get signed URL for my image
-			const { data: myImageUrl } = await supabase.storage
-				.from(STORAGE_BUCKETS.USER_IMAGES)
-				.createSignedUrl(myFaceData.image_path, env.SUPABASE_SIGNED_URL_TTL);
+			// Get signed URLs from cache
+			const otherImageUrl = getSignedUrl(
+				signedUrlMap,
+				otherFaceData.image_path,
+			);
+			const myImageUrl = getSignedUrl(signedUrlMap, myFaceData.image_path);
 
 			groupedMatches.set(key, {
 				me: {
 					id: myProfile.id,
 					name: myProfile.name,
 					gender: myProfile.gender,
-					image: myImageUrl?.signedUrl || "",
+					image: myImageUrl || "",
 					school: myProfile.school,
 				},
 				other: {
 					id: otherProfile.id,
 					name: otherProfile.name,
 					gender: otherProfile.gender,
-					image: otherImageUrl?.signedUrl || "",
+					image: otherImageUrl || "",
 					school: otherProfile.school,
 				},
 				number_of_matches: 0,
@@ -171,14 +192,12 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 			});
 		}
 
-		// Get signed URLs for this specific match's images
-		const { data: myMatchImageUrl } = await supabase.storage
-			.from(STORAGE_BUCKETS.USER_IMAGES)
-			.createSignedUrl(myFaceData.image_path, env.SUPABASE_SIGNED_URL_TTL);
-
-		const { data: otherMatchImageUrl } = await supabase.storage
-			.from(STORAGE_BUCKETS.USER_IMAGES)
-			.createSignedUrl(otherFaceData.image_path, env.SUPABASE_SIGNED_URL_TTL);
+		// Get signed URLs from cache
+		const myMatchImageUrl = getSignedUrl(signedUrlMap, myFaceData.image_path);
+		const otherMatchImageUrl = getSignedUrl(
+			signedUrlMap,
+			otherFaceData.image_path,
+		);
 
 		// Add this match to the group
 		const group = groupedMatches.get(key);
@@ -186,8 +205,8 @@ export const GET = withSession(async ({ searchParams, supabase, session }) => {
 		group.matches.push({
 			id: match.id,
 			created_at: match.created_at,
-			my_image: myMatchImageUrl?.signedUrl || "",
-			other_image: otherMatchImageUrl?.signedUrl || "",
+			my_image: myMatchImageUrl || "",
+			other_image: otherMatchImageUrl || "",
 			similarity_score: match.similarity_score, // Distance value (for backward compatibility)
 			similarity_percentage: calculateMatchPercentage(match.similarity_score), // Engaging exponential formula
 			reactions: {}, // TODO: Join reactions table when implemented

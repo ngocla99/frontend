@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getOtherUserId } from "@/lib/api/connections";
-import { updateOrCreateMessageNotification } from "@/lib/api/notifications";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getOtherUserId } from "@/lib/supabase/services/connections";
+import { updateOrCreateMessageNotification } from "@/lib/supabase/services/notifications";
 
 /**
  * POST /api/messages

@@ -15,7 +15,7 @@ interface UseChatRealtimeOptions {
 
 /**
  * Hook for subscribing to real-time message updates for a connection
- * Uses Supabase Realtime with postgres_changes pattern
+ * Uses Supabase Realtime with broadcast pattern
  * Based on Supabase UI best practices with optimistic updates
  */
 export function useChatRealtime({

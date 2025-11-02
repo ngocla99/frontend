@@ -22,6 +22,7 @@ const navItems: NavItem[] = [];
 const navItemsMobile: NavItem[] = [
 	{ name: "Live Matches", href: "/" },
 	{ name: "Your Matches", href: "/your-matches" },
+	{ name: "Message", href: "/chat" },
 	{ name: "Profile", href: "/profile" },
 ];
 

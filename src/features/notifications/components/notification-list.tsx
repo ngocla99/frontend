@@ -3,6 +3,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Notification } from "../types";
 import { NotificationItem } from "./notification-item";
+import { NotificationListSkeleton } from "./notification-skeleton";
 
 interface NotificationListProps {
 	notifications: Notification[];
@@ -18,9 +19,9 @@ export function NotificationList({
 }: NotificationListProps) {
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-			</div>
+			<ScrollArea className="h-[400px]">
+				<NotificationListSkeleton count={3} />
+			</ScrollArea>
 		);
 	}
 

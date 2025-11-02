@@ -3,6 +3,10 @@ import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
+import {
+	batchSignUrls,
+	getSignedUrl,
+} from "@/lib/utils/deduplicate-signed-urls";
 
 /**
  * GET /api/connections
@@ -67,6 +71,39 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 			throw error;
 		}
 
+		// OPTIMIZATION: First collect all face IDs to fetch in one query
+		const faceIds = (connections || [])
+			.map((conn: any) => {
+				const otherUser =
+					conn.profile_a_id === session.user.id
+						? conn.profile_b
+						: conn.profile_a;
+				return otherUser.default_face_id;
+			})
+			.filter(Boolean);
+
+		// Fetch all faces in one query
+		const { data: faces } = await supabase
+			.from("faces")
+			.select("id, image_path")
+			.in("id", faceIds);
+
+		// Create face ID to image path map
+		const faceMap = new Map(
+			(faces || []).map((f: any) => [f.id, f.image_path]),
+		);
+
+		// Collect all unique image paths
+		const imagePaths = Array.from(faceMap.values());
+
+		// Batch sign all unique URLs at once
+		const signedUrlMap = await batchSignUrls(
+			supabase,
+			STORAGE_BUCKETS.USER_IMAGES,
+			imagePaths,
+			env.SUPABASE_SIGNED_URL_TTL,
+		);
+
 		// For each connection, get the last message and unread count
 		const enrichedConnections = await Promise.all(
 			(connections || []).map(async (conn: any) => {
@@ -77,21 +114,11 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 						: conn.profile_a;
 				console.log("🚀 ~ otherUser:", otherUser);
 
-				// Get other user's profile image
+				// Get other user's profile image from cache
 				let profileImage = null;
 				if (otherUser.default_face_id) {
-					const { data: face } = await supabase
-						.from("faces")
-						.select("image_path")
-						.eq("id", otherUser.default_face_id)
-						.single();
-
-					if (face) {
-						const { data: signedUrl } = await supabase.storage
-							.from(STORAGE_BUCKETS.USER_IMAGES)
-							.createSignedUrl(face.image_path, env.SUPABASE_SIGNED_URL_TTL);
-						profileImage = signedUrl?.signedUrl || null;
-					}
+					const imagePath = faceMap.get(otherUser.default_face_id);
+					profileImage = getSignedUrl(signedUrlMap, imagePath);
 				}
 
 				// Get last message

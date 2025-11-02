@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getRandomIcebreaker } from "../utils/icebreakers";
+import { getRandomIcebreaker } from "../../utils/icebreakers";
 import { createAndBroadcastNotification } from "./notifications";
 
 /**

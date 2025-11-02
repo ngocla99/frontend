@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { env } from "@/config/env";
+import { STORAGE_BUCKETS } from "@/lib/constants/constant";
+import { withSession } from "@/lib/middleware/with-session";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
 	checkBothUsersGeneratedBaby,
 	checkMutualConnection,
 	createMutualConnection,
-} from "@/lib/api/connections";
-import { createAndBroadcastNotification } from "@/lib/api/notifications";
-import { STORAGE_BUCKETS } from "@/lib/constants/constant";
-import { withSession } from "@/lib/middleware/with-session";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+} from "@/lib/supabase/services/connections";
+import { createAndBroadcastNotification } from "@/lib/supabase/services/notifications";
 
 /**
  * POST /api/baby - Generate baby image from match
