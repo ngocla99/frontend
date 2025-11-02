@@ -10,21 +10,19 @@ export default async function HomePage() {
 		error: authError,
 	} = await supabase.auth.getUser();
 
-	if (authError || !user) {
-		redirect("/auth/sign-in");
-	}
+	if (user && !authError) {
+		const { data: profile, error: profileError } = await supabase
+			.from("profiles")
+			.select("*")
+			.eq("id", user.id)
+			.single();
 
-	const { data: profile, error: profileError } = await supabase
-		.from("profiles")
-		.select("*")
-		.eq("id", user.id)
-		.single();
+		// TODO: Add a check for age
+		const isOnboarding = profile && (!profile?.name || !profile?.gender);
 
-	// TODO: Add a check for age
-	const isOnboarding = profile && (!profile?.name || !profile?.gender);
-
-	if (profileError || isOnboarding) {
-		redirect("/onboarding");
+		if (profileError || isOnboarding) {
+			redirect("/onboarding");
+		}
 	}
 
 	return <HomeContent />;

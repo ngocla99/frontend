@@ -58,17 +58,10 @@ export const CelebrityMatchCard = ({
 						<h3 className="font-bold text-foreground text-base sm:text-lg truncate mb-0.5">
 							{celebMatch.celeb.name}
 						</h3>
-						<p className="text-xs sm:text-sm text-muted-foreground truncate">
-							Celebrity • {celebMatch.timestamp}
+						<p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
+							{celebMatch.celeb.category} • {celebMatch.timestamp}
 						</p>
 					</div>
-
-					{/* Optional: School info if available */}
-					{celebMatch.celeb.school && (
-						<p className="text-xs text-muted-foreground/80 truncate mt-1">
-							{celebMatch.celeb.school}
-						</p>
-					)}
 				</div>
 
 				{/* Match Percentage - Right Side */}

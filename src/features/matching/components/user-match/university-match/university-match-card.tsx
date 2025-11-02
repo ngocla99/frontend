@@ -94,7 +94,7 @@ export function UniversityMatchCard({
 							className="relative w-14 h-14 rounded-full border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 						/>
 					</div>
-					<div className="text-center">
+					<div className="flex flex-col items-center">
 						<p className="text-xs font-semibold text-gray-800 group-hover:text-pink-600 transition-colors duration-300 truncate max-w-[60px]">
 							{match.me.name}
 						</p>
@@ -179,7 +179,7 @@ export function UniversityMatchCard({
 							className="relative w-14 h-14 rounded-full border-3 border-white shadow-lg group-hover/avatar:scale-110 transition-transform duration-300"
 						/>
 					</div>
-					<div className="text-center">
+					<div className="flex flex-col items-center">
 						<p className="text-xs font-semibold text-gray-800 group-hover:text-purple-600 transition-colors duration-300 truncate max-w-[60px]">
 							{match.other.name}
 						</p>

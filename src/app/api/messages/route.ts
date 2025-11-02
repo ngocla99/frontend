@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getOtherUserId } from "@/lib/connections";
+import { getOtherUserId } from "@/lib/api/connections";
+import { updateOrCreateMessageNotification } from "@/lib/api/notifications";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
-import { updateOrCreateMessageNotification } from "@/lib/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**

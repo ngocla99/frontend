@@ -48,7 +48,6 @@ const AI_SERVICE_API_KEY = env.PYTHON_AI_SERVICE_API_KEY;
  * ```typescript
  * const imageBuffer = await file.arrayBuffer();
  * const embedding = await extractEmbedding(Buffer.from(imageBuffer));
- * await upsertFaceEmbedding(faceId, embedding);
  * ```
  */
 export async function extractEmbedding(imageBuffer: Buffer): Promise<number[]> {

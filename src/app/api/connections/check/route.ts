@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { checkMutualConnection } from "@/lib/connections";
+import { checkMutualConnection } from "@/lib/api/connections";
 import { handleApiError } from "@/lib/middleware/error-handler";
 import { withSession } from "@/lib/middleware/with-session";
 

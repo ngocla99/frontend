@@ -4,10 +4,10 @@ import {
 	checkBothUsersGeneratedBaby,
 	checkMutualConnection,
 	createMutualConnection,
-} from "@/lib/connections";
+} from "@/lib/api/connections";
+import { createAndBroadcastNotification } from "@/lib/api/notifications";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
-import { createAndBroadcastNotification } from "@/lib/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
