@@ -19,13 +19,7 @@ import { cn } from "@/lib/utils";
 export function ProfileDropdown({ className }: { className?: string }) {
 	const user = useUser();
 
-	const signOutMutation = useSignOut({
-		mutationConfig: {
-			onSuccess: () => {
-				window.location.href = "/";
-			},
-		},
-	});
+	const signOutMutation = useSignOut();
 	const handleLogout = () => {
 		if (signOutMutation.isPending) return;
 		signOutMutation.mutate(undefined);

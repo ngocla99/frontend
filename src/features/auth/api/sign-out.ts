@@ -25,6 +25,7 @@ export const useSignOut = ({ mutationConfig }: UseSignOutOptions = {}) => {
 		onSuccess: async (...args) => {
 			queryClient.clear();
 			toast.success("Logged out successfully");
+			router.push("/auth/sign-in");
 			onSuccess?.(...args);
 		},
 		onError: (error: Error, ...args) => {

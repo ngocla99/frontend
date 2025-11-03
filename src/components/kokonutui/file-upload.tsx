@@ -552,7 +552,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 													onClick={triggerFileInput}
 													className="w-4/5 flex items-center bg-gradient-primary justify-center gap-2 rounded-lg dark:bg-white/10 px-4 py-2.5 text-sm font-semibold text-white dark:text-white transition-all duration-200 hover:bg-gray-200 dark:hover:bg-white/20 group"
 												>
-													<span>Upload File</span>
+													<span>Upload Photo</span>
 													<UploadCloud className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
 												</button>
 											</AuthGuard>

@@ -168,12 +168,13 @@ export function Header({ loading = false }: { loading?: boolean }) {
 									</>
 								) : (
 									<>
-										<SignInButton />
+										{/* <SignInButton /> */}
 										<SignUpButton />
 									</>
 								)}
 							</motion.div>
 						)}
+
 						<div className="flex items-center space-x-2 lg:hidden">
 							{user && <NotificationCenter userId={user.id} />}
 							<motion.button
@@ -211,10 +212,30 @@ export function Header({ loading = false }: { loading?: boolean }) {
 							exit="closed"
 						>
 							<div className="space-y-6 p-6">
-								{user && (
+								{user ? (
 									<>
 										<div className="space-y-1">
 											{navItemsMobile.map((item) => (
+												<motion.div
+													key={item.name}
+													variants={mobileItemVariants}
+												>
+													<Link
+														href={item.href}
+														className="text-foreground hover:bg-muted block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
+														onClick={() => setIsMobileMenuOpen(false)}
+													>
+														{item.name}
+													</Link>
+												</motion.div>
+											))}
+										</div>
+										<Separator />
+									</>
+								) : (
+									<>
+										<div className="space-y-1">
+											{[{ name: "Home", href: "/" }].map((item) => (
 												<motion.div
 													key={item.name}
 													variants={mobileItemVariants}
@@ -241,7 +262,7 @@ export function Header({ loading = false }: { loading?: boolean }) {
 										/>
 									) : (
 										<>
-											<SignInButton className="h-12 w-full" />
+											{/* <SignInButton className="h-12 w-full" /> */}
 											<SignUpButton className="h-12 justify-center w-full" />
 										</>
 									)}
