@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: no need check */
-import { useNotifications } from "@/components/notifications";
 import { env } from "@/config/env";
 
 type RequestOptions = {
@@ -73,13 +72,6 @@ async function fetchApi<T>(
 			.catch(() => ({ message: response.statusText }));
 		const message = errorData.error || errorData.message || response.statusText;
 
-		if (typeof window !== "undefined") {
-			useNotifications.getState().addNotification({
-				type: "error",
-				title: "Error",
-				message,
-			});
-		}
 		throw new Error(message);
 	}
 
