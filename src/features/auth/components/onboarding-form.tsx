@@ -7,6 +7,10 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
+import {
+	FileUpload,
+	type FileUploadRef,
+} from "@/components/kokonutui/file-upload";
 import Stepper, { Step } from "@/components/stepper";
 import {
 	Form,
@@ -25,6 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
+import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
 import type { UserApi } from "@/types/api";
 import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
@@ -47,6 +52,7 @@ const onboardingSchema = z.object({
 export function OnboardingForm() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const fileUploadRef = React.useRef<FileUploadRef>(null);
 	const [currentStep, setCurrentStep] = React.useState(1);
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
 	const currentUser = useUser();
@@ -107,9 +113,9 @@ export function OnboardingForm() {
 	});
 
 	const onSubmit = (values: UpdateMeInput) => {
-		if (updateMeMutation.isPending) return;
-		setIsSubmitting(true);
-		updateMeMutation.mutate(values);
+		// if (updateMeMutation.isPending) return;
+		// setIsSubmitting(true);
+		// updateMeMutation.mutate(values);
 	};
 
 	// Watch form values to determine if current step is valid
@@ -125,6 +131,11 @@ export function OnboardingForm() {
 		});
 	};
 
+	const handleUploadFile = (file: File) => {
+		// Handle any additional logic after file upload if needed
+		fileUploadRef.current?.reset();
+	};
+
 	const handleStepChange = (step: number) => {
 		setCurrentStep(step);
 	};
@@ -136,7 +147,7 @@ export function OnboardingForm() {
 			case 2:
 				return ["gender"];
 			// case 3:
-			// return ["school"];
+			// 	return ["school"];
 			default:
 				return [];
 		}
@@ -167,7 +178,7 @@ export function OnboardingForm() {
 						onStepChange={handleStepChange}
 						onFinalStepCompleted={() => {
 							// Validate all fields before final submission
-							form.handleSubmit(onSubmit)();
+							// form.handleSubmit(onSubmit)();
 						}}
 						backButtonText="Previous"
 						nextButtonText="Next"
@@ -261,6 +272,22 @@ export function OnboardingForm() {
 									)}
 								/>
 							</div>
+						</Step>
+						<Step>
+							<FileUpload
+								ref={fileUploadRef}
+								onUploadSuccess={handleUploadFile}
+								acceptedFileTypes={[
+									"image/png",
+									"image/jpeg",
+									"image/jpg",
+									"image/webp",
+								]}
+								maxFileSize={10 * 1024 * 1024} // 10MB
+								uploadDelay={100}
+								validateFile={() => null}
+								className="w-full"
+							/>
 						</Step>
 					</Stepper>
 				</form>
