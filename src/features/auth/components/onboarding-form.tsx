@@ -132,11 +132,22 @@ export function OnboardingForm() {
 			updateMeMutation.isPending ||
 			uploadFaceMutation.isPending ||
 			!uploadedFile
-		)
+		) {
 			return;
+		}
+
 		setIsSubmitting(true);
-		updateMeMutation.mutate(values);
-		uploadFaceMutation.mutate({ file: uploadedFile! });
+		uploadFaceMutation.mutate(
+			{ file: uploadedFile! },
+			{
+				onSuccess: () => {
+					updateMeMutation.mutate(values);
+				},
+				onError: () => {
+					setIsSubmitting(false);
+				},
+			},
+		);
 	};
 
 	// Watch form values to determine if current step is valid
