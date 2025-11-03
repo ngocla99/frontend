@@ -2,9 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import z from "zod";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import {
@@ -12,6 +15,7 @@ import {
 	type FileUploadRef,
 } from "@/components/kokonutui/file-upload";
 import Stepper, { Step } from "@/components/stepper";
+import { Button } from "@/components/ui/button";
 import {
 	Form,
 	FormControl,
@@ -29,7 +33,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
-import { UploadPhoto } from "@/features/matching/components/upload-photo/upload-photo";
+import { useUploadFace } from "@/features/matching/api/upload-face";
+import { useVerifyFace } from "@/features/matching/api/verify-face";
 import type { UserApi } from "@/types/api";
 import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
@@ -49,13 +54,23 @@ const onboardingSchema = z.object({
 	gender: z.string().min(1, { message: "Gender is required" }),
 });
 
+const TOTAL_ONBOARDING_STEPS = 3;
+
 export function OnboardingForm() {
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 	const [currentStep, setCurrentStep] = React.useState(1);
 	const [isSubmitting, setIsSubmitting] = React.useState(false);
+	const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
+	const [uploadedFilePreview, setUploadedFilePreview] = React.useState<
+		string | null
+	>(null);
 	const currentUser = useUser();
+
+	const verifyFaceMutation = useVerifyFace();
+
+	const uploadFaceMutation = useUploadFace();
 
 	const updateMeMutation = useUpdateMe({
 		mutationConfig: {
@@ -113,9 +128,15 @@ export function OnboardingForm() {
 	});
 
 	const onSubmit = (values: UpdateMeInput) => {
-		// if (updateMeMutation.isPending) return;
-		// setIsSubmitting(true);
-		// updateMeMutation.mutate(values);
+		if (
+			updateMeMutation.isPending ||
+			uploadFaceMutation.isPending ||
+			!uploadedFile
+		)
+			return;
+		setIsSubmitting(true);
+		updateMeMutation.mutate(values);
+		uploadFaceMutation.mutate({ file: uploadedFile! });
 	};
 
 	// Watch form values to determine if current step is valid
@@ -131,10 +152,54 @@ export function OnboardingForm() {
 		});
 	};
 
-	const handleUploadFile = (file: File) => {
-		// Handle any additional logic after file upload if needed
+	const handleVerificationStart = (file: File) => {
+		if (verifyFaceMutation.isPending) return;
+		// Verify face in the uploaded image
+		verifyFaceMutation.mutate(
+			{ file },
+			{
+				onSuccess: (data) => {
+					if (data.face_detected) {
+						// Face detected successfully - store file and show preview
+						setUploadedFile(file);
+						const previewUrl = URL.createObjectURL(file);
+						setUploadedFilePreview(previewUrl);
+					} else {
+						// No face detected - reset upload
+						setUploadedFile(null);
+						if (uploadedFilePreview) {
+							URL.revokeObjectURL(uploadedFilePreview);
+							setUploadedFilePreview(null);
+						}
+						fileUploadRef.current?.reset();
+					}
+				},
+				onError: () => {
+					// Error during verification - reset upload
+					fileUploadRef.current?.reset();
+				},
+			},
+		);
+	};
+
+	const handleRemoveFile = () => {
+		// Clean up the preview URL to prevent memory leaks
+		if (uploadedFilePreview) {
+			URL.revokeObjectURL(uploadedFilePreview);
+		}
+		setUploadedFile(null);
+		setUploadedFilePreview(null);
 		fileUploadRef.current?.reset();
 	};
+
+	// Cleanup preview URL on unmount
+	React.useEffect(() => {
+		return () => {
+			if (uploadedFilePreview) {
+				URL.revokeObjectURL(uploadedFilePreview);
+			}
+		};
+	}, [uploadedFilePreview]);
 
 	const handleStepChange = (step: number) => {
 		setCurrentStep(step);
@@ -163,6 +228,11 @@ export function OnboardingForm() {
 		);
 	}
 
+	const nextButtonDisabled =
+		!isCurrentStepValid(currentStep) ||
+		updateMeMutation.isPending ||
+		(currentStep === TOTAL_ONBOARDING_STEPS && !uploadedFilePreview);
+
 	return (
 		<div className="min-h-screen flex flex-col gap-4 items-stretch justify-center bg-transparent sm:bg-gradient-subtle px-4">
 			<div className="text-center">
@@ -172,21 +242,20 @@ export function OnboardingForm() {
 				</p>
 			</div>
 			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)}>
+				<form>
 					<Stepper
 						initialStep={1}
 						onStepChange={handleStepChange}
 						onFinalStepCompleted={() => {
 							// Validate all fields before final submission
-							// form.handleSubmit(onSubmit)();
+							form.handleSubmit(onSubmit)();
 						}}
 						backButtonText="Previous"
 						nextButtonText="Next"
 						nextButtonProps={{
-							disabled:
-								!isCurrentStepValid(currentStep) || updateMeMutation.isPending,
+							disabled: nextButtonDisabled,
 							className: `duration-350 flex items-center justify-center rounded-full py-1.5 px-3.5 font-medium tracking-tight text-white transition ${
-								!isCurrentStepValid(currentStep) || updateMeMutation.isPending
+								nextButtonDisabled
 									? "bg-gray-300 cursor-not-allowed opacity-50"
 									: "bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 active:from-pink-600 active:to-rose-600"
 							}`,
@@ -274,20 +343,99 @@ export function OnboardingForm() {
 							</div>
 						</Step>
 						<Step>
-							<FileUpload
-								ref={fileUploadRef}
-								onUploadSuccess={handleUploadFile}
-								acceptedFileTypes={[
-									"image/png",
-									"image/jpeg",
-									"image/jpg",
-									"image/webp",
-								]}
-								maxFileSize={10 * 1024 * 1024} // 10MB
-								uploadDelay={100}
-								validateFile={() => null}
-								className="w-full"
-							/>
+							<div className="space-y-4">
+								{verifyFaceMutation.isPending && (
+									<div className="flex flex-col items-center justify-center py-8">
+										<AITextLoading
+											texts={["Verifying face...", "Please wait..."]}
+										/>
+										<p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+											Checking if your photo contains a clear face
+										</p>
+									</div>
+								)}
+
+								{!verifyFaceMutation.isPending &&
+								uploadedFile &&
+								uploadedFilePreview ? (
+									<div className="flex flex-col items-center gap-6 animate-in fade-in-0 zoom-in-95 duration-300">
+										{/* Success Message */}
+										<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+											{/** biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
+											<svg
+												className="size-5"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth={2}
+													d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+												/>
+											</svg>
+											<span className="text-sm font-medium">
+												Face verified successfully!
+											</span>
+										</div>
+
+										{/* Image Preview */}
+										<div className="relative group">
+											{/* Image container */}
+											<div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-white dark:border-gray-900 shadow-2xl">
+												<Image
+													src={uploadedFilePreview}
+													alt="Uploaded preview"
+													width={192}
+													height={192}
+													className="w-full h-full object-cover"
+													priority
+												/>
+
+												{/* Overlay on hover */}
+												<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+													<Button
+														type="button"
+														variant="destructive"
+														size="sm"
+														onClick={handleRemoveFile}
+														className="rounded-full"
+													>
+														<X className="size-4 mr-1" />
+														Remove
+													</Button>
+												</div>
+											</div>
+										</div>
+										{/* Change Photo Button */}
+										<Button
+											type="button"
+											variant="outline"
+											onClick={handleRemoveFile}
+											className="mt-2"
+										>
+											Change Photo
+										</Button>
+									</div>
+								) : !verifyFaceMutation.isPending ? (
+									<FileUpload
+										ref={fileUploadRef}
+										onUploadSuccess={handleVerificationStart}
+										acceptedFileTypes={[
+											"image/png",
+											"image/jpeg",
+											"image/jpg",
+											"image/webp",
+										]}
+										maxFileSize={10 * 1024 * 1024} // 10MB
+										uploadDelay={100}
+										validateFile={() => null}
+										classes={{ container: "w-full", dropzone: "p-0" }}
+										isOutlined={false}
+									/>
+								) : null}
+							</div>
 						</Step>
 					</Stepper>
 				</form>

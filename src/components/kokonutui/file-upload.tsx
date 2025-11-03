@@ -43,7 +43,11 @@ interface FileUploadProps {
 	/** Duration in milliseconds for the upload simulation. Defaults to 2000ms (2s), 0 for no simulation */
 	uploadDelay?: number;
 	validateFile?: (file: File) => FileError | null;
-	className?: string;
+	classes?: {
+		container?: string;
+		dropzone?: string;
+	};
+	isOutlined?: boolean;
 }
 
 // Interface for the exposed methods
@@ -262,7 +266,8 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 			onFileRemove = () => {},
 			uploadDelay = 2000,
 			validateFile = () => null,
-			className,
+			classes,
+			isOutlined = true,
 		},
 		ref,
 	) => {
@@ -480,17 +485,31 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 
 		return (
 			<div
-				className={cn("relative w-full max-w-sm mx-auto", className || "")}
+				className={cn(
+					"relative w-full max-w-sm mx-auto",
+					classes?.container || "",
+				)}
 				role="complementary"
 				aria-label="File upload"
 			>
-				<div className="group relative w-full rounded-xl bg-white dark:bg-black ring-1 ring-pink-200/50 dark:ring-pink-500/20 p-0.5">
+				<div
+					className={cn(
+						"group relative w-full rounded-xl bg-white dark:bg-black ring-1 ring-pink-200/50 dark:ring-pink-500/20 p-0.5",
+						!isOutlined && "ring-0",
+					)}
+				>
 					<div className="absolute inset-x-0 -top-px h-px w-full bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
 
-					<div className="relative w-full rounded-[10px] bg-gradient-to-br from-pink-50/30 via-white to-rose-50/30 dark:from-pink-950/20 dark:via-black dark:to-rose-950/20 p-1.5">
+					<div
+						className={cn(
+							"relative w-full rounded-[10px] bg-gradient-to-br from-pink-50/30 via-white to-rose-50/30 dark:from-pink-950/20 dark:via-black dark:to-rose-950/20 p-1.5",
+							!isOutlined && "p-0",
+						)}
+					>
 						<div
 							className={cn(
 								"relative mx-auto w-full overflow-hidden rounded-lg border border-pink-100/50 dark:border-pink-500/10 bg-white/90 dark:bg-black/50 backdrop-blur-sm",
+								!isOutlined && "border-none",
 								error ? "border-red-500/50" : "",
 							)}
 						>
@@ -522,7 +541,10 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 											}}
 											exit={{ opacity: 0, y: -10 }}
 											transition={{ duration: 0.2 }}
-											className="absolute inset-0 flex flex-col items-center justify-center p-6"
+											className={cn(
+												"absolute inset-0 flex flex-col items-center justify-center p-6",
+												classes?.dropzone || "",
+											)}
 											onDragOver={handleDragOver}
 											onDragLeave={handleDragLeave}
 											onDrop={handleDrop}
@@ -558,7 +580,7 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(
 											</AuthGuard>
 
 											<p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-												or drag and drop your file here
+												or drag and drop your photo here
 											</p>
 
 											<input

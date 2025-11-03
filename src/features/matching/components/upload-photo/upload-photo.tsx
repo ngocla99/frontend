@@ -74,7 +74,7 @@ export const UploadPhoto = ({ className }: { className?: string }) => {
 							maxFileSize={10 * 1024 * 1024} // 10MB
 							uploadDelay={100}
 							validateFile={() => null}
-							className="w-full"
+							classes={{ container: "w-full" }}
 						/>
 					</motion.div>
 				</AnimatePresence>

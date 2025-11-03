@@ -126,7 +126,7 @@ export function MagicLinkForm({ mode }: MagicLinkFormProps) {
 				</form>
 			</Form>
 
-			<p className="text-center text-sm text-muted-foreground">
+			{/* <p className="text-center text-sm text-muted-foreground">
 				{mode === "signin" ? (
 					<>
 						Don't have an account?{" "}
@@ -148,7 +148,7 @@ export function MagicLinkForm({ mode }: MagicLinkFormProps) {
 						</a>
 					</>
 				)}
-			</p>
+			</p> */}
 		</div>
 	);
 }
