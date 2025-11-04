@@ -41,6 +41,14 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 #### ✅ Completed Tasks
 
+- **[Online/Offline Status Feature](./tasks/online-offline-status.md)** ✅ Completed 2025-11-04
+  - Real-time presence tracking with Supabase Realtime
+  - Global Zustand store with single subscription (optimized performance)
+  - Online indicators (green/gray dots) in chat list and header
+  - "Last seen X ago" formatting (minutes, hours, days)
+  - Automatic last_seen update on disconnect
+  - Full TypeScript integration with atomic selectors
+
 - **[Baby Generation for University Matches](./tasks/baby-generation-university-matches.md)** ✅ Completed 2025-10-16
   - Integrated FAL.AI baby generation API with frontend
   - Connected baby generator component to real API endpoints

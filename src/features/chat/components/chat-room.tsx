@@ -20,6 +20,7 @@ interface ChatRoomProps {
 			id: string;
 			name: string;
 			profile_image: string | null;
+			last_seen?: string | null;
 		};
 		baby_image: string | null;
 	};

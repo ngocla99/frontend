@@ -47,12 +47,14 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
         profile_a:profiles!mutual_connections_profile_a_id_fkey (
           id,
           name,
-          default_face_id
+          default_face_id,
+          last_seen
         ),
         profile_b:profiles!mutual_connections_profile_b_id_fkey (
           id,
           name,
-          default_face_id
+          default_face_id,
+          last_seen
         ),
         baby:babies (
           image_url
@@ -112,7 +114,6 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 					conn.profile_a_id === session.user.id
 						? conn.profile_b
 						: conn.profile_a;
-				console.log("🚀 ~ otherUser:", otherUser);
 
 				// Get other user's profile image from cache
 				let profileImage = null;
@@ -144,6 +145,7 @@ export const GET = withSession(async ({ supabase, session, searchParams }) => {
 						id: otherUser.id,
 						name: otherUser.name,
 						profile_image: profileImage,
+						last_seen: otherUser.last_seen || null,
 					},
 					baby_image: conn.baby?.image_url || null,
 					last_message: lastMessage

@@ -3,17 +3,26 @@
 import { ArrowLeft } from "lucide-react";
 import { BlurImage } from "@/components/blur-image";
 import { Button } from "@/components/ui/button";
+import { usePresenceStatus } from "@/features/presence/hooks/use-presence-status";
+import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
 	otherUser: {
+		id: string;
 		name: string;
 		profile_image: string | null;
+		last_seen?: string | null;
 	};
 	babyImage: string | null;
 	onBack?: () => void;
 }
 
 export function ChatHeader({ otherUser, onBack }: ChatHeaderProps) {
+	const { isOnline, statusText } = usePresenceStatus(
+		otherUser.id,
+		otherUser.last_seen,
+	);
+
 	return (
 		<div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg z-10">
 			{/* User Info Header */}
@@ -39,7 +48,16 @@ export function ChatHeader({ otherUser, onBack }: ChatHeaderProps) {
 					<h2 className="font-semibold text-gray-900 dark:text-white truncate">
 						{otherUser.name}
 					</h2>
-					<p className="text-sm text-gray-500 dark:text-gray-400">Online</p>
+					<p
+						className={cn(
+							"text-sm",
+							isOnline
+								? "text-green-600 dark:text-green-500"
+								: "text-gray-500 dark:text-gray-400",
+						)}
+					>
+						{statusText}
+					</p>
 				</div>
 
 				{/* <div className="flex items-center gap-1 lg:gap-2">
