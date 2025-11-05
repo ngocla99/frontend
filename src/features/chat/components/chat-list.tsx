@@ -1,17 +1,12 @@
 "use client";
 
-import {
-	MessageCircle,
-	MessagesSquare,
-	Search as SearchIcon,
-} from "lucide-react";
+import { MessageCircle, Search as SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BlurImage } from "@/components/blur-image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { MutualConnection } from "../types";
+import { ConnectionItem } from "./connection-item";
 
 export interface ChatListProps {
 	connections: MutualConnection[];
@@ -100,39 +95,12 @@ export function ChatList({
 			{/* Connections list */}
 			<ScrollArea className="-mx-3 h-full p-3">
 				{filteredConnections.map((connection) => (
-					<div key={connection.id}>
-						<button
-							type="button"
-							className={cn(
-								"group hover:bg-accent hover:text-accent-foreground",
-								"flex w-full rounded-md px-2 py-2 text-start text-sm",
-								selectedConnectionId === connection.id && "sm:bg-muted",
-							)}
-							onClick={() => handleConnectionClick(connection)}
-						>
-							<div className="flex gap-2">
-								<BlurImage
-									src={connection.other_user.profile_image || ""}
-									alt={connection.other_user.name}
-									width={32}
-									height={32}
-									className="rounded-full object-cover size-8"
-								/>
-								<div>
-									<span className="col-start-2 row-span-2 font-medium">
-										{connection.other_user.name}
-									</span>
-									{connection.last_message && (
-										<span className="text-muted-foreground group-hover:text-accent-foreground/90 col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis">
-											{connection.last_message.is_mine && "You: "}
-											{connection.last_message.content}
-										</span>
-									)}
-								</div>
-							</div>
-						</button>
-						<Separator className="my-1" />
-					</div>
+					<ConnectionItem
+						key={connection.id}
+						connection={connection}
+						isSelected={selectedConnectionId === connection.id}
+						onClick={() => handleConnectionClick(connection)}
+					/>
 				))}
 			</ScrollArea>
 		</div>

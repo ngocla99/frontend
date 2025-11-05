@@ -30,14 +30,16 @@ export const GET = withSession(async ({ params, supabase, session }) => {
           name,
           gender,
           school,
-          default_face_id
+          default_face_id,
+          last_seen
         ),
         profile_b:profiles!mutual_connections_profile_b_id_fkey (
           id,
           name,
           gender,
           school,
-          default_face_id
+          default_face_id,
+          last_seen
         ),
         baby:babies (
           image_url
@@ -111,6 +113,7 @@ export const GET = withSession(async ({ params, supabase, session }) => {
 				gender: connData.profile_a.gender,
 				school: connData.profile_a.school,
 				profile_image: profileAImage,
+				last_seen: connData.profile_a.last_seen || null,
 			},
 			profile_b: {
 				id: connData.profile_b.id,
@@ -118,6 +121,7 @@ export const GET = withSession(async ({ params, supabase, session }) => {
 				gender: connData.profile_b.gender,
 				school: connData.profile_b.school,
 				profile_image: profileBImage,
+				last_seen: connData.profile_b.last_seen || null,
 			},
 			match_id: connData.match_id,
 			baby_image: connData.baby?.image_url || null,

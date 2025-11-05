@@ -180,7 +180,6 @@ export function RealtimeChat({
 						Send your first message to begin chatting
 					</p>
 				</div>
-				s{" "}
 			</div>
 		);
 	}

@@ -5,6 +5,7 @@ import React from "react";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import { getUserPhotosQueryOptions } from "@/features/matching/api/get-user-photos";
 import { useMatchRealtime } from "@/features/matching/hooks/use-live-match-realtime";
+import { usePresenceTracker } from "@/features/presence/hooks/use-presence-tracker";
 import { Header } from "./header";
 
 export function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
 	// Enable Supabase realtime for ALL new matches at app level
 	// This keeps the connection alive even when user uploads photos
 	useMatchRealtime();
+	usePresenceTracker();
 
 	React.useEffect(() => {
 		queryClient.prefetchQuery(getUserPhotosQueryOptions()).finally(() => {
