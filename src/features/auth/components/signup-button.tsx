@@ -9,7 +9,7 @@ export function SignUpButton({ className }: { className?: string }) {
 	const router = useRouter();
 
 	const handleSignUp = () => {
-		router.push("/auth/sign-up");
+		router.push("/auth/sign-in");
 	};
 
 	return (
