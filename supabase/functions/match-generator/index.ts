@@ -189,20 +189,19 @@ Deno.serve(async (req) => {
 			throw new Error(errorMsg);
 		}
 
-		// Find similar faces (filtered by school and gender)
-		console.log("Searching for similar faces...");
+		// Find similar faces using advanced matching algorithm (NEW: Sophisticated Scoring)
+		console.log("Searching for similar faces with advanced algorithm...");
 		console.log(
-			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=-1, limit=20`,
+			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=0.5, limit=20`,
 		);
 
 		const { data: matches, error: searchError } = await supabase.rpc(
-			"find_similar_faces_filtered",
+			"find_similar_faces_advanced",
 			{
-				query_embedding: typedJob.embedding,
+				query_face_id: typedJob.face_id,
 				user_school: typedProfile.school,
 				user_gender: typedProfile.gender,
-				exclude_profile_id: typedProfile.id,
-				match_threshold: -1,
+				match_threshold: 0.5, // 50% minimum with new composite scoring
 				match_count: 20,
 			},
 		);
