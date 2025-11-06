@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BlurImage } from "@/components/blur-image";
+import SiriOrb from "@/components/smoothui/siri-orb";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -231,34 +232,7 @@ export const BabyGenerator = ({
 									</div>
 								</motion.div>
 							) : generateBabyMutation.isPending || loadingExisting ? (
-								<motion.div className="relative w-24 h-24 md:w-28 md:h-28">
-									{/* Simple gradient glow */}
-									<motion.div
-										className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 blur-md"
-										animate={{
-											opacity: [0.4, 0.8, 0.4],
-											scale: [1, 1.1, 1],
-										}}
-										transition={{
-											duration: 1.5,
-											repeat: Number.POSITIVE_INFINITY,
-											ease: "easeInOut",
-										}}
-									/>
-									{/* Loading circle with spinner */}
-									<div className="relative w-full h-full rounded-full bg-white/30 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center">
-										<motion.div
-											animate={{ rotate: 360 }}
-											transition={{
-												duration: 1,
-												repeat: Number.POSITIVE_INFINITY,
-												ease: "linear",
-											}}
-										>
-											<Sparkles className="w-10 h-10 md:w-12 md:h-12 text-white" />
-										</motion.div>
-									</div>
-								</motion.div>
+								<SiriOrb size="96px" animationDuration={5} />
 							) : (
 								<div className="relative w-24 h-24 md:w-28 md:h-28">
 									{/* Animated glow ring */}
