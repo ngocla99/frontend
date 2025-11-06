@@ -1,12 +1,12 @@
 #!/usr/bin/env tsx
 /**
- * Celebrity Embedding Generator
+ * Celebrity Advanced Analysis Generator
  *
  * This script:
  * 1. Loads celebrity images from ./data/celebrities/ folder
- * 2. Extracts 512D InsightFace embeddings using existing AI service
+ * 2. Extracts advanced facial analysis (6-factor attributes) using AI service
  * 3. Uploads images to Supabase celebrity-images bucket
- * 4. Updates celebrities table with embeddings
+ * 4. Updates celebrities table with advanced attributes
  *
  * Usage:
  *   npx tsx scripts/generate-celebrity-embeddings.ts
@@ -34,7 +34,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
 import { readdir, readFile } from "fs/promises";
 import { basename, extname, join } from "path";
-import { extractEmbedding } from "../src/lib/services/ai-service";
+import { analyzeAdvancedFace } from "../src/lib/services/ai-service";
 
 // Configuration
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -118,20 +118,36 @@ async function processCelebrityImage(
 			return { success: true, filename, name: existing.name, skipped: true };
 		}
 
-		// 3. Extract embedding using existing AI service
-		let embedding: number[];
+		// 3. Extract advanced facial analysis using AI service
+		// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+		let analysis;
 		try {
-			embedding = await extractEmbedding(Buffer.from(imageBuffer));
-			console.log(`   ✓ Embedding extracted (${embedding.length}D vector)`);
+			analysis = await analyzeAdvancedFace(Buffer.from(imageBuffer));
+			console.log(
+				`   ✓ Advanced analysis complete (${analysis.embedding.length}D vector)`,
+			);
 		} catch (error: any) {
-			console.error(`   ✗ Failed to extract embedding: ${error.message}`);
+			console.error(`   ✗ Failed to analyze face: ${error.message}`);
 			return { success: false, filename, error: error.message };
 		}
 
+		// Validate face detected
+		if (!analysis.face_detected) {
+			console.error(`   ✗ No face detected in image`);
+			return {
+				success: false,
+				filename,
+				error: "No face detected",
+			};
+		}
+
 		// Validate embedding
-		if (!Array.isArray(embedding) || embedding.length !== 512) {
+		if (
+			!Array.isArray(analysis.embedding) ||
+			analysis.embedding.length !== 512
+		) {
 			console.error(
-				`   ✗ Invalid embedding: expected 512D vector, got ${embedding?.length}`,
+				`   ✗ Invalid embedding: expected 512D vector, got ${analysis.embedding?.length}`,
 			);
 			return {
 				success: false,
@@ -139,6 +155,38 @@ async function processCelebrityImage(
 				error: "Invalid embedding dimension",
 			};
 		}
+
+		// Quality gate check
+		const qualityScore = analysis.quality.overall;
+		const blurScore = analysis.quality.blur_score;
+		const illumination = analysis.quality.illumination;
+
+		if (qualityScore < 0.6) {
+			const issues = [];
+			if (blurScore < 0.6) issues.push(`blur: ${blurScore.toFixed(2)}`);
+			if (illumination < 0.6)
+				issues.push(`lighting: ${illumination.toFixed(2)}`);
+
+			console.log(
+				`   ⏭️  Quality too low (${qualityScore.toFixed(2)}): ${issues.join(", ")} - skipping`,
+			);
+			return {
+				success: false,
+				filename,
+				error: `Quality too low: ${issues.join(", ")}`,
+				skipped: true,
+			};
+		}
+
+		console.log(
+			`   ✓ Quality check passed (overall: ${qualityScore.toFixed(2)})`,
+		);
+		console.log(
+			`   ✓ Attributes: age=${analysis.age}, gender=${analysis.gender}, expression=${analysis.expression.dominant}`,
+		);
+		console.log(
+			`   ✓ Symmetry: ${analysis.symmetry_score.toFixed(3)}, Skin tone: LAB[${analysis.skin_tone.dominant_color_lab.map((v) => v.toFixed(1)).join(", ")}]`,
+		);
 
 		// 4. Upload image to Supabase storage
 		const storagePath = `celebrities/${category}/${filename}`;
@@ -173,8 +221,22 @@ async function processCelebrityImage(
 				category,
 				gender,
 				image_path: storagePath,
-				embedding: `[${embedding.join(",")}]`, // PostgreSQL vector format
+				embedding: `[${analysis.embedding.join(",")}]`, // PostgreSQL vector format
 				image_hash: imageHash,
+				// Advanced attributes (NEW)
+				age: analysis.age,
+				symmetry_score: analysis.symmetry_score,
+				skin_tone_lab: analysis.skin_tone.dominant_color_lab,
+				expression: analysis.expression.dominant,
+				geometry_ratios: analysis.geometry,
+				quality_score: analysis.quality.overall,
+				blur_score: analysis.quality.blur_score,
+				illumination_score: analysis.quality.illumination,
+				landmarks_68: analysis.landmarks_68,
+				pose: analysis.pose,
+				emotion_scores: analysis.expression.emotions,
+				expression_confidence: analysis.expression.confidence,
+				analyzed_at: new Date().toISOString(),
 			},
 			{
 				onConflict: "image_hash",
@@ -307,11 +369,14 @@ async function main() {
 		});
 	}
 
-	console.log("\n✅ Celebrity embedding generation complete!");
+	console.log("\n✅ Celebrity advanced analysis complete!");
 	console.log("\nNext steps:");
-	console.log("  1. Verify celebrities in Supabase dashboard");
-	console.log("  2. Test celebrity matching by uploading a photo");
-	console.log("  3. Check GET /api/matches/celebrity endpoint\n");
+	console.log(
+		"  1. Verify celebrities with advanced attributes in Supabase dashboard",
+	);
+	console.log("  2. Deploy updated Edge Function (match-generator)");
+	console.log("  3. Test celebrity matching by uploading a photo");
+	console.log("  4. Check GET /api/matches/celebrity endpoint\n");
 }
 
 // Run the script

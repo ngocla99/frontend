@@ -299,19 +299,17 @@ Deno.serve(async (req) => {
 		const jobType = typedJob.job_type || "both";
 
 		if (jobType === "celebrity_match" || jobType === "both") {
-			console.log("Generating celebrity matches...");
+			console.log("Generating celebrity matches with advanced algorithm...");
 
-			// Determine opposite gender for filtering
-			const oppositeGender = typedProfile.gender === "male" ? "female" : "male";
-
-			// Find celebrity matches using the vector search function
+			// Find celebrity matches using the advanced 6-factor algorithm (NEW)
 			const { data: celebrityMatches, error: celebError } = await supabase.rpc(
-				"find_celebrity_matches",
+				"find_celebrity_matches_advanced",
 				{
-					query_embedding: typedJob.embedding,
+					query_face_id: typedJob.face_id, // Changed from query_embedding to query_face_id
+					user_gender: typedProfile.gender, // Changed from gender_filter to user_gender
+					match_threshold: 0.5, // Same as user matching (50% minimum with composite scoring)
 					match_count: 20,
-					gender_filter: oppositeGender,
-					category_filter: null, // No category filter for now
+					category_filter: null, // Optional: filter by actor/musician/athlete
 				},
 			);
 

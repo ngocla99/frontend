@@ -4,8 +4,8 @@ import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import {
-	analyzeAdvancedFace,
 	type AdvancedFaceAnalysis,
+	analyzeAdvancedFace,
 } from "@/lib/services/ai-service";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
