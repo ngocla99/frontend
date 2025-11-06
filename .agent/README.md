@@ -41,6 +41,13 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 #### ✅ Completed Tasks
 
+- **[Fix Vector Extension Security Issue](./tasks/fix-vector-extension-security.md)** ✅ Completed 2025-11-06
+  - Moved vector extension from public schema to dedicated extensions schema
+  - Resolved Supabase security advisory warning (Extension in Public)
+  - Zero downtime migration with automatic type resolution via search_path
+  - All vector operations, indexes, and functions continue to work seamlessly
+  - No application code changes required
+
 - **[Online/Offline Status Feature](./tasks/online-offline-status.md)** ✅ Completed 2025-11-04
   - Real-time presence tracking with Supabase Realtime
   - Global Zustand store with single subscription (optimized performance)
