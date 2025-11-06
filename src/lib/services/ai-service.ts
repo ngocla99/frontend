@@ -42,6 +42,58 @@ interface BatchExtractResponse {
 	failed: number;
 }
 
+/**
+ * Advanced face analysis response with comprehensive attributes
+ * Used for sophisticated multi-factor matching algorithm
+ */
+export interface AdvancedFaceAnalysis {
+	face_detected: boolean;
+	embedding: number[];
+	bbox: number[];
+	confidence: number;
+
+	// Demographics
+	age: number;
+	gender: "male" | "female";
+
+	// Landmarks and pose
+	landmarks_68: [number, number][];
+	pose: {
+		yaw: number;
+		pitch: number;
+		roll: number;
+	};
+
+	// Quality metrics
+	quality: {
+		blur_score: number;
+		illumination: number;
+		overall: number;
+	};
+
+	// Aesthetic features
+	symmetry_score: number;
+	skin_tone: {
+		dominant_color_lab: [number, number, number];
+		hex: string;
+	};
+	expression: {
+		dominant: string;
+		confidence: number;
+		emotions: Record<string, number>;
+	};
+
+	// Geometry ratios
+	geometry: {
+		face_width_height_ratio: number;
+		eye_spacing_face_width: number;
+		jawline_width_face_width: number;
+		nose_width_face_width: number;
+	};
+
+	error?: string;
+}
+
 const AI_SERVICE_URL = env.PYTHON_AI_SERVICE_URL;
 const AI_SERVICE_API_KEY = env.PYTHON_AI_SERVICE_API_KEY;
 
@@ -357,5 +409,102 @@ export async function verifyFaceFromBase64(
 	}
 
 	const data: VerifyFaceResponse = await response.json();
+	return data;
+}
+
+/**
+ * Extract comprehensive facial attributes for advanced matching
+ *
+ * NEW: Advanced analysis endpoint that extracts 6+ facial attributes:
+ * - Age, gender, expression
+ * - Face quality (blur, illumination)
+ * - Symmetry score
+ * - Skin tone (CIELAB)
+ * - Facial geometry ratios
+ * - 68-point landmarks
+ *
+ * @param imageBuffer - Image file buffer (JPEG, PNG)
+ * @returns Comprehensive facial analysis
+ * @throws Error if no face detected or API fails
+ *
+ * @example
+ * ```typescript
+ * const imageBuffer = await file.arrayBuffer();
+ * const analysis = await analyzeAdvancedFace(Buffer.from(imageBuffer));
+ *
+ * if (analysis.quality.overall < 0.6) {
+ *   console.error("Image quality too low");
+ * } else {
+ *   console.log(`Age: ${analysis.age}, Expression: ${analysis.expression.dominant}`);
+ * }
+ * ```
+ */
+export async function analyzeAdvancedFace(
+	imageBuffer: Buffer,
+): Promise<AdvancedFaceAnalysis> {
+	const formData = new FormData();
+	const blob = new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" });
+	formData.append("file", blob, "face.jpg");
+
+	const response = await fetch(`${AI_SERVICE_URL}/analyze-face-advanced`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+		},
+		body: formData,
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || "Failed to analyze face");
+	}
+
+	const data: AdvancedFaceAnalysis = await response.json();
+
+	if (!data.face_detected) {
+		throw new Error("No face detected in image");
+	}
+
+	return data;
+}
+
+/**
+ * Extract advanced face analysis from base64-encoded image
+ *
+ * @param imageBase64 - Base64-encoded image data
+ * @returns Comprehensive facial analysis
+ * @throws Error if no face detected or API fails
+ *
+ * @example
+ * ```typescript
+ * const base64 = imageBuffer.toString('base64');
+ * const analysis = await analyzeAdvancedFaceFromBase64(base64);
+ * ```
+ */
+export async function analyzeAdvancedFaceFromBase64(
+	imageBase64: string,
+): Promise<AdvancedFaceAnalysis> {
+	const response = await fetch(`${AI_SERVICE_URL}/analyze-face-advanced`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			image_base64: imageBase64,
+		}),
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || "Failed to analyze face");
+	}
+
+	const data: AdvancedFaceAnalysis = await response.json();
+
+	if (!data.face_detected) {
+		throw new Error("No face detected in image");
+	}
+
 	return data;
 }

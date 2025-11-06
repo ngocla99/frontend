@@ -17,7 +17,11 @@ interface NavItem {
 	href: string;
 }
 
-const navItems: NavItem[] = [];
+const navItems: NavItem[] = [
+	{ name: "Live Matches", href: "/" },
+	{ name: "Your Matches", href: "/your-matches" },
+	{ name: "Message", href: "/chat" },
+];
 
 const navItemsMobile: NavItem[] = [
 	{ name: "Live Matches", href: "/" },

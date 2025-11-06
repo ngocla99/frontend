@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
-import { extractEmbedding } from "@/lib/services/ai-service";
+import {
+	analyzeAdvancedFace,
+	type AdvancedFaceAnalysis,
+} from "@/lib/services/ai-service";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
 	batchSignUrls,
@@ -63,10 +66,10 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 	const arrayBuffer = await file.arrayBuffer();
 	const buffer = Buffer.from(arrayBuffer);
 
-	// Extract face embedding via Python AI microservice
-	let embedding: number[];
+	// Extract comprehensive face attributes via Python AI microservice (NEW: Advanced Analysis)
+	let analysis: AdvancedFaceAnalysis;
 	try {
-		embedding = await extractEmbedding(buffer);
+		analysis = await analyzeAdvancedFace(buffer);
 	} catch (error: any) {
 		if (error.message.includes("No face detected")) {
 			return NextResponse.json(
@@ -78,6 +81,29 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 			);
 		}
 		throw error;
+	}
+
+	// Quality gate: Reject images with low quality (NEW: Quality Check)
+	if (analysis.quality.overall < 0.6) {
+		const issues: string[] = [];
+		if (analysis.quality.blur_score < 0.5) {
+			issues.push("image is too blurry");
+		}
+		if (analysis.quality.illumination < 0.5) {
+			issues.push("poor lighting");
+		}
+
+		return NextResponse.json(
+			{
+				error: `Image quality too low: ${issues.join(", ")}. Please upload a clearer photo with better lighting.`,
+				quality_details: {
+					overall: analysis.quality.overall,
+					blur: analysis.quality.blur_score,
+					illumination: analysis.quality.illumination,
+				},
+			},
+			{ status: 400 },
+		);
 	}
 
 	// Generate unique filename
@@ -98,14 +124,30 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		throw new Error(`Failed to upload image: ${uploadError.message}`);
 	}
 
-	// Create face record in database with embedding
+	// Create face record in database with all advanced attributes (NEW: Comprehensive Data)
 	const { data: face, error: dbError } = await supabase
 		.from("faces")
 		.insert({
 			profile_id: profile.id,
 			image_path: fileName,
-			embedding: embedding,
+			embedding: analysis.embedding,
 			image_hash: imageHash,
+
+			// NEW: Advanced facial attributes for sophisticated matching
+			age: analysis.age,
+			gender: analysis.gender,
+			landmarks_68: analysis.landmarks_68,
+			pose: analysis.pose,
+			quality_score: analysis.quality.overall,
+			blur_score: analysis.quality.blur_score,
+			illumination_score: analysis.quality.illumination,
+			symmetry_score: analysis.symmetry_score,
+			skin_tone_lab: analysis.skin_tone.dominant_color_lab,
+			expression: analysis.expression.dominant,
+			expression_confidence: analysis.expression.confidence,
+			emotion_scores: analysis.expression.emotions,
+			geometry_ratios: analysis.geometry,
+			analyzed_at: new Date().toISOString(),
 		})
 		.select()
 		.single();
@@ -142,7 +184,7 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		const { error: jobError } = await supabaseAdmin.from("match_jobs").insert({
 			face_id: face.id,
 			user_id: profile.id,
-			embedding: embedding,
+			embedding: analysis.embedding,
 			status: "pending",
 			job_type: "both", // Generate both user and celebrity matches
 		});
