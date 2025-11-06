@@ -8,7 +8,7 @@
 			"gender": "male"
 		},
 		{
-			"filename": "jennifer-lawrence.webp",
+			"filename": "jennifer-lawrence.jpg",
 			"name": "Jennifer Lawrence",
 			"bio": "Academy Award-winning actress known for The Hunger Games",
 			"category": "actors",
@@ -50,7 +50,7 @@
 			"gender": "female"
 		},
 		{
-			"filename": "ed-sheeran.jpg",
+			"filename": "ed-sheeran.webp",
 			"name": "Ed Sheeran",
 			"bio": "British singer-songwriter",
 			"category": "musicians",
@@ -85,7 +85,7 @@
 			"gender": "male"
 		},
 		{
-			"filename": "zendaya.jpg",
+			"filename": "zendaya.webp",
 			"name": "Zendaya",
 			"bio": "Actress and singer known for Euphoria and Spider-Man",
 			"category": "actors",
@@ -113,7 +113,7 @@
 			"gender": "male"
 		},
 		{
-			"filename": "emma-watson.jpg",
+			"filename": "emma-watson.webp",
 			"name": "Emma Watson",
 			"bio": "Actress known for Harry Potter series",
 			"category": "actors",
