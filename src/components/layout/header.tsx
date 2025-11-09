@@ -126,36 +126,37 @@ export function Header({ loading = false }: { loading?: boolean }) {
 						</motion.div>
 
 						<nav className="hidden items-center space-x-1 lg:flex">
-							{navItems.map((item) => (
-								<motion.div
-									key={item.name}
-									variants={itemVariants}
-									className="relative"
-									onMouseEnter={() => setHoveredItem(item.name)}
-									onMouseLeave={() => setHoveredItem(null)}
-								>
-									<Link
-										href={item.href}
-										className="text-foreground/80 hover:text-foreground relative rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200"
+							{user &&
+								navItems.map((item) => (
+									<motion.div
+										key={item.name}
+										variants={itemVariants}
+										className="relative"
+										onMouseEnter={() => setHoveredItem(item.name)}
+										onMouseLeave={() => setHoveredItem(null)}
 									>
-										{hoveredItem === item.name && (
-											<motion.div
-												className="bg-muted absolute inset-0 rounded-lg"
-												layoutId="navbar-hover"
-												initial={{ opacity: 0 }}
-												animate={{ opacity: 1 }}
-												exit={{ opacity: 0 }}
-												transition={{
-													type: "spring",
-													stiffness: 400,
-													damping: 30,
-												}}
-											/>
-										)}
-										<span className="relative z-10">{item.name}</span>
-									</Link>
-								</motion.div>
-							))}
+										<Link
+											href={item.href}
+											className="text-foreground/80 hover:text-foreground relative rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200"
+										>
+											{hoveredItem === item.name && (
+												<motion.div
+													className="bg-muted absolute inset-0 rounded-lg"
+													layoutId="navbar-hover"
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													transition={{
+														type: "spring",
+														stiffness: 400,
+														damping: 30,
+													}}
+												/>
+											)}
+											<span className="relative z-10">{item.name}</span>
+										</Link>
+									</motion.div>
+								))}
 						</nav>
 
 						{loading ? (
