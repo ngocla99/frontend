@@ -184,7 +184,6 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		const { error: jobError } = await supabaseAdmin.from("match_jobs").insert({
 			face_id: face.id,
 			user_id: profile.id,
-			embedding: analysis.embedding,
 			status: "pending",
 			job_type: "both", // Generate both user and celebrity matches
 		});
