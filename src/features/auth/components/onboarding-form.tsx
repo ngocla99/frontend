@@ -398,7 +398,7 @@ export function OnboardingForm() {
 									<div className="flex flex-col items-center gap-6 animate-in fade-in-0 zoom-in-95 duration-300">
 										{/* Success Message */}
 										<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-											{/** biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
+											{/** biome-ignore lint/a11y/noSvgWithoutTitle: no need check */}
 											<svg
 												className="size-5"
 												fill="none"

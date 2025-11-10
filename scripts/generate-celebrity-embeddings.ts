@@ -120,7 +120,7 @@ async function processCelebrityImage(
 		}
 
 		// 3. Extract advanced facial analysis using AI service
-		// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+		// biome-ignore lint/suspicious/noImplicitAnyLet: no need check
 		let analysis;
 		try {
 			analysis = await analyzeAdvancedFace(Buffer.from(imageBuffer));

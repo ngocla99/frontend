@@ -52,7 +52,8 @@
 			},
 			"suspicious": {
 				"noUnknownAtRules": "off",
-				"noArrayIndexKey": "off"
+				"noArrayIndexKey": "off",
+				"noExplicitAny": "off"
 			},
 			"style": {
 				"noNonNullAssertion": "off"

@@ -154,7 +154,6 @@ export const ImageCrop = ({
 		setCrop(percentCrop);
 		onChange?.(pixelCrop, percentCrop);
 	};
-	// biome-ignore lint/suspicious/useAwait: "onComplete is async"
 	const handleComplete = async (
 		pixelCrop: PixelCrop,
 		percentCrop: PercentCrop,

@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: no need check */
 import { env } from "@/config/env";
 
 type RequestOptions = {

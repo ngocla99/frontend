@@ -264,6 +264,18 @@ export function UniversityMatchCard({
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ delay: index * 0.1 }}
 									className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border"
+									onClick={() => {
+										onOpen(
+											{
+												user1: { name: match.me.name, photo: match.me.image },
+												user2: {
+													name: match.other.name,
+													photo: individualMatch.image,
+												},
+											},
+											individualMatch.id,
+										);
+									}}
 								>
 									<div className="flex items-center gap-3">
 										<BlurImage

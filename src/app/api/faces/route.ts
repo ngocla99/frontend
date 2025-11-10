@@ -112,7 +112,7 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 	const fileName = `${profile.id}/${Date.now()}-${imageHash.substring(0, 8)}.${extension}`;
 
 	// Upload image to Supabase Storage
-	const { data: uploadData, error: uploadError } = await supabase.storage
+	const { error: uploadError } = await supabase.storage
 		.from(STORAGE_BUCKETS.USER_IMAGES)
 		.upload(fileName, buffer, {
 			contentType: file.type,
