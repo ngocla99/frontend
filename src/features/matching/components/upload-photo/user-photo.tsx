@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import React from "react";
@@ -12,28 +14,60 @@ import { Card } from "@/components/ui/card";
 import { useUser } from "@/features/auth/api/get-me";
 import { cn } from "@/lib/utils";
 import { useUploadFace } from "../../api/upload-face";
+import { base64ToFile } from "../../utils";
 import { FavoriteHistory } from "../favorite-history/favorite-history";
+import { ImageCropDialog } from "./image-crop-dialog";
 
 export function UserPhoto() {
 	const user = useUser();
 	const fileUploadRef = React.useRef<FileUploadRef>(null);
 	const [isUploading, setIsUploading] = React.useState<boolean>(false);
+	const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+	const [showCropDialog, setShowCropDialog] = React.useState(false);
 
 	const uploadFaceMutation = useUploadFace({
 		mutationConfig: {
 			onSuccess: () => {
 				setIsUploading(false);
+				setSelectedFile(null);
 				fileUploadRef.current?.reset();
 			},
 			onError: () => {
+				setSelectedFile(null);
 				fileUploadRef.current?.reset();
 			},
 		},
 	});
 
-	const handleUploadFile = (file: File) => {
+	const handleFileSelected = (file: File) => {
+		setSelectedFile(file);
+		setShowCropDialog(true);
+	};
+
+	const handleCropComplete = async (croppedImageBase64: string) => {
 		if (uploadFaceMutation.isPending) return;
-		uploadFaceMutation.mutate({ file });
+
+		try {
+			const croppedFile = await base64ToFile(
+				croppedImageBase64,
+				selectedFile?.name || "cropped-image.png",
+			);
+
+			setShowCropDialog(false);
+			uploadFaceMutation.mutate({ file: croppedFile });
+		} catch (error) {
+			console.error("Failed to process cropped image:", error);
+			setShowCropDialog(false);
+			setSelectedFile(null);
+			fileUploadRef.current?.reset();
+			// TODO: Show error toast to user
+		}
+	};
+	const handleCancelCrop = () => {
+		setShowCropDialog(false);
+		setSelectedFile(null);
+		setIsUploading(false);
+		fileUploadRef.current?.reset();
 	};
 
 	const handleChangePhoto = () => {
@@ -95,7 +129,7 @@ export function UserPhoto() {
 				>
 					<FileUpload
 						ref={fileUploadRef}
-						onUploadSuccess={handleUploadFile}
+						onUploadSuccess={handleFileSelected}
 						onSelectFile={handleSelectFile}
 						acceptedFileTypes={["image/*"]}
 						maxFileSize={10 * 1024 * 1024} // 10MB
@@ -105,6 +139,13 @@ export function UserPhoto() {
 					/>
 				</motion.div>
 			</AnimatePresence>
+			<ImageCropDialog
+				open={showCropDialog}
+				file={selectedFile}
+				onCancelCrop={handleCancelCrop}
+				onCrop={handleCropComplete}
+				onOpenChange={setShowCropDialog}
+			/>
 		</>
 	);
 }

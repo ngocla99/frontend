@@ -115,42 +115,36 @@ CREATE OR REPLACE FUNCTION find_similar_faces_advanced(
 BEGIN
     RETURN QUERY
     WITH query_face AS (
-        SELECT
-            f.embedding,
-            f.age,
-            f.symmetry_score,
-            f.skin_tone_lab,
-            f.expression,
-            f.geometry_ratios
-        FROM faces f
+        SELECT f.embedding, f.age, f.symmetry_score, f.skin_tone_lab, f.expression, f.geometry_ratios
+        FROM public.faces f
         WHERE f.id = query_face_id
+    ),
+    candidate_matches AS (
+        SELECT
+            f.id as face_id,
+            p.id as profile_id,
+            public.calculate_advanced_similarity(
+                qf.embedding, qf.age, qf.symmetry_score, qf.skin_tone_lab, qf.expression, qf.geometry_ratios,
+                f.embedding, f.age, f.symmetry_score, f.skin_tone_lab, f.expression, f.geometry_ratios
+            ) as similarity,
+            f.image_path,
+            p.name,
+            f.age,
+            f.expression
+        FROM public.faces f
+        CROSS JOIN query_face qf
+        JOIN public.profiles p ON f.profile_id = p.id
+        WHERE f.id != query_face_id
+            AND f.embedding IS NOT NULL
+            AND COALESCE(f.quality_score, 0.6) >= 0.6
+            AND p.school = user_school
+            AND p.gender != user_gender
+            AND p.profile_type = 'user'
     )
-    SELECT
-        f.id as face_id,
-        p.id as profile_id,
-        calculate_advanced_similarity(
-            qf.embedding, qf.age, qf.symmetry_score, qf.skin_tone_lab, qf.expression, qf.geometry_ratios,
-            f.embedding, f.age, f.symmetry_score, f.skin_tone_lab, f.expression, f.geometry_ratios
-        ) as similarity,
-        f.image_path,
-        p.name,
-        f.age,
-        f.expression
-    FROM faces f
-    CROSS JOIN query_face qf
-    JOIN profiles p ON f.profile_id = p.id
-    WHERE
-        f.id != query_face_id
-        AND f.embedding IS NOT NULL
-        AND COALESCE(f.quality_score, 0.6) >= 0.6  -- Quality gate: reject poor images
-        AND p.school = user_school
-        AND p.gender != user_gender  -- Gender already filtered here (no need in scoring)
-        AND p.profile_type = 'user'
-    HAVING calculate_advanced_similarity(
-        qf.embedding, qf.age, qf.symmetry_score, qf.skin_tone_lab, qf.expression, qf.geometry_ratios,
-        f.embedding, f.age, f.symmetry_score, f.skin_tone_lab, f.expression, f.geometry_ratios
-    ) >= match_threshold
-    ORDER BY similarity DESC
+    SELECT cm.face_id, cm.profile_id, cm.similarity, cm.image_path, cm.name, cm.age, cm.expression
+    FROM candidate_matches cm
+    WHERE cm.similarity >= match_threshold
+    ORDER BY cm.similarity DESC
     LIMIT match_count;
 END;
 $$ LANGUAGE plpgsql;

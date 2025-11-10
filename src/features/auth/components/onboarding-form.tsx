@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import z from "zod";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import {
@@ -35,6 +34,8 @@ import {
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useVerifyFace } from "@/features/matching/api/verify-face";
+import { ImageCropDialog } from "@/features/matching/components/upload-photo/image-crop-dialog";
+import { base64ToFile } from "@/features/matching/utils";
 import type { UserApi } from "@/types/api";
 import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
@@ -66,6 +67,8 @@ export function OnboardingForm() {
 	const [uploadedFilePreview, setUploadedFilePreview] = React.useState<
 		string | null
 	>(null);
+	const [verifiedFile, setVerifiedFile] = React.useState<File | null>(null);
+	const [showCropDialog, setShowCropDialog] = React.useState(false);
 	const currentUser = useUser();
 
 	const verifyFaceMutation = useVerifyFace();
@@ -171,13 +174,13 @@ export function OnboardingForm() {
 			{
 				onSuccess: (data) => {
 					if (data.face_detected) {
-						// Face detected successfully - store file and show preview
-						setUploadedFile(file);
-						const previewUrl = URL.createObjectURL(file);
-						setUploadedFilePreview(previewUrl);
+						// Face detected successfully - show crop dialog
+						setVerifiedFile(file);
+						setShowCropDialog(true);
 					} else {
 						// No face detected - reset upload
 						setUploadedFile(null);
+						setVerifiedFile(null);
 						if (uploadedFilePreview) {
 							URL.revokeObjectURL(uploadedFilePreview);
 							setUploadedFilePreview(null);
@@ -187,10 +190,35 @@ export function OnboardingForm() {
 				},
 				onError: () => {
 					// Error during verification - reset upload
+					setVerifiedFile(null);
 					fileUploadRef.current?.reset();
 				},
 			},
 		);
+	};
+
+	const handleCropComplete = async (croppedImageBase64: string) => {
+		try {
+			const croppedFile = await base64ToFile(
+				croppedImageBase64,
+				verifiedFile?.name || "cropped-image.png",
+			);
+			setUploadedFile(croppedFile);
+			setUploadedFilePreview(croppedImageBase64);
+			setShowCropDialog(false);
+		} catch (error) {
+			console.error("Failed to process cropped image:", error);
+			setShowCropDialog(false);
+			setVerifiedFile(null);
+			fileUploadRef.current?.reset();
+			// TODO: Show error toast to user
+		}
+	};
+
+	const handleCancelCrop = () => {
+		setShowCropDialog(false);
+		setVerifiedFile(null);
+		fileUploadRef.current?.reset();
 	};
 
 	const handleRemoveFile = () => {
@@ -366,9 +394,7 @@ export function OnboardingForm() {
 									</div>
 								)}
 
-								{!verifyFaceMutation.isPending &&
-								uploadedFile &&
-								uploadedFilePreview ? (
+								{!verifyFaceMutation.isPending && uploadedFilePreview ? (
 									<div className="flex flex-col items-center gap-6 animate-in fade-in-0 zoom-in-95 duration-300">
 										{/* Success Message */}
 										<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
@@ -387,7 +413,7 @@ export function OnboardingForm() {
 												/>
 											</svg>
 											<span className="text-sm font-medium">
-												Face verified successfully!
+												Face verified and cropped successfully!
 											</span>
 										</div>
 
@@ -429,7 +455,7 @@ export function OnboardingForm() {
 											Change Photo
 										</Button>
 									</div>
-								) : !verifyFaceMutation.isPending ? (
+								) : !verifyFaceMutation.isPending && !showCropDialog ? (
 									<FileUpload
 										ref={fileUploadRef}
 										onUploadSuccess={handleVerificationStart}
@@ -451,6 +477,13 @@ export function OnboardingForm() {
 					</Stepper>
 				</form>
 			</Form>
+			<ImageCropDialog
+				open={showCropDialog}
+				file={verifiedFile}
+				onCancelCrop={handleCancelCrop}
+				onCrop={handleCropComplete}
+				onOpenChange={setShowCropDialog}
+			/>
 		</div>
 	);
 }

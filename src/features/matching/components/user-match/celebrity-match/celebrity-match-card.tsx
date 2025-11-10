@@ -26,7 +26,7 @@ export const CelebrityMatchCard = ({
 					? "border-pink-400 bg-gradient-to-br from-pink-50 to-white shadow-lg ring-2 ring-pink-200 ring-offset-2"
 					: "border-gray-200 bg-white hover:border-pink-300 hover:bg-gradient-to-br hover:from-pink-25 hover:to-white",
 			)}
-			onClick={() => onSelect(celebMatch)}
+			// onClick={() => onSelect(celebMatch)}
 		>
 			{/* Selection indicator */}
 			{isSelected && (

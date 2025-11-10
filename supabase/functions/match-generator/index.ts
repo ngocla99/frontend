@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
 				query_face_id: typedJob.face_id,
 				user_school: typedProfile.school,
 				user_gender: typedProfile.gender,
-				match_threshold: 0.5, // 50% minimum with new composite scoring
+				match_threshold: 0,
 				match_count: 20,
 			},
 		);

@@ -1,5 +1,6 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import * as React from "react";
+import type { Drawer as DrawerPrimitive } from "vaul";
 import {
 	Dialog,
 	DialogContent,
@@ -36,6 +37,7 @@ interface ResponsiveDialogProps {
 		drawer?: string;
 		trigger?: string;
 	};
+	drawerProps?: React.ComponentProps<typeof DrawerPrimitive.Root>;
 }
 
 interface ResponsiveDialogContentProps {
@@ -53,6 +55,7 @@ export function ResponsiveDialog({
 	footer,
 	classes,
 	showCloseButton = true,
+	drawerProps,
 }: ResponsiveDialogProps) {
 	const [internalOpen, setInternalOpen] = React.useState(false);
 	const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -96,7 +99,7 @@ export function ResponsiveDialog({
 	}
 
 	return (
-		<Drawer open={isOpen} onOpenChange={setIsOpen}>
+		<Drawer open={isOpen} onOpenChange={setIsOpen} {...drawerProps}>
 			{trigger && (
 				<DrawerTrigger asChild className={classes?.trigger}>
 					{trigger}
