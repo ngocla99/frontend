@@ -60,8 +60,8 @@ const getCroppedPngImage = async (
 	const scaleX = imageSrc.naturalWidth / imageSrc.width;
 	const scaleY = imageSrc.naturalHeight / imageSrc.height;
 	ctx.imageSmoothingEnabled = false;
-	canvas.width = pixelCrop.width;
-	canvas.height = pixelCrop.height;
+	canvas.width = pixelCrop.width * scaleFactor;
+	canvas.height = pixelCrop.height * scaleFactor;
 	ctx.drawImage(
 		imageSrc,
 		pixelCrop.x * scaleX,
@@ -166,13 +166,18 @@ export const ImageCrop = ({
 		if (!(imgRef.current && completedCrop)) {
 			return;
 		}
-		const croppedImage = await getCroppedPngImage(
-			imgRef.current,
-			1,
-			completedCrop,
-			maxImageSize,
-		);
-		onCrop?.(croppedImage);
+		try {
+			const croppedImage = await getCroppedPngImage(
+				imgRef.current,
+				1,
+				completedCrop,
+				maxImageSize,
+			);
+			onCrop?.(croppedImage);
+		} catch (error) {
+			console.error("Failed to crop image:", error);
+			// Optionally call an onError callback to inform the parent
+		}
 	};
 	const resetCrop = () => {
 		if (initialCrop) {

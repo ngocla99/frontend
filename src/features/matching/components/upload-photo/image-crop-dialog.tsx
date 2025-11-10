@@ -37,19 +37,20 @@ export const ImageCropDialog = ({
 					<h3 className="text-xl font-semibold text-foreground mb-2">
 						Crop Your Photo
 					</h3>
-					<p className="text-muted-foreground text-sm h">
+					<p className="text-muted-foreground text-sm">
+						{" "}
 						Adjust the crop area to frame your face
 					</p>
 				</div>
 			}
 			drawerProps={{ dismissible: false }}
 		>
-			<div className="mb-4 h-[80vh]">
+			<div className="mb-4 sm:mb-0 h-[80vh] sm:h-auto">
 				{file && (
 					<ImageCrop file={file} onCrop={onCrop} aspect={1} circularCrop>
 						<div className="space-y-4 flex flex-col justify-between h-full">
 							<div className="flex justify-center flex-1 items-center">
-								<ImageCropContent className="rounded-lg overflow-hidden max-h-[70vh]" />
+								<ImageCropContent className="rounded-lg overflow-hidden max-h-[70vh] sm:max-h-[300px]" />
 							</div>
 
 							<div className="flex justify-center gap-2">

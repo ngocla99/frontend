@@ -198,14 +198,21 @@ export function OnboardingForm() {
 	};
 
 	const handleCropComplete = async (croppedImageBase64: string) => {
-		// Convert cropped image to file and store it
-		const croppedFile = await base64ToFile(
-			croppedImageBase64,
-			verifiedFile?.name || "cropped-image.png",
-		);
-		setUploadedFile(croppedFile);
-		setUploadedFilePreview(croppedImageBase64);
-		setShowCropDialog(false);
+		try {
+			const croppedFile = await base64ToFile(
+				croppedImageBase64,
+				verifiedFile?.name || "cropped-image.png",
+			);
+			setUploadedFile(croppedFile);
+			setUploadedFilePreview(croppedImageBase64);
+			setShowCropDialog(false);
+		} catch (error) {
+			console.error("Failed to process cropped image:", error);
+			setShowCropDialog(false);
+			setVerifiedFile(null);
+			fileUploadRef.current?.reset();
+			// TODO: Show error toast to user
+		}
 	};
 
 	const handleCancelCrop = () => {

@@ -47,15 +47,22 @@ export function UserPhoto() {
 	const handleCropComplete = async (croppedImageBase64: string) => {
 		if (uploadFaceMutation.isPending) return;
 
-		const croppedFile = await base64ToFile(
-			croppedImageBase64,
-			selectedFile?.name || "cropped-image.png",
-		);
+		try {
+			const croppedFile = await base64ToFile(
+				croppedImageBase64,
+				selectedFile?.name || "cropped-image.png",
+			);
 
-		setShowCropDialog(false);
-		uploadFaceMutation.mutate({ file: croppedFile });
+			setShowCropDialog(false);
+			uploadFaceMutation.mutate({ file: croppedFile });
+		} catch (error) {
+			console.error("Failed to process cropped image:", error);
+			setShowCropDialog(false);
+			setSelectedFile(null);
+			fileUploadRef.current?.reset();
+			// TODO: Show error toast to user
+		}
 	};
-
 	const handleCancelCrop = () => {
 		setShowCropDialog(false);
 		setSelectedFile(null);
