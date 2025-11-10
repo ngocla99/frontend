@@ -12,6 +12,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useReactToMatch } from "@/features/matching/api/react-to-match";
+import { useMarkMatchViewed } from "@/features/matching/api/mark-match-viewed";
 import { useUserMatchesActions } from "../../store/user-matches";
 
 export interface MatchCardProps {
@@ -78,6 +79,7 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 	const { onOpen } = useUserMatchesActions();
 	const [, setIsFavorite] = React.useState(isFavorited);
 	const { mutate: _reactToMatch } = useReactToMatch();
+	const { mutate: markViewed } = useMarkMatchViewed();
 
 	// Update local state when server state changes
 	React.useEffect(() => {
@@ -334,7 +336,11 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 									variant="ghost"
 									size="sm"
 									className="group/btn flex items-center gap-1.5 hover:bg-gradient-to-r hover:from-pink-600 hover:to-rose-600 rounded-full px-4 py-1.5 transition-all duration-300 text-xs hover:text-white"
-									onClick={() =>
+									onClick={() => {
+										// Track view (fire-and-forget)
+										markViewed(id);
+
+										// Open baby dialog
 										onOpen(
 											{
 												user1: { name: user1.name, photo: user1.image },
@@ -342,8 +348,8 @@ export const MatchCard = ({ data, isNewlyAdded = false }: MatchCardProps) => {
 											},
 											id,
 											"live-match",
-										)
-									}
+										);
+									}}
 								>
 									<span className="font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent group-hover/btn:text-white">
 										View Baby

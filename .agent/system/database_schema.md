@@ -98,29 +98,40 @@ Stores face match results between users or users and celebrities.
 
 ### Table: `reactions`
 
-Stores user reactions to matches (favorites, likes, etc.).
+Stores user reactions to matches (favorites, likes, viewed status, etc.). **Updated 2025-11-10** to support multiple reaction types per match.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | `uuid` | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique reaction ID |
-| `user_id` | `text` | NOT NULL | User who reacted |
-| `match_id` | `uuid` | NOT NULL | Match being reacted to |
-| `reaction_type` | `text` | NOT NULL | Type of reaction (favorite, etc.) |
+| `user_profile_id` | `uuid` | NOT NULL, FK → profiles(id) | User who reacted |
+| `match_id` | `uuid` | NOT NULL, FK → matches(id) | Match being reacted to |
+| `reaction_type` | `text` | NOT NULL | Type of reaction: "like", "viewed" |
 | `created_at` | `timestamptz` | DEFAULT now() | Reaction timestamp |
-| | | UNIQUE(user_id, match_id, reaction_type) | One reaction per match per type |
+| | | UNIQUE(match_id, user_profile_id, reaction_type) | One reaction per match per type |
 
 **Indexes:**
-- `idx_reactions_user` on `user_id`
+- `idx_reactions_user` on `user_profile_id`
 - `idx_reactions_match` on `match_id`
+- `idx_reactions_type` on `reaction_type`
+- `idx_reactions_user_type` on `(user_profile_id, reaction_type)`
+
+**Supported Reaction Types:**
+- `"like"` - User favorited the match (used for "favorites" feature)
+- `"viewed"` - User viewed the match (used for "viewed" filter in live-match)
 
 **Usage:**
 - Tracks user engagement with matches
 - Powers favorites/likes functionality
+- Tracks viewed status for live-match filters
+- Allows multiple reaction types per user per match (e.g., both "like" AND "viewed")
 - Used in aggregated match stats
 
 **Relationships:**
-- `user_id` → `users.user_id`
+- `user_profile_id` → `profiles.id`
 - `match_id` → `matches.id`
+
+**Migration History:**
+- **2025-11-10:** Changed UNIQUE constraint to include `reaction_type`, enabling multiple reaction types per match
 
 ---
 

@@ -87,6 +87,7 @@ export function LiveMatch() {
 			activeUsers: allMatches.length, // Use actual match count as active users indicator
 			newMatches: newCount,
 			viewedMatches: viewedCount,
+			totalMatches: allMatches.length, // Total count for "All" filter
 		};
 	}, [allMatches]);
 

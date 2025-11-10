@@ -9,6 +9,7 @@ interface HeadCardProps {
 		activeUsers: number;
 		newMatches: number;
 		viewedMatches: number;
+		totalMatches: number; // Total count of all matches
 	};
 	onFilterChange: (filter: "all" | "new" | "viewed") => void;
 	activeFilter: "all" | "new" | "viewed";
@@ -19,7 +20,7 @@ export const HeadCard = ({
 	onFilterChange,
 	activeFilter,
 }: HeadCardProps) => {
-	const { activeUsers, newMatches, viewedMatches } = stats;
+	const { activeUsers, newMatches, viewedMatches, totalMatches } = stats;
 	const user = useUser();
 	const isAuthenticated = !!user;
 
@@ -44,7 +45,7 @@ export const HeadCard = ({
 					}`}
 					onClick={() => onFilterChange("all")}
 				>
-					🔥 All (<SlidingNumber value={newMatches + viewedMatches} />)
+					🔥 All (<SlidingNumber value={totalMatches} />)
 				</Badge>
 				{isAuthenticated && (
 					<Badge

@@ -6,6 +6,18 @@ import type { CelebMatchApi, LiveMatchApi, UserMatchApi } from "@/types/api";
 export const transformApiMatchToDisplayData = (
 	apiMatch: LiveMatchApi,
 ): MatchCardProps["data"] => {
+	// Calculate if match is "new" (created within last 5 minutes)
+	const now = Date.now();
+	const createdAt = new Date(apiMatch.created_at).getTime();
+	const fiveMinutesInMs = 5 * 60 * 1000;
+	const isNew = now - createdAt < fiveMinutesInMs;
+
+	// Check if user has viewed this match
+	const isViewed = apiMatch.my_reaction?.includes("viewed") ?? false;
+
+	// Check if user has favorited this match
+	const isFavorited = apiMatch.my_reaction?.includes("like") ?? false;
+
 	return {
 		id: apiMatch.id,
 		user1: {
@@ -18,11 +30,9 @@ export const transformApiMatchToDisplayData = (
 		},
 		matchPercentage: Math.round(apiMatch.similarity_percentage),
 		timestamp: getTimeAgo(apiMatch.created_at),
-		isNew: true, // All matches from API are considered new initially
-		isViewed: false, // All matches from API are unviewed initially
-		isFavorited:
-			Array.isArray(apiMatch.my_reaction) &&
-			apiMatch.my_reaction.includes("favorite"),
+		isNew,
+		isViewed,
+		isFavorited,
 	};
 };
 

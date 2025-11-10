@@ -1,35 +1,35 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(mkdir:*)",
-      "WebSearch",
-      "Read(//d/Nemo/Others/side-projects/ai-matching/**)",
-      "mcp__supabase__get_project_url",
-      "mcp__supabase__get_anon_key",
-      "mcp__supabase__list_tables",
-      "mcp__supabase__list_extensions",
-      "mcp__supabase__list_migrations",
-      "mcp__supabase__list_branches",
-      "Bash(git log:*)",
-      "Read(//d/Code/Practice/Freelancer/ai-matching/backend/**)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\ndocs(agent): update backend architecture and API documentation\n\nDocumented major backend changes from recent GitHub pull:\n\nAuthentication System Migration:\n- Removed legacy Google OAuth flow (endpoints deprecated)\n- Now exclusively uses Supabase JWT authentication with PKCE\n- All API endpoints require Supabase-issued tokens only\n- Added SUPABASE_JWT_SECRET requirement\n- Profile creation/lookup now via email from token claims\n\nBaby Generation API Updates:\n- Changed match_id parameter from query string to request body\n- Updated POST/GET /api/v1/baby to accept JSON body\n- Maintained query params for /api/v1/me/babies endpoint\n\nDocumentation Updates:\n- Updated project_architecture.md with authentication flow changes\n- Updated environment variables section with new requirements\n- Updated API endpoints list with correct signatures\n- Updated database_schema.md with body parameter examples\n- Updated README.md Recent Updates section with breaking changes\n\nBreaking Changes Documented:\n- OAuth endpoints no longer functional\n- Existing OAuth JWT tokens must be regenerated via Supabase\n- Baby API calls need parameter location change (query → body)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(bun run:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(matching): update baby generation API to match backend changes\n\nUpdated baby generation feature to align with backend API changes:\n\nAPI Client Updates:\n- Changed GET /api/v1/baby to send match_id in request body (unconventional but required by backend)\n- POST /api/v1/baby already correctly uses body params\n- Added baby list API endpoint (GET /api/v1/me/babies)\n- Added types for baby list response (BabyListItem, GetBabyListInput)\n- Added useBabyList hook with query options\n\nTypeScript Type Updates:\n- Updated BabyApi type to allow null values\n- image_url can be null when no baby generated yet\n- created_at can be null when no baby generated yet\n- me/other images and schools can be null\n\nImplementation Status:\n- Baby generator component already fully implemented with animations\n- Dialog correctly passes matchId from Zustand store\n- All API endpoints ready for backend integration\n- Build passes with no type errors\n\nBreaking Changes:\n- GET /api/v1/baby now expects JSON body instead of query params\n- Follows backend API spec from docs/API-specs.MD\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "mcp__supabase__execute_sql",
-      "mcp__supabase__get_logs",
-      "Bash(curl:*)",
-      "Bash(sed:*)",
-      "Bash(cat:*)",
-      "mcp__supabase__apply_migration",
-      "Bash(npx supabase:*)",
-      "Bash(where:*)",
-      "mcp__supabase__list_edge_functions",
-      "mcp__supabase__get_edge_function",
-      "mcp__supabase__deploy_edge_function"
-    ],
-    "deny": [],
-    "ask": []
-  },
-  "enableAllProjectMcpServers": false
+	"permissions": {
+		"allow": [
+			"Bash(mkdir:*)",
+			"WebSearch",
+			"Read(//d/Nemo/Others/side-projects/ai-matching/**)",
+			"mcp__supabase__get_project_url",
+			"mcp__supabase__get_anon_key",
+			"mcp__supabase__list_tables",
+			"mcp__supabase__list_extensions",
+			"mcp__supabase__list_migrations",
+			"mcp__supabase__list_branches",
+			"Bash(git log:*)",
+			"Read(//d/Code/Practice/Freelancer/ai-matching/backend/**)",
+			"Bash(git add:*)",
+			"Bash(git commit -m \"$(cat <<''EOF''\ndocs(agent): update backend architecture and API documentation\n\nDocumented major backend changes from recent GitHub pull:\n\nAuthentication System Migration:\n- Removed legacy Google OAuth flow (endpoints deprecated)\n- Now exclusively uses Supabase JWT authentication with PKCE\n- All API endpoints require Supabase-issued tokens only\n- Added SUPABASE_JWT_SECRET requirement\n- Profile creation/lookup now via email from token claims\n\nBaby Generation API Updates:\n- Changed match_id parameter from query string to request body\n- Updated POST/GET /api/v1/baby to accept JSON body\n- Maintained query params for /api/v1/me/babies endpoint\n\nDocumentation Updates:\n- Updated project_architecture.md with authentication flow changes\n- Updated environment variables section with new requirements\n- Updated API endpoints list with correct signatures\n- Updated database_schema.md with body parameter examples\n- Updated README.md Recent Updates section with breaking changes\n\nBreaking Changes Documented:\n- OAuth endpoints no longer functional\n- Existing OAuth JWT tokens must be regenerated via Supabase\n- Baby API calls need parameter location change (query → body)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+			"Bash(bun run:*)",
+			"Bash(git commit -m \"$(cat <<''EOF''\nfeat(matching): update baby generation API to match backend changes\n\nUpdated baby generation feature to align with backend API changes:\n\nAPI Client Updates:\n- Changed GET /api/v1/baby to send match_id in request body (unconventional but required by backend)\n- POST /api/v1/baby already correctly uses body params\n- Added baby list API endpoint (GET /api/v1/me/babies)\n- Added types for baby list response (BabyListItem, GetBabyListInput)\n- Added useBabyList hook with query options\n\nTypeScript Type Updates:\n- Updated BabyApi type to allow null values\n- image_url can be null when no baby generated yet\n- created_at can be null when no baby generated yet\n- me/other images and schools can be null\n\nImplementation Status:\n- Baby generator component already fully implemented with animations\n- Dialog correctly passes matchId from Zustand store\n- All API endpoints ready for backend integration\n- Build passes with no type errors\n\nBreaking Changes:\n- GET /api/v1/baby now expects JSON body instead of query params\n- Follows backend API spec from docs/API-specs.MD\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+			"mcp__supabase__execute_sql",
+			"mcp__supabase__get_logs",
+			"Bash(curl:*)",
+			"Bash(sed:*)",
+			"Bash(cat:*)",
+			"mcp__supabase__apply_migration",
+			"Bash(npx supabase:*)",
+			"Bash(where:*)",
+			"mcp__supabase__list_edge_functions",
+			"mcp__supabase__get_edge_function",
+			"mcp__supabase__deploy_edge_function"
+		],
+		"deny": [],
+		"ask": []
+	},
+	"enableAllProjectMcpServers": false
 }

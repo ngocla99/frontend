@@ -30,6 +30,12 @@ export async function GET(request: NextRequest) {
 		);
 		const skip = parseInt(searchParams.get("skip") || "0", 10);
 
+		// Get current user session (optional - for personalized data)
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		const currentUserId = user?.id || null;
+
 		// Get recent user-user matches with profile and face data
 		// Filter for matches where both profiles are users (not celebrities)
 		const { data: matches, error } = await supabase
@@ -89,6 +95,29 @@ export async function GET(request: NextRequest) {
 			return profileA && profileB;
 		});
 
+		// Get user's reactions for these matches (if authenticated)
+		let userReactions: Record<string, string[]> = {};
+		if (currentUserId) {
+			const matchIds = validMatches.map((m: any) => m.id);
+
+			const { data: reactions } = await supabase
+				.from("reactions")
+				.select("match_id, reaction_type")
+				.in("match_id", matchIds)
+				.eq("user_profile_id", currentUserId);
+
+			// Group reactions by match_id
+			userReactions =
+				reactions?.reduce(
+					(acc, r) => {
+						if (!acc[r.match_id]) acc[r.match_id] = [];
+						acc[r.match_id].push(r.reaction_type);
+						return acc;
+					},
+					{} as Record<string, string[]>,
+				) || {};
+		}
+
 		// OPTIMIZATION: Collect all unique image paths first
 		const allImagePaths: string[] = [];
 
@@ -144,6 +173,7 @@ export async function GET(request: NextRequest) {
 				similarity_score: match.similarity_score, // Distance value (for backward compatibility)
 				similarity_percentage: calculateMatchPercentage(match.similarity_score), // Engaging exponential formula
 				created_at: match.created_at,
+				my_reaction: userReactions[match.id] || [], // Array of reaction types: ["like", "viewed"]
 				users: {
 					a: {
 						id: profileA.id,

@@ -5,6 +5,7 @@ export enum Gender {
 }
 
 export type Reaction = "favorite";
+export type ReactionType = "like" | "viewed";
 
 export type UserApi = {
 	id: string;
@@ -20,7 +21,7 @@ export type UserApi = {
 export type LiveMatchApi = {
 	created_at: string;
 	id: string;
-	my_reaction: Reaction[];
+	my_reaction: string[]; // Array of reaction types: ["like", "viewed"]
 	reactions: Record<string, unknown>;
 	similarity_percentage: number;
 	similarity_score: number;
