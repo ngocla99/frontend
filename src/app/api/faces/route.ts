@@ -4,8 +4,8 @@ import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 import {
-	analyzeAdvancedFace,
 	type AdvancedFaceAnalysis,
+	analyzeAdvancedFace,
 } from "@/lib/services/ai-service";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
@@ -84,27 +84,27 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 	}
 
 	// Quality gate: Reject images with low quality (NEW: Quality Check)
-	if (analysis.quality.overall < 0.6) {
-		const issues: string[] = [];
-		if (analysis.quality.blur_score < 0.5) {
-			issues.push("image is too blurry");
-		}
-		if (analysis.quality.illumination < 0.5) {
-			issues.push("poor lighting");
-		}
+	// if (analysis.quality.overall < 0.6) {
+	// 	const issues: string[] = [];
+	// 	if (analysis.quality.blur_score < 0.5) {
+	// 		issues.push("image is too blurry");
+	// 	}
+	// 	if (analysis.quality.illumination < 0.5) {
+	// 		issues.push("poor lighting");
+	// 	}
 
-		return NextResponse.json(
-			{
-				error: `Image quality too low: ${issues.join(", ")}. Please upload a clearer photo with better lighting.`,
-				quality_details: {
-					overall: analysis.quality.overall,
-					blur: analysis.quality.blur_score,
-					illumination: analysis.quality.illumination,
-				},
-			},
-			{ status: 400 },
-		);
-	}
+	// 	return NextResponse.json(
+	// 		{
+	// 			error: `Image quality too low: ${issues.join(", ")}. Please upload a clearer photo with better lighting.`,
+	// 			quality_details: {
+	// 				overall: analysis.quality.overall,
+	// 				blur: analysis.quality.blur_score,
+	// 				illumination: analysis.quality.illumination,
+	// 			},
+	// 		},
+	// 		{ status: 400 },
+	// 	);
+	// }
 
 	// Generate unique filename
 	const imageHash = crypto.createHash("sha256").update(buffer).digest("hex");

@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import React from "react";
@@ -12,23 +14,9 @@ import { Card } from "@/components/ui/card";
 import { useUser } from "@/features/auth/api/get-me";
 import { cn } from "@/lib/utils";
 import { useUploadFace } from "../../api/upload-face";
+import { base64ToFile } from "../../utils";
 import { FavoriteHistory } from "../favorite-history/favorite-history";
-import {
-	ImageCrop,
-	ImageCropContent,
-	ImageCropApply,
-	ImageCropReset,
-} from "@/components/image-crop";
-
-// Helper function to convert base64 to File
-const base64ToFile = async (
-	base64: string,
-	filename: string,
-): Promise<File> => {
-	const response = await fetch(base64);
-	const blob = await response.blob();
-	return new File([blob], filename, { type: blob.type });
-};
+import { ImageCropDialog } from "./image-crop-dialog";
 
 export function UserPhoto() {
 	const user = useUser();
@@ -42,12 +30,10 @@ export function UserPhoto() {
 			onSuccess: () => {
 				setIsUploading(false);
 				setSelectedFile(null);
-				setShowCropDialog(false);
 				fileUploadRef.current?.reset();
 			},
 			onError: () => {
 				setSelectedFile(null);
-				setShowCropDialog(false);
 				fileUploadRef.current?.reset();
 			},
 		},
@@ -65,6 +51,8 @@ export function UserPhoto() {
 			croppedImageBase64,
 			selectedFile?.name || "cropped-image.png",
 		);
+
+		setShowCropDialog(false);
 		uploadFaceMutation.mutate({ file: croppedFile });
 	};
 
@@ -132,68 +120,25 @@ export function UserPhoto() {
 					exit={{ opacity: 0, height: 0 }}
 					className={cn("space-y-4", isUploading ? "block" : "sr-only")}
 				>
-					{showCropDialog && selectedFile ? (
-						<Card className="p-6 bg-gradient-card border-0 shadow-soft">
-							<div className="space-y-4">
-								<div className="text-center">
-									<h3 className="text-xl font-semibold text-foreground mb-2">
-										Crop Your Photo
-									</h3>
-									<p className="text-muted-foreground text-sm">
-										Adjust the crop area to frame your face
-									</p>
-								</div>
-
-								<ImageCrop
-									file={selectedFile}
-									onCrop={handleCropComplete}
-									aspect={1}
-									circularCrop
-								>
-									<div className="space-y-4">
-										<div className="flex justify-center">
-											<ImageCropContent className="rounded-lg overflow-hidden" />
-										</div>
-
-										<div className="flex justify-center gap-2">
-											<ImageCropReset>
-												<Button variant="outline" size="sm">
-													Reset
-												</Button>
-											</ImageCropReset>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={handleCancelCrop}
-											>
-												Cancel
-											</Button>
-											<ImageCropApply>
-												<Button size="sm" disabled={uploadFaceMutation.isPending}>
-													{uploadFaceMutation.isPending
-														? "Uploading..."
-														: "Apply & Upload"}
-												</Button>
-											</ImageCropApply>
-										</div>
-									</div>
-								</ImageCrop>
-							</div>
-						</Card>
-					) : (
-						<FileUpload
-							ref={fileUploadRef}
-							onUploadSuccess={handleFileSelected}
-							onSelectFile={handleSelectFile}
-							acceptedFileTypes={["image/*"]}
-							maxFileSize={10 * 1024 * 1024} // 10MB
-							uploadDelay={100}
-							validateFile={() => null}
-							classes={{ container: "w-full" }}
-						/>
-					)}
+					<FileUpload
+						ref={fileUploadRef}
+						onUploadSuccess={handleFileSelected}
+						onSelectFile={handleSelectFile}
+						acceptedFileTypes={["image/*"]}
+						maxFileSize={10 * 1024 * 1024} // 10MB
+						uploadDelay={100}
+						validateFile={() => null}
+						classes={{ container: "w-full" }}
+					/>
 				</motion.div>
 			</AnimatePresence>
+			<ImageCropDialog
+				open={showCropDialog}
+				file={selectedFile}
+				onCancelCrop={handleCancelCrop}
+				onCrop={handleCropComplete}
+				onOpenChange={setShowCropDialog}
+			/>
 		</>
 	);
 }

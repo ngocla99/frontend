@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import z from "zod";
 import AITextLoading from "@/components/kokonutui/ai-text-loading";
 import {
@@ -35,25 +34,11 @@ import {
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
 import { useVerifyFace } from "@/features/matching/api/verify-face";
+import { ImageCropDialog } from "@/features/matching/components/upload-photo/image-crop-dialog";
+import { base64ToFile } from "@/features/matching/utils";
 import type { UserApi } from "@/types/api";
 import { getMeQueryOptions, useUser } from "../api/get-me";
 import { useUpdateMe } from "../api/update-me";
-import {
-	ImageCrop,
-	ImageCropContent,
-	ImageCropApply,
-	ImageCropReset,
-} from "@/components/image-crop";
-
-// Helper function to convert base64 to File
-const base64ToFile = async (
-	base64: string,
-	filename: string,
-): Promise<File> => {
-	const response = await fetch(base64);
-	const blob = await response.blob();
-	return new File([blob], filename, { type: blob.type });
-};
 
 const onboardingSchema = z.object({
 	name: z
@@ -402,51 +387,7 @@ export function OnboardingForm() {
 									</div>
 								)}
 
-								{showCropDialog && verifiedFile ? (
-									<div className="space-y-4">
-										<div className="text-center">
-											<h3 className="text-lg font-semibold text-foreground mb-2">
-												Crop Your Photo
-											</h3>
-											<p className="text-sm text-gray-500 dark:text-gray-400">
-												Adjust the crop area to frame your face perfectly
-											</p>
-										</div>
-
-										<ImageCrop
-											file={verifiedFile}
-											onCrop={handleCropComplete}
-											aspect={1}
-											circularCrop
-										>
-											<div className="space-y-4">
-												<div className="flex justify-center">
-													<ImageCropContent className="rounded-lg overflow-hidden" />
-												</div>
-
-												<div className="flex justify-center gap-2">
-													<ImageCropReset>
-														<Button variant="outline" size="sm">
-															Reset
-														</Button>
-													</ImageCropReset>
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={handleCancelCrop}
-													>
-														Cancel
-													</Button>
-													<ImageCropApply>
-														<Button size="sm">Apply Crop</Button>
-													</ImageCropApply>
-												</div>
-											</div>
-										</ImageCrop>
-									</div>
-								) : !verifyFaceMutation.isPending &&
-								  uploadedFile &&
-								  uploadedFilePreview ? (
+								{!verifyFaceMutation.isPending && uploadedFilePreview ? (
 									<div className="flex flex-col items-center gap-6 animate-in fade-in-0 zoom-in-95 duration-300">
 										{/* Success Message */}
 										<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
@@ -529,6 +470,13 @@ export function OnboardingForm() {
 					</Stepper>
 				</form>
 			</Form>
+			<ImageCropDialog
+				open={showCropDialog}
+				file={verifiedFile}
+				onCancelCrop={handleCancelCrop}
+				onCrop={handleCropComplete}
+				onOpenChange={setShowCropDialog}
+			/>
 		</div>
 	);
 }
