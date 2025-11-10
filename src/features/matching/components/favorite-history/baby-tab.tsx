@@ -17,7 +17,7 @@ export function BabyTab() {
 	const { onOpen } = useUserMatchesActions();
 
 	// Handle clicking a baby to view details
-	const handleBabyClick = (baby: BabyListItem) => {
+	const _handleBabyClick = (baby: BabyListItem) => {
 		onOpen(
 			{
 				user1: { name: baby.me.name, photo: baby.me.image || "" },

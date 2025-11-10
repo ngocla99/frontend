@@ -7,7 +7,6 @@ import {
 	Heart,
 	MessageCircle,
 	Share2,
-	Sparkles,
 	Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";

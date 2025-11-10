@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { env } from "@/config/env";
 import { STORAGE_BUCKETS } from "@/lib/constants/constant";
 import { withSession } from "@/lib/middleware/with-session";
 

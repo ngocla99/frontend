@@ -8,7 +8,7 @@ export function formatLastSeen(lastSeenISO: string): string {
 	const diffMs = now.getTime() - lastSeen.getTime();
 
 	// Handle invalid or future dates
-	if (isNaN(diffMs) || diffMs < 0) {
+	if (Number.isNaN(diffMs) || diffMs < 0) {
 		return "Offline";
 	}
 

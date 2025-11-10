@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+
 /**
  * Celebrity Advanced Analysis Generator
  *
@@ -30,10 +31,10 @@
  *     └── metadata.json
  */
 
+import { createHash } from "node:crypto";
+import { readdir, readFile } from "node:fs/promises";
+import { basename, extname, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import { createHash } from "crypto";
-import { readdir, readFile } from "fs/promises";
-import { basename, extname, join } from "path";
 import { analyzeAdvancedFace } from "../src/lib/services/ai-service";
 
 // Configuration
@@ -79,7 +80,7 @@ async function loadMetadata(): Promise<Map<string, CelebrityMetadata>> {
 		}
 		console.log(`📋 Loaded metadata for ${map.size} celebrities\n`);
 		return map;
-	} catch (error) {
+	} catch (_error) {
 		console.warn("⚠️  No metadata.json found, will use filename as name\n");
 		return new Map();
 	}
@@ -268,7 +269,7 @@ async function main() {
 	// Check if celebrities directory exists
 	try {
 		await readdir(CELEBRITIES_DIR);
-	} catch (error) {
+	} catch (_error) {
 		console.error(`❌ Directory not found: ${CELEBRITIES_DIR}`);
 		console.error("\nPlease create the directory structure:");
 		console.error("  mkdir -p data/celebrities/actors");
@@ -352,7 +353,7 @@ async function main() {
 	}
 
 	// Print summary
-	console.log("\n" + "═".repeat(50));
+	console.log(`\n${"═".repeat(50)}`);
 	console.log("📊 SUMMARY");
 	console.log("═".repeat(50));
 	console.log(`✅ Successfully processed: ${results.success}`);

@@ -90,7 +90,6 @@ export async function GET(request: NextRequest) {
 		});
 
 		// OPTIMIZATION: Collect all unique image paths first
-		const perfStart = performance.now();
 		const allImagePaths: string[] = [];
 
 		for (const match of validMatches) {
