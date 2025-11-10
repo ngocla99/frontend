@@ -45,7 +45,7 @@ export const ImageCropDialog = ({
 			}
 			drawerProps={{ dismissible: false }}
 		>
-			<div className="mb-4 sm:mb-0 h-[80vh] sm:h-auto">
+			<div className="mb-4 sm:mb-0 h-[80vh] sm:h-auto px-4">
 				{file && (
 					<ImageCrop file={file} onCrop={onCrop} aspect={1} circularCrop>
 						<div className="space-y-4 flex flex-col justify-between h-full">
