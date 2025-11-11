@@ -37,9 +37,6 @@ export const useUploadFace = ({
 
 	return useMutation({
 		onSuccess: (data, ...args) => {
-			onSuccess?.(data, ...args);
-			toast.success("Upload face success");
-
 			// Update user profile image
 			queryClient.setQueryData(
 				getMeQueryOptions().queryKey,
@@ -68,11 +65,13 @@ export const useUploadFace = ({
 					};
 				},
 			);
+			onSuccess?.(data, ...args);
+			toast.success("Upload face success");
 		},
 		onError: (error: Error, ...args) => {
 			const errorMessage = error.message || "Upload face failed";
-			toast.error(errorMessage);
 			onError?.(error, ...args);
+			toast.error(errorMessage);
 		},
 		...restConfig,
 		mutationFn: uploadFaceApi,
