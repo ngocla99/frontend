@@ -36,6 +36,7 @@ export default function AdminPage() {
 		expression: 0.15,
 	});
 	const [allowNonEduEmails, setAllowNonEduEmails] = useState(false);
+	const [matchThreshold, setMatchThreshold] = useState(0.5);
 	const [hasChanges, setHasChanges] = useState(false);
 
 	// Sync form state with fetched settings
@@ -43,6 +44,7 @@ export default function AdminPage() {
 		if (settings) {
 			setWeights(settings.matching_weights);
 			setAllowNonEduEmails(settings.allow_non_edu_emails);
+			setMatchThreshold(settings.match_threshold);
 		}
 	}, [settings]);
 
@@ -72,6 +74,7 @@ export default function AdminPage() {
 		if (settings) {
 			setWeights(settings.matching_weights);
 			setAllowNonEduEmails(settings.allow_non_edu_emails);
+			setMatchThreshold(settings.match_threshold);
 			setHasChanges(false);
 			toast.info("Reset to saved settings");
 		}
@@ -88,6 +91,7 @@ export default function AdminPage() {
 			await updateSettings.mutateAsync({
 				matching_weights: weights,
 				allow_non_edu_emails: allowNonEduEmails,
+				match_threshold: matchThreshold,
 			});
 
 			toast.success("Settings updated successfully");
@@ -351,6 +355,47 @@ export default function AdminPage() {
 								setHasChanges(true);
 							}}
 						/>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Match Threshold Settings */}
+			<Card className="mb-6">
+				<CardHeader>
+					<CardTitle>Match Threshold</CardTitle>
+					<CardDescription>
+						Minimum similarity score required to create a match
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<div className="flex justify-between items-center">
+							<Label htmlFor="match-threshold">Minimum Similarity Score</Label>
+							<span className="text-sm font-medium">
+								{(matchThreshold * 100).toFixed(0)}%
+							</span>
+						</div>
+						<Slider
+							id="match-threshold"
+							min={0}
+							max={1}
+							step={0.01}
+							value={[matchThreshold]}
+							onValueChange={([value]) => {
+								setMatchThreshold(value);
+								setHasChanges(true);
+							}}
+							className="w-full"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Lower values show more matches but with lower similarity. Higher
+							values show fewer matches with higher similarity.
+						</p>
+						<div className="flex justify-between text-xs text-muted-foreground mt-2">
+							<span>0% (Show all)</span>
+							<span>50% (Balanced)</span>
+							<span>100% (Perfect match)</span>
+						</div>
 					</div>
 				</CardContent>
 			</Card>

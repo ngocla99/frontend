@@ -172,6 +172,16 @@ Deno.serve(async (req) => {
 			`User profile: school=${typedProfile.school}, gender=${typedProfile.gender}`,
 		);
 
+		// Fetch match_threshold from system_settings
+		const { data: thresholdSetting } = await supabase
+			.from("system_settings")
+			.select("value")
+			.eq("key", "match_threshold")
+			.single();
+
+		const matchThreshold = (thresholdSetting?.value as number) ?? 0.5;
+		console.log(`Using match_threshold: ${matchThreshold}`);
+
 		// Validate profile has required fields
 		if (!typedProfile.school || !typedProfile.gender) {
 			const errorMsg = "User profile missing school or gender";
@@ -192,7 +202,7 @@ Deno.serve(async (req) => {
 		// Find similar faces using advanced matching algorithm (NEW: Sophisticated Scoring)
 		console.log("Searching for similar faces with advanced algorithm...");
 		console.log(
-			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=0.5, limit=20`,
+			`Filters: school="${typedProfile.school}", opposite_gender="${typedProfile.gender}", threshold=${matchThreshold}, limit=20`,
 		);
 
 		const { data: matches, error: searchError } = await supabase.rpc(
@@ -201,7 +211,7 @@ Deno.serve(async (req) => {
 				query_face_id: typedJob.face_id,
 				user_school: typedProfile.school,
 				user_gender: typedProfile.gender,
-				match_threshold: 0,
+				match_threshold: matchThreshold,
 				match_count: 20,
 			},
 		);
@@ -307,7 +317,7 @@ Deno.serve(async (req) => {
 				{
 					query_face_id: typedJob.face_id, // Changed from query_embedding to query_face_id
 					user_gender: typedProfile.gender, // Changed from gender_filter to user_gender
-					match_threshold: 0.5, // Same as user matching (50% minimum with composite scoring)
+					match_threshold: matchThreshold, // Dynamic threshold from database
 					match_count: 20,
 					category_filter: null, // Optional: filter by actor/musician/athlete
 				},
