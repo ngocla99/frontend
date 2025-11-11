@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLiveMatchInfinite } from "@/features/matching/api/get-live-match";
+import { useMatchStats } from "@/features/matching/api/get-match-stats";
 import { HeadCard } from "@/features/matching/components/live-match/head-card";
 import { MatchCard } from "@/features/matching/components/live-match/match-card";
 
@@ -65,6 +66,9 @@ export function LiveMatch() {
 	} = useLiveMatchInfinite();
 	const allMatches = liveMatchData || [];
 
+	// Fetch accurate stats from server (total and viewed counts)
+	const { data: statsData } = useMatchStats();
+
 	const matches = React.useMemo(() => {
 		switch (activeFilter) {
 			case "new":
@@ -76,20 +80,18 @@ export function LiveMatch() {
 		}
 	}, [allMatches, activeFilter]);
 
-	// Calculate stats based on current data
+	// Calculate stats: use server-side counts for total/viewed/activeUsers, client-side for "new"
 	const stats = React.useMemo(() => {
+		// "New" count is time-based and needs loaded match data (client-side)
 		const newCount = allMatches.filter((match) => match.isNew === true).length;
-		const viewedCount = allMatches.filter(
-			(match) => match.isViewed === true,
-		).length;
 
 		return {
-			activeUsers: allMatches.length, // Use actual match count as active users indicator
+			activeUsers: statsData?.activeUsers ?? 0, // Server-side count (accurate)
 			newMatches: newCount,
-			viewedMatches: viewedCount,
-			totalMatches: allMatches.length, // Total count for "All" filter
+			viewedMatches: statsData?.viewed ?? 0, // Server-side count (accurate)
+			totalMatches: statsData?.total ?? 0, // Server-side count (accurate)
 		};
-	}, [allMatches]);
+	}, [allMatches, statsData]);
 
 	React.useEffect(() => {
 		if (inView) {

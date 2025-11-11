@@ -11,8 +11,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useMarkMatchViewed } from "@/features/matching/api/mark-match-viewed";
+import { useReactToMatch } from "@/features/matching/api/react-to-match";
 import { useUserMatchesActions } from "../../store/user-matches";
 
 export interface MatchCardProps {

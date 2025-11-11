@@ -77,37 +77,39 @@ export const POST = withSession(
  * Query params:
  *   - reaction_type: Type of reaction to remove (optional, removes all if not specified)
  */
-export const DELETE = withSession(async ({ request, params, session, supabase }) => {
-	const matchId = params.matchId;
-	const { searchParams } = new URL(request.url);
-	const reactionType = searchParams.get("reaction_type");
+export const DELETE = withSession(
+	async ({ request, params, session, supabase }) => {
+		const matchId = params.matchId;
+		const { searchParams } = new URL(request.url);
+		const reactionType = searchParams.get("reaction_type");
 
-	// Build delete query
-	let query = supabase
-		.from("reactions")
-		.delete()
-		.eq("match_id", matchId)
-		.eq("user_profile_id", session.profile.id);
+		// Build delete query
+		let query = supabase
+			.from("reactions")
+			.delete()
+			.eq("match_id", matchId)
+			.eq("user_profile_id", session.profile.id);
 
-	// If reaction_type specified, only delete that type
-	if (reactionType) {
-		query = query.eq("reaction_type", reactionType);
-	}
+		// If reaction_type specified, only delete that type
+		if (reactionType) {
+			query = query.eq("reaction_type", reactionType);
+		}
 
-	const { error: deleteError } = await query;
+		const { error: deleteError } = await query;
 
-	if (deleteError) {
-		throw deleteError;
-	}
+		if (deleteError) {
+			throw deleteError;
+		}
 
-	return NextResponse.json({
-		message: reactionType
-			? `Reaction "${reactionType}" removed successfully`
-			: "All reactions removed successfully",
-		match_id: matchId,
-		reaction_type: reactionType || "all",
-	});
-});
+		return NextResponse.json({
+			message: reactionType
+				? `Reaction "${reactionType}" removed successfully`
+				: "All reactions removed successfully",
+			match_id: matchId,
+			reaction_type: reactionType || "all",
+		});
+	},
+);
 
 /**
  * GET /api/matches/[matchId]/react - Get user's reactions for this match

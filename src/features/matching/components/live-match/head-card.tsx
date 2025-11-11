@@ -32,7 +32,7 @@ export const HeadCard = ({
 			</div>
 
 			<p className="text-sm text-white/90 mb-3">
-				🔥 {activeUsers} people getting matched right now
+				🔥 {activeUsers} users registered
 			</p>
 
 			<div className="flex gap-2">

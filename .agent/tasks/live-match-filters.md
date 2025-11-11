@@ -394,6 +394,14 @@ If real-time updates are needed, implement Supabase Realtime subscriptions to pu
 - [x] List supported reaction types
 - [x] Update this task doc with completion date
 
+### Phase 8: Stats API Implementation ✅ COMPLETED
+- [x] Create `GET /api/matches/top/stats` endpoint for accurate counts
+- [x] Create `get-match-stats.ts` API client with `useMatchStats()` hook
+- [x] Update `mark-match-viewed.ts` with stats optimistic updates
+- [x] Update `live-match.tsx` to use server-side stats
+- [x] Remove `activeUsers` from HeadCard (simplified UI)
+- [x] Update documentation
+
 ---
 
 ## Testing Scenarios
@@ -533,6 +541,54 @@ If issues arise post-deployment:
 | 2025-11-10 | Claude | Implementation completed - all phases done except manual testing |
 | 2025-11-10 | Claude | Fixed badge count display bug - "All" now shows `totalMatches` instead of `newMatches + viewedMatches` |
 | 2025-11-10 | Claude | Fixed API error handling in view endpoint + added optimistic updates for instant UI feedback |
+| 2025-11-11 | Claude | Added Phase 8: Stats API Implementation - separate endpoint for accurate counts, removed activeUsers |
+
+---
+
+## Stats API Design (Phase 8)
+
+### Problem Statement
+The original implementation calculated match counts client-side by filtering paginated data, which gave **incorrect counts**:
+- Only counted matches that were loaded (paginated)
+- As user scrolled, counts would increase dynamically
+- Example: Shows "All (20)" when there are actually 500+ matches in database
+
+### Solution: Dedicated Stats Endpoint
+
+**Endpoint:** `GET /api/matches/top/stats`
+
+**Response:**
+```json
+{
+  "total": 500,      // Total user-to-user matches in database
+  "viewed": 45       // Matches current user has viewed (null if not authenticated)
+}
+```
+
+**SQL Queries:**
+1. **Total matches** - COUNT all user-to-user matches with efficient query
+2. **Viewed matches** - COUNT reactions with `reaction_type = "viewed"` for current user
+
+**Cache Strategy:**
+- No server-side caching needed
+- Existing `useMatchRealtime()` hook invalidates `["matching"]` queries on INSERT
+- Stats automatically refresh when new matches are created
+
+**Frontend Integration:**
+- `useMatchStats()` hook fetches server-side counts
+- `totalMatches` and `viewedMatches` now accurate (not limited by pagination)
+- `newMatches` still calculated client-side (time-based, needs loaded data)
+
+**Optimistic Updates:**
+- `useMarkMatchViewed()` now updates both:
+  1. Match data cache (adds "viewed" to `my_reaction`)
+  2. Stats cache (increments `viewed` count)
+- Instant UI feedback with automatic rollback on error
+
+**UI Changes:**
+- Removed `activeUsers` prop from HeadCard
+- Changed text from "🔥 X people getting matched right now" to "🔥 X total matches"
+- Simpler, more accurate messaging
 
 ---
 
@@ -567,6 +623,14 @@ If issues arise post-deployment:
 **Documentation:**
 - Updated `.agent/system/database_schema.md` with new reactions schema
 - Updated `.agent/tasks/live-match-filters.md` with implementation details
+
+**Phase 8 - Stats API (2025-11-11):**
+- Created `GET /api/matches/top/stats` endpoint for accurate counts
+- Created `src/features/matching/api/get-match-stats.ts` with `useMatchStats()` hook
+- Updated `mark-match-viewed.ts` to optimistically update stats cache
+- Updated `live-match.tsx` to use server-side stats for total/viewed counts
+- Updated `head-card.tsx` to remove `activeUsers` and simplify UI
+- Documented stats API design and implementation
 
 ### ⚠️ Manual Testing Required
 
