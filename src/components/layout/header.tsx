@@ -29,6 +29,8 @@ const navItemsMobile: NavItem[] = [
 	{ name: "Profile", href: "/profile" },
 ];
 
+const adminNavItem: NavItem = { name: "Admin", href: "/admin" };
+
 export function Header({ loading = false }: { loading?: boolean }) {
 	const user = useUser();
 
@@ -126,7 +128,10 @@ export function Header({ loading = false }: { loading?: boolean }) {
 
 						<nav className="hidden items-center space-x-1 lg:flex">
 							{user &&
-								navItems.map((item) => (
+								[
+									...navItems,
+									...(user.role === "admin" ? [adminNavItem] : []),
+								].map((item) => (
 									<motion.div
 										key={item.name}
 										variants={itemVariants}
@@ -219,7 +224,10 @@ export function Header({ loading = false }: { loading?: boolean }) {
 								{user ? (
 									<>
 										<div className="space-y-1">
-											{navItemsMobile.map((item) => (
+											{[
+												...navItemsMobile,
+												...(user.role === "admin" ? [adminNavItem] : []),
+											].map((item) => (
 												<motion.div
 													key={item.name}
 													variants={mobileItemVariants}

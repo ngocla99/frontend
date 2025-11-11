@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import GeneralError from "@/components/errors/general-error";
 
-export default function Error({
+export default function PageError({
 	error,
 }: {
 	error: Error & { digest?: string };

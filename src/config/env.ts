@@ -18,8 +18,7 @@ export const env = createEnv({
 		PYTHON_AI_SERVICE_API_KEY: z.string().min(1),
 		FAL_AI_API_KEY: z.string().min(1),
 		FAL_BABY_MODEL_ID: z.string().min(1).default("fal-ai/nano-banana/edit"),
-		// Email validation
-		DEV_ALLOW_NON_EDU_EMAILS: z.coerce.boolean().default(false),
+		// Note: allow_non_edu_emails is now stored in database (system_settings table)
 	},
 
 	/**
@@ -47,7 +46,6 @@ export const env = createEnv({
 		PYTHON_AI_SERVICE_API_KEY: process.env.PYTHON_AI_SERVICE_API_KEY,
 		FAL_AI_API_KEY: process.env.FAL_AI_API_KEY,
 		FAL_BABY_MODEL_ID: process.env.FAL_BABY_MODEL_ID,
-		DEV_ALLOW_NON_EDU_EMAILS: process.env.DEV_ALLOW_NON_EDU_EMAILS,
 
 		// Client-side
 		NEXT_PUBLIC_BASE_API_URL: process.env.NEXT_PUBLIC_BASE_API_URL,

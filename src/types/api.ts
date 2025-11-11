@@ -16,6 +16,7 @@ export type UserApi = {
 	default_face_id?: string;
 	image?: string;
 	school?: string;
+	role: string;
 };
 
 export type LiveMatchApi = {

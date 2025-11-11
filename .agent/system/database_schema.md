@@ -26,6 +26,7 @@ Unified user and celebrity profile storage.
 | `email` | `text` | UNIQUE | User email (from Supabase Auth) |
 | `gender` | `text` | | Gender (male, female, other) |
 | `school` | `text` | | User location/school |
+| `role` | `text` | NOT NULL, DEFAULT 'user', CHECK (user, admin) | User role for access control |
 | `default_face_id` | `uuid` | FK → faces(id) | Default face for matching |
 | `last_seen` | `timestamptz` | | Last online timestamp (presence tracking) |
 | `created_at` | `timestamptz` | DEFAULT now() | Account creation time |
@@ -36,6 +37,7 @@ Unified user and celebrity profile storage.
 - `profiles_email_key` (UNIQUE) on `email`
 - `idx_profiles_school_gender` on `(school, gender)` WHERE `profile_type = 'user'`
 - `idx_profiles_last_seen` on `last_seen`
+- `idx_profiles_role` on `role` WHERE `role = 'admin'`
 
 **Usage:**
 - Stores both user and celebrity profile data
@@ -460,6 +462,52 @@ Chat messaging system for mutual connections.
 **Relationships:**
 - `connection_id` → `mutual_connections.id`
 - `sender_id` → `profiles.id`
+
+---
+
+### Table: `system_settings`
+
+Configurable system settings managed by admins.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `key` | `text` | PRIMARY KEY | Unique setting identifier (e.g., matching_weights, allow_non_edu_emails) |
+| `value` | `jsonb` | NOT NULL | JSON value for the setting (supports complex types) |
+| `description` | `text` | | Human-readable description of the setting |
+| `updated_at` | `timestamptz` | NOT NULL, DEFAULT now() | Last update timestamp |
+| `updated_by` | `uuid` | FK → profiles(id) | Admin user who last updated this setting |
+
+**Indexes:**
+- `system_settings_pkey` (UNIQUE) on `key`
+- `idx_system_settings_updated_at` on `updated_at DESC`
+
+**Current Settings:**
+- `matching_weights` - Weights for the 6-factor matching algorithm (must sum to 1.0)
+  ```json
+  {
+    "embedding": 0.20,    // Facial embedding similarity
+    "geometry": 0.20,     // Facial proportions
+    "age": 0.15,          // Age compatibility
+    "symmetry": 0.15,     // Symmetry score
+    "skin_tone": 0.15,    // Skin tone similarity
+    "expression": 0.15    // Expression match
+  }
+  ```
+- `allow_non_edu_emails` - Allow non-.edu email addresses to register (boolean)
+- `match_threshold` - Minimum similarity score (0.0-1.0) required to create a match
+
+**Usage:**
+- Dynamic configuration of matching algorithm weights
+- Email validation settings
+- All settings are admin-configurable via `/admin` page
+- Used by `calculate_advanced_similarity()` function for real-time weight adjustments
+
+**RLS Policies:**
+- SELECT: Public read access
+- INSERT/UPDATE/DELETE: Admin role only (via `profiles.role = 'admin'`)
+
+**Relationships:**
+- `updated_by` → `profiles.id`
 
 ---
 

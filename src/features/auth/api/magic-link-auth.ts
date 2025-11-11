@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 /**
  * Create magic link schema with dynamic validation
- * @param allowNonEduEmails - Whether to allow non-.edu emails (from server config)
+ * @param allowNonEduEmails - Whether to allow non-.edu emails (from database system_settings)
  */
 export const createMagicLinkSchema = (allowNonEduEmails: boolean) =>
 	z.object({
@@ -14,7 +14,7 @@ export const createMagicLinkSchema = (allowNonEduEmails: boolean) =>
 			.string()
 			.email("Please enter a valid email address")
 			.refine((email) => {
-				// If DEV_ALLOW_NON_EDU_EMAILS is enabled, allow all emails
+				// If allow_non_edu_emails setting is enabled, allow all emails
 				if (allowNonEduEmails) {
 					return true;
 				}

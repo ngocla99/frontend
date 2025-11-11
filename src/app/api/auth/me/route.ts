@@ -71,6 +71,7 @@ export async function GET(_request: NextRequest) {
 			email: profile.email,
 			gender: profile.gender,
 			school: profile.school,
+			role: profile.role,
 			default_face_id: profile.default_face_id,
 			image: defaultFaceImage,
 		});
@@ -84,6 +85,15 @@ export async function GET(_request: NextRequest) {
  */
 export const PATCH = withSession(async ({ request, session, supabase }) => {
 	const body = await request.json();
+
+	// Security: Prevent role escalation
+	// Users cannot change their own role - this must be done directly in the database
+	if (body.role !== undefined) {
+		return NextResponse.json(
+			{ error: "Forbidden: Cannot modify role" },
+			{ status: 403 },
+		);
+	}
 
 	// Validate and sanitize input
 	const updates: any = {};
@@ -104,7 +114,17 @@ export const PATCH = withSession(async ({ request, session, supabase }) => {
 		if (detectedSchool) {
 			updates.school = detectedSchool;
 		}
-		if (env.DEV_ALLOW_NON_EDU_EMAILS) {
+
+		// Check database setting for non-edu email allowance
+		const { data: allowNonEduSetting } = await supabase
+			.from("system_settings")
+			.select("value")
+			.eq("key", "allow_non_edu_emails")
+			.single();
+
+		const allowNonEduEmails = allowNonEduSetting?.value ?? false;
+
+		if (allowNonEduEmails) {
 			updates.school = "Columbia University";
 		}
 	}

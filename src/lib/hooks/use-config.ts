@@ -17,12 +17,12 @@ async function fetchConfig(): Promise<AppConfig> {
 
 /**
  * Hook to get app configuration
- * Returns whether non-.edu emails are allowed (DEV_ALLOW_NON_EDU_EMAILS)
+ * Returns whether non-.edu emails are allowed (allow_non_edu_emails from database)
  */
 export function useConfig() {
 	return useQuery({
 		queryKey: ["config"],
 		queryFn: fetchConfig,
-		staleTime: Number.POSITIVE_INFINITY, // Config doesn't change during session
+		staleTime: 5 * 60 * 1000, // 5 minutes - config can change via admin panel
 	});
 }
