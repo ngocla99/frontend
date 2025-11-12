@@ -68,10 +68,29 @@ export const useUploadFace = ({
 			onSuccess?.(data, ...args);
 			toast.success("Upload face success");
 		},
-		onError: (error: Error, ...args) => {
-			const errorMessage = error.message || "Upload face failed";
+		onError: (error: any, ...args) => {
+			// Handle rate limit errors (429) with specific messaging
+			if (error.status === 429 && error.data) {
+				const { limit, current, resetAt } = error.data;
+				const resetDate = new Date(resetAt);
+				const resetTimeStr = resetDate.toLocaleTimeString("en-US", {
+					hour: "numeric",
+					minute: "2-digit",
+				});
+
+				toast.error(
+					`Daily upload limit reached (${current}/${limit}). Resets at ${resetTimeStr} UTC.`,
+					{
+						duration: 5000,
+					},
+				);
+			} else {
+				// Handle other errors
+				const errorMessage = error.message || "Upload face failed";
+				toast.error(errorMessage);
+			}
+
 			onError?.(error, ...args);
-			toast.error(errorMessage);
 		},
 		...restConfig,
 		mutationFn: uploadFaceApi,

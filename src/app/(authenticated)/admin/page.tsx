@@ -37,6 +37,8 @@ export default function AdminPage() {
 	});
 	const [allowNonEduEmails, setAllowNonEduEmails] = useState(false);
 	const [matchThreshold, setMatchThreshold] = useState(0.5);
+	const [dailyBabyLimit, setDailyBabyLimit] = useState(10);
+	const [dailyPhotoLimit, setDailyPhotoLimit] = useState(5);
 	const [hasChanges, setHasChanges] = useState(false);
 
 	// Sync form state with fetched settings
@@ -45,6 +47,8 @@ export default function AdminPage() {
 			setWeights(settings.matching_weights);
 			setAllowNonEduEmails(settings.allow_non_edu_emails);
 			setMatchThreshold(settings.match_threshold);
+			setDailyBabyLimit(settings.daily_baby_generation_limit);
+			setDailyPhotoLimit(settings.daily_photo_upload_limit);
 		}
 	}, [settings]);
 
@@ -75,6 +79,8 @@ export default function AdminPage() {
 			setWeights(settings.matching_weights);
 			setAllowNonEduEmails(settings.allow_non_edu_emails);
 			setMatchThreshold(settings.match_threshold);
+			setDailyBabyLimit(settings.daily_baby_generation_limit);
+			setDailyPhotoLimit(settings.daily_photo_upload_limit);
 			setHasChanges(false);
 			toast.info("Reset to saved settings");
 		}
@@ -92,6 +98,8 @@ export default function AdminPage() {
 				matching_weights: weights,
 				allow_non_edu_emails: allowNonEduEmails,
 				match_threshold: matchThreshold,
+				daily_baby_generation_limit: dailyBabyLimit,
+				daily_photo_upload_limit: dailyPhotoLimit,
 			});
 
 			toast.success("Settings updated successfully");
@@ -395,6 +403,92 @@ export default function AdminPage() {
 							<span>0% (Show all)</span>
 							<span>50% (Balanced)</span>
 							<span>100% (Perfect match)</span>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Daily Rate Limits */}
+			<Card className="mb-6">
+				<CardHeader>
+					<CardTitle>Daily Rate Limits</CardTitle>
+					<CardDescription>
+						Control daily usage limits per user to manage costs and prevent
+						abuse. Set to -1 for unlimited, 0 to block entirely.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-6">
+					{/* Baby Generation Limit */}
+					<div className="space-y-2">
+						<div className="flex justify-between items-center">
+							<Label htmlFor="baby-limit">Baby Generation Limit</Label>
+							<span className="text-sm font-medium">
+								{dailyBabyLimit === -1
+									? "Unlimited"
+									: dailyBabyLimit === 0
+										? "Blocked"
+										: `${dailyBabyLimit} per day`}
+							</span>
+						</div>
+						<Slider
+							id="baby-limit"
+							min={-1}
+							max={50}
+							step={1}
+							value={[dailyBabyLimit]}
+							onValueChange={([value]) => {
+								setDailyBabyLimit(value);
+								setHasChanges(true);
+							}}
+							className="w-full"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Maximum baby generations allowed per user per day. Set to -1 for
+							unlimited, 0 to block all.
+						</p>
+						<div className="flex justify-between text-xs text-muted-foreground mt-2">
+							<span>-1 (Unlimited)</span>
+							<span>0 (Blocked)</span>
+							<span>25 (Moderate)</span>
+							<span>50 (High)</span>
+						</div>
+					</div>
+
+					<Separator />
+
+					{/* Photo Upload Limit */}
+					<div className="space-y-2">
+						<div className="flex justify-between items-center">
+							<Label htmlFor="photo-limit">Photo Upload Limit</Label>
+							<span className="text-sm font-medium">
+								{dailyPhotoLimit === -1
+									? "Unlimited"
+									: dailyPhotoLimit === 0
+										? "Blocked"
+										: `${dailyPhotoLimit} per day`}
+							</span>
+						</div>
+						<Slider
+							id="photo-limit"
+							min={-1}
+							max={100}
+							step={1}
+							value={[dailyPhotoLimit]}
+							onValueChange={([value]) => {
+								setDailyPhotoLimit(value);
+								setHasChanges(true);
+							}}
+							className="w-full"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Maximum photo uploads allowed per user per day. Set to -1 for
+							unlimited, 0 to block all.
+						</p>
+						<div className="flex justify-between text-xs text-muted-foreground mt-2">
+							<span>-1 (Unlimited)</span>
+							<span>0 (Blocked)</span>
+							<span>50 (Moderate)</span>
+							<span>100 (High)</span>
 						</div>
 					</div>
 				</CardContent>

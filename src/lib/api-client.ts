@@ -71,7 +71,12 @@ async function fetchApi<T>(
 			.catch(() => ({ message: response.statusText }));
 		const message = errorData.error || errorData.message || response.statusText;
 
-		throw new Error(message);
+		// Create error object with additional metadata for rate limiting
+		const error: any = new Error(message);
+		error.status = response.status;
+		error.data = errorData; // Preserve full error response (limit, current, resetAt, etc.)
+
+		throw error;
 	}
 
 	return response.json();

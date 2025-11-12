@@ -39,6 +39,18 @@ const updateSettingsSchema = z.object({
 	matching_weights: matchingWeightsSchema.optional(),
 	allow_non_edu_emails: z.boolean().optional(),
 	match_threshold: z.number().min(0).max(1).optional(),
+	daily_baby_generation_limit: z
+		.number()
+		.int()
+		.min(-1)
+		.optional()
+		.describe("Daily baby generation limit (-1 = unlimited, 0 = blocked)"),
+	daily_photo_upload_limit: z
+		.number()
+		.int()
+		.min(-1)
+		.optional()
+		.describe("Daily photo upload limit (-1 = unlimited, 0 = blocked)"),
 });
 
 /**
@@ -89,7 +101,9 @@ export const GET = withAdminSession(async ({ supabase }) => {
  * @body {
  *   matching_weights?: { embedding: number, geometry: number, ... },
  *   allow_non_edu_emails?: boolean,
- *   match_threshold?: number
+ *   match_threshold?: number,
+ *   daily_baby_generation_limit?: number,
+ *   daily_photo_upload_limit?: number
  * }
  */
 export const PATCH = withAdminSession(

@@ -16,6 +16,8 @@ export type SystemSettings = {
 	matching_weights: MatchingWeights;
 	allow_non_edu_emails: boolean;
 	match_threshold: number;
+	daily_baby_generation_limit: number;
+	daily_photo_upload_limit: number;
 };
 
 export type UpdateSettingsInput = Partial<SystemSettings>;

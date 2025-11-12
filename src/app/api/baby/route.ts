@@ -9,6 +9,11 @@ import {
 	createMutualConnection,
 } from "@/lib/supabase/services/connections";
 import { createAndBroadcastNotification } from "@/lib/supabase/services/notifications";
+import {
+	checkDailyLimit,
+	incrementDailyUsage,
+	RateLimitError,
+} from "@/lib/utils/rate-limiting";
 
 /**
  * POST /api/baby - Generate baby image from match
@@ -36,6 +41,34 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 			{ error: "match_id is required" },
 			{ status: 400 },
 		);
+	}
+
+	// Check daily baby generation limit
+	try {
+		const limitCheck = await checkDailyLimit(
+			supabaseAdmin,
+			session.user.id,
+			"baby_generations",
+		);
+
+		if (!limitCheck.allowed) {
+			// User has reached their daily limit
+			return NextResponse.json(
+				{
+					error: "Daily limit reached",
+					message: `You've reached your daily limit of ${limitCheck.limit} baby generations. Resets at midnight UTC.`,
+					limit: limitCheck.limit,
+					current: limitCheck.current,
+					resetAt: limitCheck.resetAt,
+					type: "baby_generation",
+				},
+				{ status: 429 },
+			);
+		}
+	} catch (error) {
+		console.error("Error checking rate limit:", error);
+		// Allow the request to proceed if rate limit check fails (fail open)
+		// Alternative: Return 500 to fail closed and prevent abuse
 	}
 
 	// Get match details with face images
@@ -151,6 +184,15 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 	if (babyError) {
 		console.error("Database error:", babyError);
 		throw new Error(`Failed to save baby record: ${babyError.message}`);
+	}
+
+	// Increment daily usage counter (after successful generation)
+	try {
+		await incrementDailyUsage(supabaseAdmin, session.user.id, "baby_generations");
+	} catch (error) {
+		console.error("Error incrementing usage counter:", error);
+		// Don't fail the request if counter increment fails
+		// The baby was already generated successfully
 	}
 
 	// Determine the other user (the one who didn't generate this baby)

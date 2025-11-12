@@ -12,6 +12,10 @@ import {
 	batchSignUrls,
 	getSignedUrl,
 } from "@/lib/utils/deduplicate-signed-urls";
+import {
+	checkDailyLimit,
+	incrementDailyUsage,
+} from "@/lib/utils/rate-limiting";
 
 /**
  * POST /api/faces - Upload face image with automatic match generation
@@ -36,6 +40,35 @@ import {
  */
 export const POST = withSession(async ({ request, session, supabase }) => {
 	const { profile } = session;
+
+	// Check daily photo upload limit BEFORE processing
+	// This prevents wasting AI service calls on rate-limited requests
+	try {
+		const limitCheck = await checkDailyLimit(
+			supabaseAdmin,
+			session.user.id,
+			"photo_uploads",
+		);
+
+		if (!limitCheck.allowed) {
+			// User has reached their daily limit
+			return NextResponse.json(
+				{
+					error: "Daily limit reached",
+					message: `You've reached your daily limit of ${limitCheck.limit} photo uploads. Resets at midnight UTC.`,
+					limit: limitCheck.limit,
+					current: limitCheck.current,
+					resetAt: limitCheck.resetAt,
+					type: "photo_upload",
+				},
+				{ status: 429 },
+			);
+		}
+	} catch (error) {
+		console.error("Error checking rate limit:", error);
+		// Allow the request to proceed if rate limit check fails (fail open)
+		// Alternative: Return 500 to fail closed and prevent abuse
+	}
 
 	// Parse multipart form data
 	const formData = await request.formData();
@@ -175,6 +208,15 @@ export const POST = withSession(async ({ request, session, supabase }) => {
 		console.error("Failed to update default_face_id:", updateError);
 		// Note: We don't throw here to avoid failing the upload
 		// The face was created successfully, just the default wasn't set
+	}
+
+	// Increment daily usage counter (after successful upload)
+	try {
+		await incrementDailyUsage(supabaseAdmin, session.user.id, "photo_uploads");
+	} catch (error) {
+		console.error("Error incrementing usage counter:", error);
+		// Don't fail the request if counter increment fails
+		// The photo was already uploaded successfully
 	}
 
 	// Queue automatic matching job (NEW - Auto-Match Generation Feature)
