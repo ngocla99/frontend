@@ -1,19 +1,12 @@
 /**
- * AI Service Client - Python Microservice Integration
+ * AI Service Client - Replicate Integration
  *
- * This client communicates with the Python AI microservice for face recognition tasks.
- * The microservice handles InsightFace model inference for embedding extraction.
+ * This client communicates with Replicate for face recognition tasks.
+ * Uses a custom Cog model deployed on Replicate for comprehensive face analysis.
  */
 
+import Replicate from "replicate";
 import { env } from "@/config/env";
-
-interface VerifyFaceResponse {
-	face_detected: boolean;
-	confidence: number;
-	bbox: number[];
-	message: string;
-	error?: string;
-}
 
 /**
  * Advanced face analysis response with comprehensive attributes
@@ -67,127 +60,35 @@ export interface AdvancedFaceAnalysis {
 	error?: string;
 }
 
-const AI_SERVICE_URL = env.PYTHON_AI_SERVICE_URL;
-const AI_SERVICE_API_KEY = env.PYTHON_AI_SERVICE_API_KEY;
+// Initialize Replicate client
+const replicate = new Replicate({
+	auth: env.REPLICATE_API_TOKEN,
+});
 
 /**
- * Check if AI service is healthy and ready
+ * Convert image buffer to base64 data URI
  *
- * @returns True if service is healthy, false otherwise
- *
- * @example
- * ```typescript
- * const isHealthy = await checkAIServiceHealth();
- * if (!isHealthy) {
- *   console.error("AI service is down!");
- * }
- * ```
+ * @param imageBuffer - Image file buffer
+ * @param mimeType - Image MIME type (default: image/jpeg)
+ * @returns Base64 data URI
  */
-export async function checkAIServiceHealth(): Promise<boolean> {
-	try {
-		const response = await fetch(`${AI_SERVICE_URL}/health`, {
-			method: "GET",
-		});
-
-		if (!response.ok) {
-			return false;
-		}
-
-		const data = await response.json();
-		return data.status === "healthy";
-	} catch (error) {
-		console.error("AI service health check failed:", error);
-		return false;
-	}
-}
-
-
-/**
- * Verify if a face is detected in an image (lightweight, no embedding extraction)
- *
- * @param imageBuffer - Image file buffer (JPEG, PNG)
- * @returns Face detection result with confidence and bbox
- * @throws Error if API fails
- *
- * @example
- * ```typescript
- * const imageBuffer = await file.arrayBuffer();
- * const result = await verifyFace(Buffer.from(imageBuffer));
- * if (result.face_detected) {
- *   console.log(`Face detected with ${result.confidence} confidence`);
- * }
- * ```
- */
-export async function verifyFace(
-	imageBuffer: Buffer,
-): Promise<VerifyFaceResponse> {
-	const formData = new FormData();
-	const blob = new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" });
-	formData.append("file", blob, "face.jpg");
-
-	const response = await fetch(`${AI_SERVICE_URL}/verify-face`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
-		},
-		body: formData,
-	});
-
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || "Failed to verify face");
-	}
-
-	const data: VerifyFaceResponse = await response.json();
-	return data;
-}
-
-/**
- * Verify face from base64-encoded image
- *
- * @param imageBase64 - Base64-encoded image data
- * @returns Face detection result
- * @throws Error if API fails
- *
- * @example
- * ```typescript
- * const base64 = imageBuffer.toString('base64');
- * const result = await verifyFaceFromBase64(base64);
- * ```
- */
-export async function verifyFaceFromBase64(
-	imageBase64: string,
-): Promise<VerifyFaceResponse> {
-	const response = await fetch(`${AI_SERVICE_URL}/verify-face`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			image_base64: imageBase64,
-		}),
-	});
-
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || "Failed to verify face");
-	}
-
-	const data: VerifyFaceResponse = await response.json();
-	return data;
+function bufferToDataUri(imageBuffer: Buffer, mimeType = "image/jpeg"): string {
+	const base64 = imageBuffer.toString("base64");
+	return `data:${mimeType};base64,${base64}`;
 }
 
 /**
  * Extract comprehensive facial attributes for advanced matching
  *
- * NEW: Advanced analysis endpoint that extracts 6+ facial attributes:
+ * Uses Replicate API to analyze faces with 15+ attributes:
+ * - Face embeddings (512D ArcFace)
  * - Age, gender, expression
  * - Face quality (blur, illumination)
  * - Symmetry score
  * - Skin tone (CIELAB)
  * - Facial geometry ratios
  * - 68-point landmarks
+ * - Head pose (yaw, pitch, roll)
  *
  * @param imageBuffer - Image file buffer (JPEG, PNG)
  * @returns Comprehensive facial analysis
@@ -208,36 +109,40 @@ export async function verifyFaceFromBase64(
 export async function analyzeAdvancedFace(
 	imageBuffer: Buffer,
 ): Promise<AdvancedFaceAnalysis> {
-	const formData = new FormData();
-	const blob = new Blob([new Uint8Array(imageBuffer)], { type: "image/jpeg" });
-	formData.append("file", blob, "face.jpg");
+	try {
+		// Convert buffer to data URI for Replicate
+		const dataUri = bufferToDataUri(imageBuffer);
 
-	const response = await fetch(`${AI_SERVICE_URL}/analyze-face-advanced`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
-		},
-		body: formData,
-	});
+		// Run prediction on Replicate
+		const output = (await replicate.run(env.REPLICATE_MODEL_VERSION, {
+			input: {
+				image: dataUri,
+			},
+		})) as AdvancedFaceAnalysis;
 
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || "Failed to analyze face");
+		// Validate response
+		if (!output.face_detected) {
+			throw new Error(output.error || "No face detected in image");
+		}
+
+		return output;
+	} catch (error) {
+		console.error("Replicate face analysis error:", error);
+
+		// Re-throw with more context
+		if (error instanceof Error) {
+			throw new Error(`Face analysis failed: ${error.message}`);
+		}
+
+		throw new Error("Face analysis failed: Unknown error");
 	}
-
-	const data: AdvancedFaceAnalysis = await response.json();
-
-	if (!data.face_detected) {
-		throw new Error("No face detected in image");
-	}
-
-	return data;
 }
 
 /**
  * Extract advanced face analysis from base64-encoded image
  *
- * @param imageBase64 - Base64-encoded image data
+ * @param imageBase64 - Base64-encoded image data (without data URI prefix)
+ * @param mimeType - Image MIME type (default: image/jpeg)
  * @returns Comprehensive facial analysis
  * @throws Error if no face detected or API fails
  *
@@ -249,28 +154,123 @@ export async function analyzeAdvancedFace(
  */
 export async function analyzeAdvancedFaceFromBase64(
 	imageBase64: string,
+	mimeType = "image/jpeg",
 ): Promise<AdvancedFaceAnalysis> {
-	const response = await fetch(`${AI_SERVICE_URL}/analyze-face-advanced`, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${AI_SERVICE_API_KEY}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			image_base64: imageBase64,
-		}),
-	});
+	try {
+		// Add data URI prefix if not present
+		const dataUri = imageBase64.startsWith("data:")
+			? imageBase64
+			: `data:${mimeType};base64,${imageBase64}`;
 
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || "Failed to analyze face");
+		// Run prediction on Replicate
+		const output = (await replicate.run(env.REPLICATE_MODEL_VERSION, {
+			input: {
+				image: dataUri,
+			},
+		})) as AdvancedFaceAnalysis;
+
+		// Validate response
+		if (!output.face_detected) {
+			throw new Error(output.error || "No face detected in image");
+		}
+
+		return output;
+	} catch (error) {
+		console.error("Replicate face analysis error:", error);
+
+		// Re-throw with more context
+		if (error instanceof Error) {
+			throw new Error(`Face analysis failed: ${error.message}`);
+		}
+
+		throw new Error("Face analysis failed: Unknown error");
 	}
+}
 
-	const data: AdvancedFaceAnalysis = await response.json();
-
-	if (!data.face_detected) {
-		throw new Error("No face detected in image");
+/**
+ * Verify if a face is detected in an image (lightweight check)
+ *
+ * Note: With Replicate, this still runs the full analysis but only checks
+ * for face detection. Consider using analyzeAdvancedFace directly to avoid
+ * redundant API calls.
+ *
+ * @param imageBuffer - Image file buffer (JPEG, PNG)
+ * @returns True if face detected, false otherwise
+ *
+ * @example
+ * ```typescript
+ * const imageBuffer = await file.arrayBuffer();
+ * const hasFace = await verifyFace(Buffer.from(imageBuffer));
+ * if (hasFace) {
+ *   console.log("Face detected!");
+ * }
+ * ```
+ */
+export async function verifyFace(imageBuffer: Buffer): Promise<boolean> {
+	try {
+		const result = await analyzeAdvancedFace(imageBuffer);
+		return result.face_detected;
+	} catch (error) {
+		console.error("Face verification error:", error);
+		return false;
 	}
+}
 
-	return data;
+/**
+ * Verify face from base64-encoded image
+ *
+ * @param imageBase64 - Base64-encoded image data
+ * @param mimeType - Image MIME type (default: image/jpeg)
+ * @returns True if face detected, false otherwise
+ *
+ * @example
+ * ```typescript
+ * const base64 = imageBuffer.toString('base64');
+ * const hasFace = await verifyFaceFromBase64(base64);
+ * ```
+ */
+export async function verifyFaceFromBase64(
+	imageBase64: string,
+	mimeType = "image/jpeg",
+): Promise<boolean> {
+	try {
+		const result = await analyzeAdvancedFaceFromBase64(imageBase64, mimeType);
+		return result.face_detected;
+	} catch (error) {
+		console.error("Face verification error:", error);
+		return false;
+	}
+}
+
+/**
+ * Check if Replicate service is accessible
+ *
+ * Note: Replicate doesn't have a health check endpoint, so this is a simplified
+ * version that just checks if the API token is configured.
+ *
+ * @returns True if service is configured, false otherwise
+ *
+ * @example
+ * ```typescript
+ * const isHealthy = await checkAIServiceHealth();
+ * if (!isHealthy) {
+ *   console.error("Replicate is not configured!");
+ * }
+ * ```
+ */
+export async function checkAIServiceHealth(): Promise<boolean> {
+	try {
+		// Check if environment variables are configured
+		if (!env.REPLICATE_API_TOKEN || !env.REPLICATE_MODEL_VERSION) {
+			console.error("Replicate environment variables not configured");
+			return false;
+		}
+
+		// Could optionally make a test prediction here, but that costs money
+		// For now, just return true if env vars are set
+		return true;
+	} catch (error) {
+		console.error("Replicate health check failed:", error);
+		return false;
+	}
 }
