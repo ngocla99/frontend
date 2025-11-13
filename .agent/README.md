@@ -70,6 +70,17 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
   - Loading states, empty states, and error handling
   - Smooth animations and responsive design
 
+#### 🚧 In Progress Tasks
+
+- **[Vercel Security & Cost Optimization](./tasks/vercel-security-cost-optimization.md)** 🚧 In Progress 2025-11-13
+  - Add IP-based rate limiting for public endpoints
+  - Implement response caching and CDN optimization
+  - Add timeout protection for external AI service calls
+  - Remove unnecessary force-dynamic rendering
+  - Implement CORS protection and security headers
+  - Migrate lightweight routes to Edge runtime
+  - **Target:** 40% cost reduction (~$60-80/month savings)
+
 **How to add new feature docs:**
 1. Create a new file: `tasks/<feature-name>.md`
 2. Include:
