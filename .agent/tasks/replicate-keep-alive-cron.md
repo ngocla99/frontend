@@ -9,20 +9,21 @@
 
 ## Overview
 
-Implements an automated keep-alive system for the Replicate face-analysis model to eliminate cold starts (3-8 minutes) by sending periodic prediction requests every 3 minutes. This ensures the model container stays warm and provides instant predictions (3-4 seconds) for actual user requests.
+Implements an automated keep-alive system for the Replicate face-analysis model to eliminate cold starts (3-8 minutes) by sending periodic prediction requests every 2 minutes. This ensures the model container stays warm and provides instant predictions (3-4 seconds) for actual user requests.
 
 ### Problem Statement
 
 The Replicate model `ngocla99/face-analysis` has significant cold start times:
 - **Cold Start**: 3-8 minutes (when container is shut down)
 - **Warm Prediction**: 3-4 seconds (when container is running)
-- **Container Idle Timeout**: ~5-10 minutes
+- **Container Idle Timeout**: ~2-5 minutes
+- **Actual Prediction Time**: ~300ms per request
 
 Without keep-alive, every user request after idle periods experiences painful 3-8 minute delays.
 
 ### Solution
 
-Schedule a lightweight Supabase Edge Function to ping the Replicate API every 3 minutes, keeping the container perpetually warm.
+Schedule a lightweight Supabase Edge Function to ping the Replicate API every 2 minutes, keeping the container perpetually warm. The 2-minute interval ensures we ping before the container timeout (2-5 minutes), providing a safety margin while keeping costs minimal.
 
 ---
 
@@ -30,12 +31,12 @@ Schedule a lightweight Supabase Edge Function to ping the Replicate API every 3 
 
 ### Functional Requirements
 
-1. Send prediction request to Replicate every 3 minutes
+1. Send prediction request to Replicate every 2 minutes
 2. Use minimal test image to reduce processing time
 3. Run 24/7 without manual intervention
 4. Log all requests for monitoring
 5. Handle errors gracefully without failing
-6. Cost-effective (< $10/month)
+6. Cost-effective (< $2/month)
 
 ### Technical Requirements
 
@@ -53,7 +54,7 @@ Schedule a lightweight Supabase Edge Function to ping the Replicate API every 3 
 ┌─────────────┐       ┌──────────────┐       ┌─────────────────┐
 │  pg_cron    │       │   Supabase   │       │   Replicate     │
 │  Scheduler  │──────>│ Edge Function│──────>│  face-analysis  │
-│ (every 3min)│       │  (HTTP POST) │       │     Model       │
+│ (every 2min)│       │  (HTTP POST) │       │     Model       │
 └─────────────┘       └──────────────┘       └─────────────────┘
                             │
                             ▼
@@ -88,10 +89,12 @@ Schedule a lightweight Supabase Edge Function to ping the Replicate API every 3 
 ### Cron Schedule
 
 ```sql
--- Pattern: */3 * * * * (every 3 minutes)
--- Frequency: 480 times per day
+-- Pattern: */2 * * * * (every 2 minutes)
+-- Frequency: 720 times per day (30 times per hour)
 -- Uses: net.http_post to call Edge Function
--- Authentication: Service role key
+-- Authentication: Hardcoded service_role JWT token (valid until 2035-05-25)
+-- Note: Token is embedded directly in SQL, not via app.settings (which doesn't work in pg_cron context)
+-- Rationale: 2-minute interval ensures ping before container timeout (2-5 min window)
 ```
 
 ### Model Information
@@ -223,7 +226,7 @@ WHERE jobid = (SELECT jobid FROM cron.job WHERE jobname = 'replicate-keep-alive'
   AND start_time > now() - interval '1 hour';
 ```
 
-Expected: ~20 executions per hour (every 3 minutes)
+Expected: ~30 executions per hour (every 2 minutes)
 
 #### View Failed Executions
 
@@ -249,8 +252,8 @@ LIMIT 10;
 
 1. Visit https://replicate.com/ngocla99/face-analysis
 2. Check **Predictions** tab
-3. Verify predictions are running every 3 minutes
-4. Monitor costs in **Billing** section
+3. Verify predictions are running every 2 minutes
+4. Monitor costs in **Billing** section (expect ~$1.46/month)
 
 ---
 
@@ -258,29 +261,32 @@ LIMIT 10;
 
 ### Breakdown
 
-- **Prediction Time**: ~3.7 seconds per call
+- **Prediction Time**: ~300ms (0.3 seconds) per call
 - **Replicate Cost**: $0.000225/second (GPU T4)
-- **Cost Per Call**: 3.7s × $0.000225 = **$0.00083**
-- **Frequency**: 480 calls/day (every 3 minutes × 24 hours)
-- **Daily Cost**: 480 × $0.00083 = **$0.40/day**
-- **Monthly Cost**: $0.40 × 30 = **~$12/month**
+- **Cost Per Call**: 0.3s × $0.000225 = **$0.0000675**
+- **Frequency**: 720 calls/day (every 2 minutes × 24 hours)
+- **Daily Cost**: 720 × $0.0000675 = **$0.0486/day**
+- **Monthly Cost**: $0.0486 × 30 = **~$1.46/month**
 
-### Alternative: 5-Minute Interval
+### Interval Comparison
 
-- **Frequency**: 288 calls/day
-- **Monthly Cost**: ~$7.20/month
-- **Risk**: Slightly higher chance of cold starts
+| Interval | Calls/Day | Cost/Month | Cold Start Risk |
+|----------|-----------|------------|----------------|
+| `*/3` (3 min) | 480 | $0.97 | HIGH - Container may timeout |
+| `*/2` (2 min) | 720 | $1.46 | LOW - Safe margin before timeout |
+| `*/1.5` (90 sec) | 960 | $1.94 | VERY LOW - Maximum reliability |
+| `*/1` (1 min) | 1,440 | $2.92 | MINIMAL - Overkill but cheap |
 
-### Comparison
+### Full Comparison
 
-| Option | Cost/Month | Cold Starts |
-|--------|------------|-------------|
-| No keep-alive | $0 | Every request after 5-10 min idle |
-| 3-min keep-alive | ~$12 | None |
-| 5-min keep-alive | ~$7 | Rare (if timeout < 5 min) |
-| Always-on deployment | ~$583 | None |
+| Option | Cost/Month | Cold Starts | Notes |
+|--------|------------|-------------|-------|
+| No keep-alive | $0 | Every request after 2-5 min idle | Unacceptable UX |
+| 2-min keep-alive | **$1.46** | None | **CHOSEN - Best cost/reliability** |
+| 1-min keep-alive | $2.92 | None | Overkill but still very affordable |
+| Always-on deployment | ~$583 | None | 400x more expensive |
 
-**Chosen**: 3-minute interval for maximum reliability
+**Chosen**: 2-minute interval for optimal cost/reliability balance at < $2/month
 
 ---
 
@@ -316,7 +322,12 @@ LIMIT 10;
 
 3. **HTTP Post Failures**
    - Check: `return_message` in `cron.job_run_details`
-   - Fix: Verify service role key in `app.settings.service_role_key`
+   - Fix: Verify service role JWT token is valid and not expired
+
+4. **Configuration Parameter Error**
+   - Error: `unrecognized configuration parameter "app.settings.service_role_key"`
+   - Cause: Trying to use `current_setting()` which doesn't work in pg_cron context
+   - Fix: Use hardcoded JWT token directly in the SQL (as implemented in migration)
 
 ---
 
