@@ -20,7 +20,7 @@ import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
  * Used for the public live match feed on the homepage.
  * Only shows matches between users (not celebrity matches).
  *
- * Rate Limiting: 10 requests per minute per IP (prevents abuse)
+ * Rate Limiting: 20 requests per minute per IP (prevents abuse)
  * Caching: 30 seconds CDN cache with 60s stale-while-revalidate
  *
  * Query params:
@@ -29,8 +29,8 @@ import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
  */
 export async function GET(request: NextRequest) {
 	try {
-		// Rate limiting: 10 requests per minute per IP
-		const rateLimit = checkIPRateLimit(request, 10, 60);
+		// Rate limiting: 20 requests per minute per IP
+		const rateLimit = checkIPRateLimit(request, 20, 60);
 
 		if (!rateLimit.allowed) {
 			const rateLimitHeaders = getRateLimitHeaders(rateLimit);
