@@ -48,6 +48,8 @@ export default async function RootLayout({
 	);
 }
 
-// We are not prerendering anything because the app is highly dynamic
-// and the data depends on the user so we need to send cookies with each request
-export const dynamic = "force-dynamic";
+// Note: Removed force-dynamic from root layout for performance optimization
+// Dynamic rendering is now handled per-route as needed:
+// - Authenticated routes use force-dynamic via (authenticated)/layout.tsx
+// - Public API routes use appropriate caching strategies (see vercel.json)
+// - Pages with auth checks are naturally dynamic due to cookie dependencies
