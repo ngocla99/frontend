@@ -16,11 +16,11 @@ Phase 1 implementation has been completed! Here's how to test and verify the cha
 
 ### 1. Test Rate Limiting (Local Development)
 
-#### Test /api/matches/top (10 requests/min limit)
+#### Test /api/matches/top (20 requests/min limit)
 
 ```bash
 # Run this in your terminal to test rate limiting
-for i in {1..15}; do
+for i in {1..25}; do
   echo "Request $i:"
   curl -w "\nHTTP Status: %{http_code}\n" \
        -H "Accept: application/json" \
@@ -30,13 +30,13 @@ for i in {1..15}; do
 done
 
 # Expected results:
-# - Requests 1-10: HTTP 200 with data
-# - Requests 11-15: HTTP 429 with error message
+# - Requests 1-20: HTTP 200 with data
+# - Requests 21-25: HTTP 429 with error message
 ```
 
 **What to look for:**
-- First 10 requests succeed (200 OK)
-- Requests 11+ return 429 Too Many Requests
+- First 20 requests succeed (200 OK)
+- Requests 21+ return 429 Too Many Requests
 - Response includes `X-RateLimit-*` headers
 - Error message shows `resetAt` timestamp
 
@@ -66,16 +66,16 @@ done
 curl -i http://localhost:3000/api/matches/top?limit=5
 
 # Look for these headers in the response:
-# X-RateLimit-Limit: 10
-# X-RateLimit-Remaining: 9
+# X-RateLimit-Limit: 20
+# X-RateLimit-Remaining: 19
 # X-RateLimit-Reset: <unix timestamp>
 ```
 
 **Expected output:**
 ```
 HTTP/1.1 200 OK
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 9
+X-RateLimit-Limit: 20
+X-RateLimit-Remaining: 19
 X-RateLimit-Reset: 1699999999
 Cache-Control: public, s-maxage=30, stale-while-revalidate=60
 ...
@@ -109,7 +109,7 @@ curl -I http://localhost:3000/api/config
 
 ```bash
 # 1. Hit the rate limit
-for i in {1..12}; do curl http://localhost:3000/api/matches/top?limit=1 > /dev/null 2>&1; done
+for i in {1..22}; do curl http://localhost:3000/api/matches/top?limit=1 > /dev/null 2>&1; done
 
 # 2. Check you're rate limited
 curl http://localhost:3000/api/matches/top
@@ -210,7 +210,7 @@ time curl https://your-app.vercel.app/api/matches/top?limit=5
 
 ```bash
 # Check rate limiting works on production
-for i in {1..15}; do
+for i in {1..25}; do
   curl https://your-app.vercel.app/api/matches/top
   echo "Request $i"
   sleep 1
