@@ -7,6 +7,10 @@ import {
 	batchSignUrls,
 	getSignedUrl,
 } from "@/lib/utils/deduplicate-signed-urls";
+import {
+	checkIPRateLimit,
+	getRateLimitHeaders,
+} from "@/lib/utils/ip-rate-limiting";
 import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
 
 /**
@@ -16,12 +20,32 @@ import { calculateMatchPercentage } from "@/lib/utils/match-percentage";
  * Used for the public live match feed on the homepage.
  * Only shows matches between users (not celebrity matches).
  *
+ * Rate Limiting: 10 requests per minute per IP (prevents abuse)
+ * Caching: 30 seconds CDN cache with 60s stale-while-revalidate
+ *
  * Query params:
  *   - limit: Number of matches to return (default: 20, max: 100)
  *   - skip: Number of matches to skip for pagination (default: 0)
  */
 export async function GET(request: NextRequest) {
 	try {
+		// Rate limiting: 10 requests per minute per IP
+		const rateLimit = checkIPRateLimit(request, 10, 60);
+
+		if (!rateLimit.allowed) {
+			const rateLimitHeaders = getRateLimitHeaders(rateLimit);
+			return NextResponse.json(
+				{
+					error: "Too many requests",
+					message: "Rate limit exceeded. Please try again later.",
+					resetAt: new Date(rateLimit.resetAt).toISOString(),
+				},
+				{
+					status: 429,
+					headers: rateLimitHeaders,
+				},
+			);
+		}
 		const supabase = await createClient();
 		const { searchParams } = new URL(request.url);
 		const limit = Math.min(
@@ -197,10 +221,26 @@ export async function GET(request: NextRequest) {
 			};
 		});
 
-		return NextResponse.json({
-			matches: matchesWithUrls,
-			total: matchesWithUrls.length,
-		});
+		// Return with rate limit headers and caching
+		const rateLimitHeaders = getRateLimitHeaders(rateLimit);
+
+		return NextResponse.json(
+			{
+				matches: matchesWithUrls,
+				total: matchesWithUrls.length,
+			},
+			{
+				headers: {
+					...rateLimitHeaders,
+					// Cache for 30s on CDN, serve stale for 60s while revalidating
+					"Cache-Control":
+						"public, s-maxage=30, stale-while-revalidate=60",
+					// Vercel-specific CDN caching
+					"CDN-Cache-Control": "public, s-maxage=30",
+					"Vercel-CDN-Cache-Control": "public, s-maxage=30",
+				},
+			},
+		);
 	} catch (error) {
 		return handleApiError(error);
 	}
