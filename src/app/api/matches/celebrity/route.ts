@@ -5,13 +5,19 @@ import { withSession } from "@/lib/middleware/with-session";
 /**
  * GET /api/matches/celebrity - Get celebrity lookalike matches for current user
  *
+ * Celebrity images use public URLs (no expiration) since:
+ * - Celebrity bucket is configured as public
+ * - Images are static and never change
+ * - No signed URL generation overhead
+ * - Perfect for CDN caching (no TTL to worry about)
+ *
  * Query params:
  *   - face_id: Optional face ID to get matches for (defaults to default_face_id)
  *   - limit: Number of results (default: 20)
  *   - category: Filter by celebrity category (optional)
  *
  * Returns:
- *   - matches: Array of celebrity matches with signed image URLs
+ *   - matches: Array of celebrity matches with public image URLs
  *   - total: Total number of matches
  *
  * Example response:
@@ -102,7 +108,9 @@ export const GET = withSession(async ({ session, searchParams, supabase }) => {
 		);
 	}
 
-	// Get public URLs for celebrity images (bucket is public)
+	// Get public URLs for celebrity images
+	// Note: Celebrity bucket is public, so getPublicUrl returns permanent URLs (no expiration)
+	// This is optimal for caching - no signed URL generation overhead, no TTL to manage
 	const matchesWithSignedUrls = filteredMatches.map((match: any) => {
 		const celebrity = match.celebrity;
 
