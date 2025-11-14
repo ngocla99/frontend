@@ -12,7 +12,6 @@ import { createAndBroadcastNotification } from "@/lib/supabase/services/notifica
 import {
 	checkDailyLimit,
 	incrementDailyUsage,
-	RateLimitError,
 } from "@/lib/utils/rate-limiting";
 
 /**
@@ -188,7 +187,11 @@ export const POST = withSession(async ({ request, supabase, session }) => {
 
 	// Increment daily usage counter (after successful generation)
 	try {
-		await incrementDailyUsage(supabaseAdmin, session.user.id, "baby_generations");
+		await incrementDailyUsage(
+			supabaseAdmin,
+			session.user.id,
+			"baby_generations",
+		);
 	} catch (error) {
 		console.error("Error incrementing usage counter:", error);
 		// Don't fail the request if counter increment fails

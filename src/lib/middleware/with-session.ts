@@ -13,7 +13,6 @@ export type Profile = {
 	gender: string | null;
 	school: string | null;
 	default_face_id: string | null;
-	profile_type: string;
 	role: string;
 	created_at: string;
 	updated_at: string;

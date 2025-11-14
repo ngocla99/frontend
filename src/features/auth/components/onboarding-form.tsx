@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import type { UpdateMeInput } from "@/features/auth/api/update-me";
 import { useUploadFace } from "@/features/matching/api/upload-face";
-import { useVerifyFace } from "@/features/matching/api/verify-face";
 import { ImageCropDialog } from "@/features/matching/components/upload-photo/image-crop-dialog";
 import { base64ToFile } from "@/features/matching/utils";
 import type { UserApi } from "@/types/api";
@@ -70,8 +69,6 @@ export function OnboardingForm() {
 	const [verifiedFile, setVerifiedFile] = React.useState<File | null>(null);
 	const [showCropDialog, setShowCropDialog] = React.useState(false);
 	const currentUser = useUser();
-
-	const verifyFaceMutation = useVerifyFace();
 
 	const uploadFaceMutation = useUploadFace();
 
@@ -166,35 +163,10 @@ export function OnboardingForm() {
 		});
 	};
 
-	const handleVerificationStart = (file: File) => {
-		if (verifyFaceMutation.isPending) return;
-		// Verify face in the uploaded image
-		verifyFaceMutation.mutate(
-			{ file },
-			{
-				onSuccess: (data) => {
-					if (data.face_detected) {
-						// Face detected successfully - show crop dialog
-						setVerifiedFile(file);
-						setShowCropDialog(true);
-					} else {
-						// No face detected - reset upload
-						setUploadedFile(null);
-						setVerifiedFile(null);
-						if (uploadedFilePreview) {
-							URL.revokeObjectURL(uploadedFilePreview);
-							setUploadedFilePreview(null);
-						}
-						fileUploadRef.current?.reset();
-					}
-				},
-				onError: () => {
-					// Error during verification - reset upload
-					setVerifiedFile(null);
-					fileUploadRef.current?.reset();
-				},
-			},
-		);
+	const handleFileSelected = (file: File) => {
+		// Skip verification - go straight to crop dialog
+		setVerifiedFile(file);
+		setShowCropDialog(true);
 	};
 
 	const handleCropComplete = async (croppedImageBase64: string) => {
@@ -283,7 +255,7 @@ export function OnboardingForm() {
 			<Form {...form}>
 				<form>
 					<Stepper
-						initialStep={1}
+						initialStep={currentStep}
 						onStepChange={handleStepChange}
 						onFinalStepCompleted={() => {
 							// Validate all fields before final submission
@@ -383,40 +355,8 @@ export function OnboardingForm() {
 						</Step>
 						<Step>
 							<div className="space-y-4">
-								{verifyFaceMutation.isPending && (
-									<div className="flex flex-col items-center justify-center py-8">
-										<AITextLoading
-											texts={["Verifying face...", "Please wait..."]}
-										/>
-										<p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-											Checking if your photo contains a clear face
-										</p>
-									</div>
-								)}
-
-								{!verifyFaceMutation.isPending && uploadedFilePreview ? (
+								{uploadedFilePreview ? (
 									<div className="flex flex-col items-center gap-6 animate-in fade-in-0 zoom-in-95 duration-300">
-										{/* Success Message */}
-										<div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-											{/** biome-ignore lint/a11y/noSvgWithoutTitle: no need check */}
-											<svg
-												className="size-5"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-												/>
-											</svg>
-											<span className="text-sm font-medium">
-												Face verified and cropped successfully!
-											</span>
-										</div>
-
 										{/* Image Preview */}
 										<div className="relative group">
 											{/* Image container */}
@@ -455,10 +395,10 @@ export function OnboardingForm() {
 											Change Photo
 										</Button>
 									</div>
-								) : !verifyFaceMutation.isPending && !showCropDialog ? (
+								) : !showCropDialog ? (
 									<FileUpload
 										ref={fileUploadRef}
-										onUploadSuccess={handleVerificationStart}
+										onUploadSuccess={handleFileSelected}
 										acceptedFileTypes={[
 											"image/png",
 											"image/jpeg",

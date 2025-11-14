@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
  *   activeUsers: 150   // Total number of user profiles in database
  * }
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
 	try {
 		const supabase = await createClient();
 
@@ -55,8 +55,7 @@ export async function GET(request: NextRequest) {
 		// Query 3: Count total number of user profiles
 		const { count: activeUsersCount, error: activeUsersError } = await supabase
 			.from("profiles")
-			.select("id", { count: "exact", head: true })
-			.eq("profile_type", "user");
+			.select("id", { count: "exact", head: true });
 
 		if (activeUsersError) {
 			throw activeUsersError;

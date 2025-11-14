@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
 		const currentUserId = user?.id || null;
 
 		// Get recent user-user matches with profile and face data
-		// Filter for matches where both profiles are users (not celebrities)
 		const { data: matches, error } = await supabase
 			.from("matches")
 			.select(`
@@ -50,7 +49,6 @@ export async function GET(request: NextRequest) {
 				profile:profiles!faces_profile_id_fkey (
 					id,
 					name,
-					profile_type,
 					gender,
 					school
 				)
@@ -61,7 +59,6 @@ export async function GET(request: NextRequest) {
 					profile:profiles!faces_profile_id_fkey (
 						id,
 						name,
-						profile_type,
 						gender,
 						school
 					)
@@ -69,8 +66,6 @@ export async function GET(request: NextRequest) {
 			`)
 			.not("face_a.profile_id", "is", null)
 			.not("face_b.profile_id", "is", null)
-			.eq("face_a.profile.profile_type", "user")
-			.eq("face_b.profile.profile_type", "user")
 			.order("created_at", { ascending: false })
 			.range(skip, skip + limit - 1);
 
@@ -178,7 +173,6 @@ export async function GET(request: NextRequest) {
 					a: {
 						id: profileA.id,
 						name: profileA.name,
-						profile_type: profileA.profile_type,
 						gender: profileA.gender,
 						school: profileA.school,
 						face_id: faceA.id,
@@ -187,7 +181,6 @@ export async function GET(request: NextRequest) {
 					b: {
 						id: profileB.id,
 						name: profileB.name,
-						profile_type: profileB.profile_type,
 						gender: profileB.gender,
 						school: profileB.school,
 						face_id: faceB.id,
