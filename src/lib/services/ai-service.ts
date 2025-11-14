@@ -60,6 +60,8 @@ export interface AdvancedFaceAnalysis {
 	error?: string;
 }
 
+const MODEL_URL = "ngocla99/face-analysis";
+
 // Initialize Replicate client
 const replicate = new Replicate({
 	auth: env.REPLICATE_API_TOKEN,
@@ -114,11 +116,14 @@ export async function analyzeAdvancedFace(
 		const dataUri = bufferToDataUri(imageBuffer);
 
 		// Run prediction on Replicate
-		const output = (await replicate.run(env.REPLICATE_MODEL_VERSION, {
-			input: {
-				image: dataUri,
+		const output = (await replicate.run(
+			`${MODEL_URL}:${env.REPLICATE_MODEL_VERSION}`,
+			{
+				input: {
+					image: dataUri,
+				},
 			},
-		})) as AdvancedFaceAnalysis;
+		)) as AdvancedFaceAnalysis;
 
 		// Validate response
 		if (!output.face_detected) {
@@ -135,142 +140,5 @@ export async function analyzeAdvancedFace(
 		}
 
 		throw new Error("Face analysis failed: Unknown error");
-	}
-}
-
-/**
- * Extract advanced face analysis from base64-encoded image
- *
- * @param imageBase64 - Base64-encoded image data (without data URI prefix)
- * @param mimeType - Image MIME type (default: image/jpeg)
- * @returns Comprehensive facial analysis
- * @throws Error if no face detected or API fails
- *
- * @example
- * ```typescript
- * const base64 = imageBuffer.toString('base64');
- * const analysis = await analyzeAdvancedFaceFromBase64(base64);
- * ```
- */
-export async function analyzeAdvancedFaceFromBase64(
-	imageBase64: string,
-	mimeType = "image/jpeg",
-): Promise<AdvancedFaceAnalysis> {
-	try {
-		// Add data URI prefix if not present
-		const dataUri = imageBase64.startsWith("data:")
-			? imageBase64
-			: `data:${mimeType};base64,${imageBase64}`;
-
-		// Run prediction on Replicate
-		const output = (await replicate.run(env.REPLICATE_MODEL_VERSION, {
-			input: {
-				image: dataUri,
-			},
-		})) as AdvancedFaceAnalysis;
-
-		// Validate response
-		if (!output.face_detected) {
-			throw new Error(output.error || "No face detected in image");
-		}
-
-		return output;
-	} catch (error) {
-		console.error("Replicate face analysis error:", error);
-
-		// Re-throw with more context
-		if (error instanceof Error) {
-			throw new Error(`Face analysis failed: ${error.message}`);
-		}
-
-		throw new Error("Face analysis failed: Unknown error");
-	}
-}
-
-/**
- * Verify if a face is detected in an image (lightweight check)
- *
- * Note: With Replicate, this still runs the full analysis but only checks
- * for face detection. Consider using analyzeAdvancedFace directly to avoid
- * redundant API calls.
- *
- * @param imageBuffer - Image file buffer (JPEG, PNG)
- * @returns True if face detected, false otherwise
- *
- * @example
- * ```typescript
- * const imageBuffer = await file.arrayBuffer();
- * const hasFace = await verifyFace(Buffer.from(imageBuffer));
- * if (hasFace) {
- *   console.log("Face detected!");
- * }
- * ```
- */
-export async function verifyFace(imageBuffer: Buffer): Promise<boolean> {
-	try {
-		const result = await analyzeAdvancedFace(imageBuffer);
-		return result.face_detected;
-	} catch (error) {
-		console.error("Face verification error:", error);
-		return false;
-	}
-}
-
-/**
- * Verify face from base64-encoded image
- *
- * @param imageBase64 - Base64-encoded image data
- * @param mimeType - Image MIME type (default: image/jpeg)
- * @returns True if face detected, false otherwise
- *
- * @example
- * ```typescript
- * const base64 = imageBuffer.toString('base64');
- * const hasFace = await verifyFaceFromBase64(base64);
- * ```
- */
-export async function verifyFaceFromBase64(
-	imageBase64: string,
-	mimeType = "image/jpeg",
-): Promise<boolean> {
-	try {
-		const result = await analyzeAdvancedFaceFromBase64(imageBase64, mimeType);
-		return result.face_detected;
-	} catch (error) {
-		console.error("Face verification error:", error);
-		return false;
-	}
-}
-
-/**
- * Check if Replicate service is accessible
- *
- * Note: Replicate doesn't have a health check endpoint, so this is a simplified
- * version that just checks if the API token is configured.
- *
- * @returns True if service is configured, false otherwise
- *
- * @example
- * ```typescript
- * const isHealthy = await checkAIServiceHealth();
- * if (!isHealthy) {
- *   console.error("Replicate is not configured!");
- * }
- * ```
- */
-export async function checkAIServiceHealth(): Promise<boolean> {
-	try {
-		// Check if environment variables are configured
-		if (!env.REPLICATE_API_TOKEN || !env.REPLICATE_MODEL_VERSION) {
-			console.error("Replicate environment variables not configured");
-			return false;
-		}
-
-		// Could optionally make a test prediction here, but that costs money
-		// For now, just return true if env vars are set
-		return true;
-	} catch (error) {
-		console.error("Replicate health check failed:", error);
-		return false;
 	}
 }
