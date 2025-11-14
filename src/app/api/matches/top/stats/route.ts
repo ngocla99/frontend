@@ -55,8 +55,7 @@ export async function GET(_request: NextRequest) {
 		// Query 3: Count total number of user profiles
 		const { count: activeUsersCount, error: activeUsersError } = await supabase
 			.from("profiles")
-			.select("id", { count: "exact", head: true })
-			.eq("profile_type", "user");
+			.select("id", { count: "exact", head: true });
 
 		if (activeUsersError) {
 			throw activeUsersError;

@@ -16,12 +16,11 @@ The application uses **Supabase PostgreSQL** for relational data. This document 
 
 ### Table: `profiles`
 
-Unified user and celebrity profile storage.
+User profile storage. Celebrity profiles are stored in the separate `celebrities` table.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | `uuid` | PRIMARY KEY | Unique profile ID (matches auth.users.id for users) |
-| `profile_type` | `text` | NOT NULL, CHECK (user, celebrity) | Profile type |
 | `name` | `text` | | Display name |
 | `email` | `text` | UNIQUE | User email (from Supabase Auth) |
 | `gender` | `text` | | Gender (male, female, other) |
@@ -35,12 +34,12 @@ Unified user and celebrity profile storage.
 **Indexes:**
 - `profiles_pkey` (UNIQUE) on `id`
 - `profiles_email_key` (UNIQUE) on `email`
-- `idx_profiles_school_gender` on `(school, gender)` WHERE `profile_type = 'user'`
+- `idx_profiles_school_gender` on `(school, gender)` WHERE `school IS NOT NULL AND gender IS NOT NULL`
 - `idx_profiles_last_seen` on `last_seen`
 - `idx_profiles_role` on `role` WHERE `role = 'admin'`
 
 **Usage:**
-- Stores both user and celebrity profile data
+- Stores user profile data only (celebrities moved to separate table)
 - Automatically created on Supabase Auth signup (via trigger)
 - `last_seen` tracks online/offline status for real-time presence
 - `default_face_id` references the primary face for matching
