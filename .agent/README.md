@@ -41,6 +41,14 @@ Welcome to the AI Face Matching Application (Fuzed) documentation. This folder c
 
 #### ✅ Completed Tasks
 
+- **[Database Cleanup - Deprecated Items](./tasks/database-cleanup-deprecated-items.md)** ✅ Completed 2025-11-14
+  - Removed 2 deprecated matching functions (replaced by advanced algorithms)
+  - Removed obsolete profile_type column from profiles table
+  - Fixed 3 functions with search_path issues for vector operators
+  - Updated TypeScript types and API queries to remove profile_type references
+  - Fixed match generation errors (profile_type and vector operator issues)
+  - Updated database schema documentation
+
 - **[Fix Vector Extension Security Issue](./tasks/fix-vector-extension-security.md)** ✅ Completed 2025-11-06
   - Moved vector extension from public schema to dedicated extensions schema
   - Resolved Supabase security advisory warning (Extension in Public)
