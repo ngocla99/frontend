@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type JSX, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -29,7 +29,7 @@ export function AdminSidebarNav({
 }: AdminSidebarNavProps) {
 	const pathname = usePathname();
 	const router = useRouter();
-	const [val, setVal] = useState(pathname ?? "/admin");
+	const [val, setVal] = useState(pathname ?? "/matching-algorithm");
 
 	const handleSelect = (e: string) => {
 		setVal(e);
