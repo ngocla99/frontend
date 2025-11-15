@@ -154,6 +154,14 @@ export function RateLimitsForm() {
 
 				<div className="flex gap-4">
 					<Button
+						type="button"
+						variant="outline"
+						onClick={() => form.reset()}
+						disabled={!form.formState.isDirty}
+					>
+						Reset
+					</Button>
+					<Button
 						type="submit"
 						disabled={!form.formState.isDirty || updateSettings.isPending}
 					>
@@ -161,14 +169,6 @@ export function RateLimitsForm() {
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}
 						Save Changes
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => form.reset()}
-						disabled={!form.formState.isDirty}
-					>
-						Reset
 					</Button>
 				</div>
 			</form>

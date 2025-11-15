@@ -159,7 +159,7 @@ export function MatchingAlgorithmForm() {
 						<FormField
 							key={key}
 							control={form.control}
-							name={`matching_weights.${key}`}
+							name={`matching_weights.${key}` as any}
 							render={({ field }) => (
 								<FormItem>
 									<div className="flex items-center justify-between">
@@ -235,6 +235,14 @@ export function MatchingAlgorithmForm() {
 
 				<div className="flex gap-4">
 					<Button
+						type="button"
+						variant="outline"
+						onClick={() => form.reset()}
+						disabled={!form.formState.isDirty}
+					>
+						Reset
+					</Button>
+					<Button
 						type="submit"
 						disabled={
 							!form.formState.isDirty || !isSumValid || updateSettings.isPending
@@ -244,14 +252,6 @@ export function MatchingAlgorithmForm() {
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}
 						Save Changes
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => form.reset()}
-						disabled={!form.formState.isDirty}
-					>
-						Reset
 					</Button>
 				</div>
 			</form>

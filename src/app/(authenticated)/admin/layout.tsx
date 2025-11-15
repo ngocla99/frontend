@@ -1,6 +1,5 @@
 import { Gauge, Settings, ToggleLeft } from "lucide-react";
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/header";
 import { Separator } from "@/components/ui/separator";
 import { AdminSidebarNav } from "@/features/admin/components/admin-sidebar-nav";
 import { createClient } from "@/lib/supabase/server";
@@ -58,11 +57,8 @@ export default async function AdminLayout({
 	}
 
 	return (
-		<>
-			{/* ===== Top Heading ===== */}
-			<Header />
-
-			<main className="container mx-auto px-4 pt-20 sm:px-6 lg:px-8">
+		<div className="relative flex w-full flex-1 flex-col h-[100vh]">
+			<main className="container pt-24 px-4 sm:px-6 lg:px-8 flex grow flex-col overflow-hidden mx-auto max-w-6xl">
 				<div className="space-y-0.5">
 					<h1 className="text-2xl font-bold tracking-tight md:text-3xl">
 						Admin Settings
@@ -79,6 +75,6 @@ export default async function AdminLayout({
 					<div className="flex w-full overflow-y-hidden p-1">{children}</div>
 				</div>
 			</main>
-		</>
+		</div>
 	);
 }

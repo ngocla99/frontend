@@ -47,7 +47,7 @@ export function AdminSidebarNav({
 					<SelectContent>
 						{items.map((item) => (
 							<SelectItem key={item.href} value={item.href}>
-								<div className="flex gap-x-4 px-2 py-1">
+								<div className="flex gap-x-4 px-2 py-1 items-center">
 									<span className="scale-125">{item.icon}</span>
 									<span className="text-md">{item.title}</span>
 								</div>
@@ -60,7 +60,7 @@ export function AdminSidebarNav({
 			{/* Desktop sidebar */}
 			<ScrollArea
 				type="always"
-				className="bg-background hidden w-full min-w-40 px-1 py-2 md:block"
+				className="hidden w-full min-w-40 px-1 py-2 md:block"
 			>
 				<nav
 					className={cn(
@@ -86,7 +86,6 @@ export function AdminSidebarNav({
 						</Link>
 					))}
 				</nav>
-				<ScrollBar orientation="horizontal" />
 			</ScrollArea>
 		</>
 	);
