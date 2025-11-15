@@ -32,7 +32,7 @@ export const HeadCard = ({
 			</div>
 
 			<p className="text-sm text-white/90 mb-3">
-				🔥 {activeUsers} users registered
+				🔥 {activeUsers} people just joined the feed
 			</p>
 
 			<div className="flex gap-2">

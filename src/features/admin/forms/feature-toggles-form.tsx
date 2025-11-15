@@ -16,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
 	useAdminSettings,
@@ -64,8 +65,21 @@ export function FeatureTogglesForm() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<Loader2 className="h-6 w-6 animate-spin" />
+			<div className="space-y-8">
+				{/* Switch Field Skeleton */}
+				<div className="flex flex-row items-center justify-between rounded-lg border p-4">
+					<div className="space-y-2 flex-1">
+						<Skeleton className="h-5 w-48" />
+						<Skeleton className="h-4 w-full max-w-md" />
+					</div>
+					<Skeleton className="h-6 w-11 rounded-full" />
+				</div>
+
+				{/* Buttons Skeleton */}
+				<div className="flex gap-4">
+					<Skeleton className="h-10 w-24" />
+					<Skeleton className="h-10 w-32" />
+				</div>
 			</div>
 		);
 	}

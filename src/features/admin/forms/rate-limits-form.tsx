@@ -16,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import {
 	useAdminSettings,
@@ -83,8 +84,32 @@ export function RateLimitsForm() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<Loader2 className="h-6 w-6 animate-spin" />
+			<div className="space-y-8">
+				{/* Baby Generation Limit Skeleton */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<Skeleton className="h-4 w-48" />
+						<Skeleton className="h-4 w-16" />
+					</div>
+					<Skeleton className="h-2 w-full" />
+					<Skeleton className="h-4 w-full" />
+				</div>
+
+				{/* Photo Upload Limit Skeleton */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<Skeleton className="h-4 w-48" />
+						<Skeleton className="h-4 w-16" />
+					</div>
+					<Skeleton className="h-2 w-full" />
+					<Skeleton className="h-4 w-full" />
+				</div>
+
+				{/* Buttons Skeleton */}
+				<div className="flex gap-4">
+					<Skeleton className="h-10 w-24" />
+					<Skeleton className="h-10 w-32" />
+				</div>
 			</div>
 		);
 	}

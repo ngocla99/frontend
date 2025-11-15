@@ -16,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import {
 	useAdminSettings,
@@ -133,8 +134,48 @@ export function MatchingAlgorithmForm() {
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center py-8">
-				<Loader2 className="h-6 w-6 animate-spin" />
+			<div className="space-y-8">
+				{/* Matching Weights Section */}
+				<div className="space-y-6">
+					<div className="space-y-1">
+						<Skeleton className="h-5 w-40" />
+						<Skeleton className="h-4 w-full max-w-lg" />
+					</div>
+
+					{/* 6 weight sliders */}
+					{Array.from({ length: 6 }).map((_, i) => (
+						<div key={i} className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Skeleton className="h-4 w-32" />
+								<Skeleton className="h-4 w-12" />
+							</div>
+							<Skeleton className="h-2 w-full" />
+							<Skeleton className="h-3 w-full max-w-xs" />
+						</div>
+					))}
+
+					{/* Sum validation indicator */}
+					<div className="flex items-center justify-between rounded-lg border p-3">
+						<Skeleton className="h-4 w-24" />
+						<Skeleton className="h-4 w-16" />
+					</div>
+				</div>
+
+				{/* Match Threshold Section */}
+				<div className="space-y-3">
+					<div className="flex items-center justify-between">
+						<Skeleton className="h-4 w-48" />
+						<Skeleton className="h-4 w-12" />
+					</div>
+					<Skeleton className="h-2 w-full" />
+					<Skeleton className="h-4 w-full max-w-md" />
+				</div>
+
+				{/* Buttons Skeleton */}
+				<div className="flex gap-4">
+					<Skeleton className="h-10 w-24" />
+					<Skeleton className="h-10 w-32" />
+				</div>
 			</div>
 		);
 	}
